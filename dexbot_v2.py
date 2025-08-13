@@ -689,6 +689,7 @@ def load_config():
     
     parser = argparse.ArgumentParser()
     
+    parser.add_argument('--reset', type=argparse_bool, nargs='?', const=True, help='Force reset auto-configured values from tmp cfg. (default=False not reset)', default=False)
     parser.add_argument('--restore', type=argparse_bool, nargs='?', const=True, help='Variable used to let bot know to try restore auto-configured values from tmp cfg. Usable when secondary run script management by, also manual testing... (default=False not restoring)', default=False)
     
     # arguments: config file(will be used instead of arguments later)
@@ -847,6 +848,7 @@ def load_config():
     if args.takeraddress is not None:
         c.BOTtakeraddress = args.takeraddress
     
+    c.BOTreset = bool(args.reset)
     c.BOTrestore = bool(args.restore)
     
     c.BOTaddress_funds_only = bool(args.address_funds_only)
@@ -1272,8 +1274,8 @@ def update_balances():
 def feature__slide_dyn__init_postpricing():
     global c, s, d
     
-    # try to restore maker price when slide zero is -2 or BOTrestore is true
-    if c.BOTslide_dyn_zero == -2 or c.BOTrestore == True:
+    # try to restore maker price when slide zero is -2 or restore is true
+    if (c.BOTreset == False) and (c.BOTslide_dyn_zero == -2 or c.BOTrestore == True):
         c.feature__slide_dyn__maker_price_value_startup = feature__tmp_cfg__get_value("feature__slide_dyn__maker_price_value_startup", None)
     
     # if maker price value is None or was not restored, than save actual as default for later usage
@@ -1291,10 +1293,10 @@ def feature__slide_dyn__init_postpricing():
         if c.BOTslide_dyn_zero == -1 or c.BOTslide_dyn_zero == -2:
             
             # if slide dyn zero is -2 or restore is true, try to load tmp cfg
-            if c.BOTslide_dyn_zero == -2 or c.BOTrestore == True:
+            if (c.BOTreset == False) and (c.BOTslide_dyn_zero == -2 or c.BOTrestore == True):
                 if feature__tmp_cfg__get_value("BOTslide_dyn_zero_type") == 'relative':
                     c.feature__slide_dyn__zero_value = feature__tmp_cfg__get_value("feature__slide_dyn__zero_value", None)
-                    
+            
             # if load tmp cfg failed, auto configure value and safe actual value
             if c.feature__slide_dyn__zero_value == None:
                 
@@ -1321,7 +1323,7 @@ def feature__slide_dyn__init_postpricing():
         if c.BOTslide_dyn_zero == -1 or c.BOTslide_dyn_zero == -2:
             
             # if slide dyn zero is -2 or restore is true, try to load tmp cfg
-            if c.BOTslide_dyn_zero == -2 or c.BOTrestore == True:
+            if (c.BOTreset == False) and (c.BOTslide_dyn_zero == -2 or c.BOTrestore == True):
                 if feature__tmp_cfg__get_value("BOTslide_dyn_zero_type") == 'static':
                     if feature__tmp_cfg__get_value("BOTslide_dyn_asset") == c.BOTslide_dyn_asset:
                         c.feature__slide_dyn__zero_value = feature__tmp_cfg__get_value("feature__slide_dyn__zero_value")
