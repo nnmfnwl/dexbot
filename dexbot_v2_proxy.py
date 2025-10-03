@@ -117,7 +117,7 @@ def pricing_check_or_exit():
 
 def proxy_server__init_preconfig():
     glob.d.proxy_server__server = None
-    glob.c.proxy_server__default_addr = "localhost"
+    glob.c.proxy_server__default_addr = "127.0.0.1"
     glob.c.proxy_server__default_port = 22333
     glob.c.proxy_server__addr = ""
     glob.c.proxy_server__port = 0
