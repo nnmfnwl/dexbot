@@ -8,7 +8,7 @@ import jsonrpclib
 
 def pricing_proxy_client__init_preconfig__():
     glob.d.pricing_proxy_client__conn = None
-    glob.c.pricing_proxy_client__default_url = "http://localhost:22333"
+    glob.c.pricing_proxy_client__default_url = "http://127.0.0.1:22333"
     glob.c.pricing_proxy_client__url = ""
 
 pricing_proxy_client__init_preconfig__()
