@@ -2,7 +2,7 @@
 
 # ~ MIT License
 
-# ~ Copyright (c) 2020-2024 FAZER
+# ~ Copyright (c) 2020-2025 NNMFNWL
 
 # ~ Permission is hereby granted, free of charge, to any person obtaining a copy
 # ~ of this software and associated documentation files (the "Software"), to deal
@@ -268,6 +268,8 @@ botconfig = str(
 # automatic maker price gathering
 # 0 = default = disabled
      "--maker_price {cc_maker_price}"
+# you can optionally set custom maker price in thirty asset. For example trading BLOCK with LTC, you would rather set BLOCK price manually and BOT value automatically converts into LTC
+     "--maker_price_asset {cc_maker_price_asset}"
 
 # Pricing is based off BTC-XXX market pairs. For example, if running on the LTC-DASH market, the bot pulls the price
 # for BTC-LTC and BTC-DASH then automatically calculates LTC-DASH price. This is how it works for all supported pricing sources:
