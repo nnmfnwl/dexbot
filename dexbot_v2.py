@@ -165,10 +165,16 @@ def feature__boundary__init_preconfig():
 def feature__maker_price__init_preconfig():
     global c, s, d
     
+    # maker price set at bot startup or loaded from cmp.cfg depending on maker_price config
     d.feature__maker_price__value_startup = 0
-    d.feature__maker_price__value_local = 0
+    # price used by bot, could be same as remote price or price configured by --maker_price or even set by thirty asset as USD
+    d.feature__maker_price__value_current_used = 0
+    # remote price loaded from markets
     d.feature__maker_price__value_remote = 0
-    c.BOTmaker_price = 0
+    # bot price configuration
+    c.feature__maker_price__cfg_price = 0
+    # bot price configuration in specific asset
+    c.feature__maker_price__cfg_asset = None
 
 def feature__slide_dyn__init_preconfig():
     global c, s, d
@@ -178,6 +184,8 @@ def feature__slide_dyn__init_preconfig():
     d.feature__slide_dyn__zero_asset_price = 0
     
     c.feature__slide_dyn__zero_value = None
+    
+    c.feature__slide_dyn__maker_price_value_startup = None
 
 def feature__takerbot__init_preconfig():
     global c, s, d
@@ -206,10 +214,14 @@ def feature__maker_price__load_config_verify():
     error_num = 0
     crazy_num = 0
     
-    if c.BOTmaker_price != -1 and c.BOTmaker_price != -2:
-        if c.BOTmaker_price < 0:
-            print('**** ERROR, <maker_price> value <{0}> is invalid'.format(c.BOTmaker_price))
+    if c.feature__maker_price__cfg_price != -1 and c.feature__maker_price__cfg_price != -2:
+        if c.feature__maker_price__cfg_price < 0:
+            print('**** ERROR, <maker_price> value <{0}> is invalid'.format(c.feature__maker_price__cfg_price))
             error_num += 1
+    
+    if c.feature__maker_price__cfg_asset != None and c.feature__maker_price__cfg_price <= 0:
+        print('**** ERROR, <maker_price> <{0}> combined with <maker_price_asset> <{1}> is invalid'.format(c.feature__maker_price__cfg_price, c.feature__maker_price__cfg_asset))
+        error_num += 1
     
     return error_num, crazy_num
 
@@ -598,11 +610,13 @@ def feature__maker_price__load_config_define(parser, argparse):
     'number > 0 means specific static center price'
     'Even if center price is static, spread and dynamic spread should take care about order position management, this like system dexbot is able to handle situations when no pricing source is available, but it is up to user how to configure price movement'
     '(default=0 disabled)', default=0)
+    parser.add_argument('--maker_price_asset', type=str, help='custom static maker price could be set set in specific asset (default=None)', default=None)
 
 def feature__maker_price__load_config_postparse(args):
     global c, s, d
     
-    c.BOTmaker_price = float(args.maker_price)
+    c.feature__maker_price__cfg_price = float(args.maker_price)
+    c.feature__maker_price__cfg_asset = str(args.maker_price_asset)
 
 def feature__slide_dyn__load_config_define(parser, argparse):
     global c, s, d
@@ -857,6 +871,8 @@ def load_config():
     
     c.BOThidden_orders = bool(args.hidden_orders)
     
+    feature__maker_price__load_config_postparse(args)
+    
     feature__flush_co__load_config_postparse(args)
     
     pricing_proxy_client__load_config_postparse(args)
@@ -1023,57 +1039,69 @@ def do_utils_and_exit():
 def feature__maker_price__pricing_update():
     global c, s, d
     
-    price_maker = pricing_storage__try_get_price(c.BOTsellmarket, c.BOTbuymarket)
+    # load default pricing from remote source
+    price_maker_remote = pricing_storage__try_get_price(c.BOTsellmarket, c.BOTbuymarket)
+    price_maker_used = price_maker_remote
     
-    if price_maker != 0:
+    # optionally set maker price if specified
+    if c.feature__maker_price__cfg_price > 0:
+        # manual price
+        if c.feature__maker_price__cfg_asset == None:
+            price_maker_used = c.feature__maker_price__cfg_price
+        # manual related price to asset
+        else:
+            price_maker_used = pricing_storage__try_get_price(c.feature__maker_price__cfg_asset, c.BOTbuymarket)
+            price_maker_used = price_maker_used * c.feature__maker_price__cfg_price
+    
+    if price_maker_used != 0:
         # actual remote value
-        d.feature__maker_price__value_remote = price_maker
+        d.feature__maker_price__value_remote = price_maker_remote
         
         # remote pricing activated
-        if c.BOTmaker_price == 0:
-            d.feature__maker_price__value_local = price_maker
+        if c.feature__maker_price__cfg_price == 0:
+            d.feature__maker_price__value_current_used = price_maker_used
             
         # local one time price activated
-        elif c.BOTmaker_price == -1:
+        elif c.feature__maker_price__cfg_price == -1:
             
-            # try to restore maker price only after crash
-            if c.BOTrestore == True:
-                d.feature__maker_price__value_local = feature__tmp_cfg__get_value("feature__maker_price__value_local", 0)
+            if d.feature__maker_price__value_current_used == 0:
+                # try to restore maker price only after crash
+                if c.BOTrestore == True:
+                    d.feature__maker_price__value_current_used = feature__tmp_cfg__get_value("feature__maker_price__value_current_used", 0)
             
             # if bot is started normally local price is zero so it will be stored in tmp cfg
-            if d.feature__maker_price__value_local == 0:
-                d.feature__maker_price__value_local = price_maker
-                feature__tmp_cfg__set_value("feature__maker_price__value_local", price_maker)
+            if d.feature__maker_price__value_current_used == 0:
+                d.feature__maker_price__value_current_used = price_maker_used
+                feature__tmp_cfg__set_value("feature__maker_price__value_current_used", price_maker_used)
         
         # local long term price activated
-        elif c.BOTmaker_price == -2:
+        elif c.feature__maker_price__cfg_price == -2:
             
             # try to restore maker price always
-            if c.feature__maker_price__value_local == 0:
-                d.feature__maker_price__value_local = feature__tmp_cfg__get_value("feature__maker_price__value_local", 0)
+            if c.feature__maker_price__value_current_used == 0:
+                d.feature__maker_price__value_current_used = feature__tmp_cfg__get_value("feature__maker_price__value_current_used", 0)
             
             # even long term price must be set for the first time
-            if c.feature__maker_price__value_local == 0:
-                d.feature__maker_price__value_local = price_maker
-                feature__tmp_cfg__set_value("feature__maker_price__value_local", price_maker)
+            if c.feature__maker_price__value_current_used == 0:
+                d.feature__maker_price__value_current_used = price_maker_used
+                feature__tmp_cfg__set_value("feature__maker_price__value_current_used", price_maker_used)
                 
         # custom price activated
         else:
-            if c.feature__maker_price__value_local == 0:
-                d.feature__maker_price__value_local = c.BOTmaker_price
-        
+            d.feature__maker_price__value_current_used = price_maker_used
+            
         # startup maker price value load or restore
         if d.feature__maker_price__value_startup == 0:
-            if c.BOTmaker_price == -1 or c.BOTmaker_price == -2:
-                d.feature__maker_price__value_startup = d.feature__maker_price__value_local
+            if c.feature__maker_price__cfg_price == -1 or c.feature__maker_price__cfg_price == -2:
+                d.feature__maker_price__value_startup = d.feature__maker_price__value_current_used
             elif c.BOTrestore == True:
                 d.feature__maker_price__value_startup = feature__tmp_cfg__get_value("feature__maker_price__value_startup", 0)
             
             if d.feature__maker_price__value_startup == 0:
-                d.feature__maker_price__value_startup = price_maker
-                feature__tmp_cfg__set_value("feature__maker_price__value_startup", price_maker)
+                d.feature__maker_price__value_startup = price_maker_used
+                feature__tmp_cfg__set_value("feature__maker_price__value_startup", price_maker_used)
             
-    return price_maker
+    return price_maker_used
 
 # check if pricing works or exit
 def pricing_check_or_exit():
@@ -1208,8 +1236,8 @@ def feature__boundary__pricing_update_relative_init():
         d.feature__boundary__price_maker_initial_center_relative = c.BOTboundary_start_price
         print(">>>> Boundary pricing initial update: manual: {} = {} * {}".format(d.feature__boundary__price_maker_initial_center, c.BOTboundary_start_price, tmp_feature__boundary__price_relative_current))
     else:
-        d.feature__boundary__price_maker_initial_center = d.feature__maker_price__value_local
-        d.feature__boundary__price_maker_initial_center_relative = d.feature__maker_price__value_local / tmp_feature__boundary__price_relative_current
+        d.feature__boundary__price_maker_initial_center = d.feature__maker_price__value_current_used
+        d.feature__boundary__price_maker_initial_center_relative = d.feature__maker_price__value_current_used / tmp_feature__boundary__price_relative_current
         print(">>>> Boundary pricing initial update: auto: {}".format(d.feature__boundary__price_maker_initial_center))
         
     return tmp_feature__boundary__price_relative_current
@@ -1280,7 +1308,7 @@ def feature__slide_dyn__init_postpricing():
     
     # if maker price value is None or was not restored, than save actual as default for later usage
     if c.feature__slide_dyn__maker_price_value_startup == None:
-        c.feature__slide_dyn__maker_price_value_startup = d.feature__maker_price__value_local
+        c.feature__slide_dyn__maker_price_value_startup = d.feature__maker_price__value_current_used
         feature__tmp_cfg__set_value("feature__slide_dyn__maker_price_value_startup", c.feature__slide_dyn__maker_price_value_startup)
     
     # get total balance maker + taker represented as maker
@@ -1296,7 +1324,7 @@ def feature__slide_dyn__init_postpricing():
             if (c.BOTreset == False) and (c.BOTslide_dyn_zero == -2 or c.BOTrestore == True):
                 if feature__tmp_cfg__get_value("BOTslide_dyn_zero_type") == 'relative':
                     c.feature__slide_dyn__zero_value = feature__tmp_cfg__get_value("feature__slide_dyn__zero_value", None)
-            
+                    
             # if load tmp cfg failed, auto configure value and safe actual value
             if c.feature__slide_dyn__zero_value == None:
                 
@@ -1374,7 +1402,7 @@ def feature__slide_dyn__get_dyn_slide():
     if c.BOTslide_dyn_zero_type == 'relative':
         tmp_dyn_zero_asset=""
         if c.BOTslide_dyn_asset_track is True:
-            balance_taker_in_maker = (d.balance_taker_total / d.feature__maker_price__value_local) #convert taker balance to by price
+            balance_taker_in_maker = (d.balance_taker_total / d.feature__maker_price__value_current_used) #convert taker balance to by price
         else:
             balance_taker_in_maker = (d.balance_taker_total / c.feature__slide_dyn__maker_price_value_startup) #convert taker balance to by price
         balance_total = d.balance_maker_total + balance_taker_in_maker
@@ -1711,7 +1739,7 @@ def virtual_orders__prepare_once():
         print('#### Pricing not available... waiting to restore...')
         time.sleep(c.BOTdelayinternalerror)
     
-    d.reset_on_price_change_start = d.feature__maker_price__value_local
+    d.reset_on_price_change_start = d.feature__maker_price__value_current_used
     
     # how many orders finished reset
     d.ordersfinished = 0
@@ -1847,7 +1875,7 @@ def feature__boundary__get_min():
 def feature__boundary__recompute_price():
     global c, s, d
     
-    price = d.feature__maker_price__value_local
+    price = d.feature__maker_price__value_current_used
     
     maximum = feature__boundary__get_max()
     minimum = feature__boundary__get_min()
@@ -1868,16 +1896,16 @@ def feature__boundary__hit_max():
     if c.BOTboundary_max_relative != 0:
         # wait if out of price relative boundary happen
         maximum = feature__boundary__get_max_relative()
-        if maximum < d.feature__maker_price__value_local:
-            print('>>>> Maximum relative boundary <{}> hit <{}> / <{}>'.format(c.BOTboundary_max_relative, maximum, d.feature__maker_price__value_local))
+        if maximum < d.feature__maker_price__value_current_used:
+            print('>>>> Maximum relative boundary <{}> hit <{}> / <{}>'.format(c.BOTboundary_max_relative, maximum, d.feature__maker_price__value_current_used))
             return True
             
     # check if static max boundary is configured
     if c.BOTboundary_max_static != 0:
         # wait if out of price static boundary happen
         maximum = feature__boundary__get_max_static()
-        if maximum < d.feature__maker_price__value_local:
-            print('>>>> Maximum static boundary <{}> hit <{}> / <{}>'.format(c.BOTboundary_max_static, maximum, d.feature__maker_price__value_local))
+        if maximum < d.feature__maker_price__value_current_used:
+            print('>>>> Maximum static boundary <{}> hit <{}> / <{}>'.format(c.BOTboundary_max_static, maximum, d.feature__maker_price__value_current_used))
             return True
     
     return False
@@ -1890,16 +1918,16 @@ def feature__boundary__hit_min():
     if c.BOTboundary_min_relative != 0:
         # wait if out of price relative boundary happen
         minimum = feature__boundary__get_min_relative()
-        if minimum > d.feature__maker_price__value_local:
-            print('>>>> Minimum relative boundary <{}> hit <{}> / <{}>'.format(c.BOTboundary_min_relative, minimum, d.feature__maker_price__value_local))
+        if minimum > d.feature__maker_price__value_current_used:
+            print('>>>> Minimum relative boundary <{}> hit <{}> / <{}>'.format(c.BOTboundary_min_relative, minimum, d.feature__maker_price__value_current_used))
             return True
     
     # check if static min boundary is configured
     if c.BOTboundary_min_static != 0:
         # wait if out of price static boundary happen
         minimum = feature__boundary__get_min_static()
-        if minimum > d.feature__maker_price__value_local:
-            print('>>>> Minimum static boundary <{}> hit <{}> / <{}>'.format(c.BOTboundary_min_static, minimum, d.feature__maker_price__value_local))
+        if minimum > d.feature__maker_price__value_current_used:
+            print('>>>> Minimum static boundary <{}> hit <{}> / <{}>'.format(c.BOTboundary_min_static, minimum, d.feature__maker_price__value_current_used))
             return True
     
     return False
@@ -1976,13 +2004,13 @@ def events_reset_orders():
     print('checking for reset order events')
     
     # if reset on price change positive is set and price has been changed, break and reset orders
-    if c.BOTresetonpricechangepositive != 0 and d.feature__maker_price__value_local >= (d.reset_on_price_change_start * (1 + c.BOTresetonpricechangepositive)):
-        print('>>>> Reset on positive price change {0}% has been reached: price stored / actual {1} / {2}, going to order reset now...'.format(c.BOTresetonpricechangepositive, d.reset_on_price_change_start, d.feature__maker_price__value_local))
+    if c.BOTresetonpricechangepositive != 0 and d.feature__maker_price__value_current_used >= (d.reset_on_price_change_start * (1 + c.BOTresetonpricechangepositive)):
+        print('>>>> Reset on positive price change {0}% has been reached: price stored / actual {1} / {2}, going to order reset now...'.format(c.BOTresetonpricechangepositive, d.reset_on_price_change_start, d.feature__maker_price__value_current_used))
         return True
         
     # if reset on price change negative is set and price has been changed, break and reset orders
-    if c.BOTresetonpricechangenegative != 0 and d.feature__maker_price__value_local <= (d.reset_on_price_change_start * (1 - c.BOTresetonpricechangenegative)):
-        print('>>>> Reset on negative price change {0}% has been reached: price stored / actual {1} / {2}, going to order reset now...'.format(c.BOTresetonpricechangenegative, d.reset_on_price_change_start, d.feature__maker_price__value_local))
+    if c.BOTresetonpricechangenegative != 0 and d.feature__maker_price__value_current_used <= (d.reset_on_price_change_start * (1 - c.BOTresetonpricechangenegative)):
+        print('>>>> Reset on negative price change {0}% has been reached: price stored / actual {1} / {2}, going to order reset now...'.format(c.BOTresetonpricechangenegative, d.reset_on_price_change_start, d.feature__maker_price__value_current_used))
         return True
     
     # if reset after delay is set and reached break and reset orders
