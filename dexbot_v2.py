@@ -76,7 +76,7 @@ def init_postconfig():
     pricing_proxy_client__init_postconfig()
     
     # initialize pricing storage and set proxy client
-    pricing_storage__init_postconfig(c.BOTconfigfile + ".tmp.pricing", c.BOTdelaycheckprice, c.BOTuse, 2, 8, pricing_proxy_client__pricing_storage__try_get_price_fn)
+    pricing_storage__init_postconfig(c.BOTconfigfile + ".tmp.pricing", c.BOTdelaycheckprice, c.BOTuse, 2, 8, pricing_proxy_client__pricing_storage__try_get_price_fn, c.BOTcf.price_redirections)
     
 #global variables initialization
 def global_vars_init_preconfig():
@@ -167,14 +167,12 @@ def feature__maker_price__init_preconfig():
     
     # maker price set at bot startup or loaded from cmp.cfg depending on maker_price config
     d.feature__maker_price__value_startup = 0
-    # price used by bot, could be same as remote price or price configured by --maker_price or even set by thirty asset as USD
+    # price used by bot, could be same as remote price or price customized by price_redirections
     d.feature__maker_price__value_current_used = 0
     # remote price loaded from markets
     d.feature__maker_price__value_remote = 0
     # bot price configuration
     c.feature__maker_price__cfg_price = 0
-    # bot price configuration in specific asset
-    c.feature__maker_price__cfg_asset = None
 
 def feature__slide_dyn__init_preconfig():
     global c, s, d
@@ -214,13 +212,8 @@ def feature__maker_price__load_config_verify():
     error_num = 0
     crazy_num = 0
     
-    if c.feature__maker_price__cfg_price != -1 and c.feature__maker_price__cfg_price != -2:
-        if c.feature__maker_price__cfg_price < 0:
-            print('**** ERROR, <maker_price> value <{0}> is invalid'.format(c.feature__maker_price__cfg_price))
-            error_num += 1
-    
-    if c.feature__maker_price__cfg_asset != None and c.feature__maker_price__cfg_price <= 0:
-        print('**** ERROR, <maker_price> <{0}> combined with <maker_price_asset> <{1}> is invalid'.format(c.feature__maker_price__cfg_price, c.feature__maker_price__cfg_asset))
+    if c.feature__maker_price__cfg_price != -1 and c.feature__maker_price__cfg_price != -2 and c.feature__maker_price__cfg_price != 0:
+        print('**** ERROR, <maker_price> value <{0}> is invalid. Allowed values are: -1, -2 and 0'.format(c.feature__maker_price__cfg_price))
         error_num += 1
     
     return error_num, crazy_num
@@ -603,20 +596,19 @@ def argparse_bool(arg):
         return False
 
 def feature__maker_price__load_config_define(parser, argparse):
-    parser.add_argument('--maker_price', type=float, help='By enabling this feature Maker/Taker price is not updated by time'
-    '0 feature is disabled'
-    '-1 local one time price activated, center price is loaded from remote source and saved int cfg file every time bot starts, even not updated after crash'
-    '-2 local long term price activated, center price is loaded from remote source and saved into cfg file only once, even not updated after restart/crash'
-    'number > 0 means specific static center price'
-    'Even if center price is static, spread and dynamic spread should take care about order position management, this like system dexbot is able to handle situations when no pricing source is available, but it is up to user how to configure price movement'
-    '(default=0 disabled)', default=0)
-    parser.add_argument('--maker_price_asset', type=str, help='custom static maker price could be set set in specific asset (default=None)', default=None)
+    parser.add_argument('--maker_price', type=float, help='Value for live price updates or static price configuration'
+    '0 - live price updates are activated'
+    '-1 - local one time price activated, center price is loaded from remote source and saved int cfg file every time bot starts, even not updated after crash'
+    '-2 - local long term price activated, center price is loaded from remote source and saved into cfg file only once, even not updated after restart/crash'
+    'Other than 0, -1, or -2 values are invalid'
+    'Even if center price is configured like-static, spread and dynamic spread should take care about order position management, this like system dexbot is able to handle situations when no pricing source is available, but it is up to user how to configure price movement'
+    'There is also another special pricing configuration feature called "price_redirections"(see bot_v2_template.py file for details)'
+    '(default=0 live price update)', default=0)
 
 def feature__maker_price__load_config_postparse(args):
     global c, s, d
     
     c.feature__maker_price__cfg_price = float(args.maker_price)
-    c.feature__maker_price__cfg_asset = str(args.maker_price_asset)
 
 def feature__slide_dyn__load_config_define(parser, argparse):
     global c, s, d
@@ -1039,25 +1031,16 @@ def do_utils_and_exit():
 def feature__maker_price__pricing_update():
     global c, s, d
     
-    # load default pricing from remote source
-    price_maker_remote = pricing_storage__try_get_price(c.BOTsellmarket, c.BOTbuymarket)
-    price_maker_used = price_maker_remote
+    # load pricing from remote source
+    price_maker_used = pricing_storage__try_get_price(c.BOTsellmarket, c.BOTbuymarket)
+    price_maker_remote = pricing_storage__try_get_price(c.BOTsellmarket, c.BOTbuymarket, allow_redirect = False)
     
-    # optionally set maker price if specified
-    if c.feature__maker_price__cfg_price > 0:
-        # manual price
-        if c.feature__maker_price__cfg_asset == None:
-            price_maker_used = c.feature__maker_price__cfg_price
-        # manual related price to asset
-        else:
-            price_maker_used = pricing_storage__try_get_price(c.feature__maker_price__cfg_asset, c.BOTbuymarket)
-            price_maker_used = price_maker_used * c.feature__maker_price__cfg_price
-    
+    # Check if price been loaded from remote pricing storage or remote
     if price_maker_used != 0:
         # actual remote value
         d.feature__maker_price__value_remote = price_maker_remote
         
-        # remote pricing activated
+        # remote pricing checking activated
         if c.feature__maker_price__cfg_price == 0:
             d.feature__maker_price__value_current_used = price_maker_used
             
@@ -1086,9 +1069,9 @@ def feature__maker_price__pricing_update():
                 d.feature__maker_price__value_current_used = price_maker_used
                 feature__tmp_cfg__set_value("feature__maker_price__value_current_used", price_maker_used)
                 
-        # custom price activated
+        # invalid maker_price configuration
         else:
-            d.feature__maker_price__value_current_used = price_maker_used
+            return 0
             
         # startup maker price value load or restore
         if d.feature__maker_price__value_startup == 0:

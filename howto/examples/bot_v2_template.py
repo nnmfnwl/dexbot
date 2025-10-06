@@ -28,6 +28,25 @@ rpcpassword = "{cc_rpc_password}"
 rpchostname = "{cc_rpc_hostname}"
 rpcport = {cc_rpc_port}
 
+# Price redirections is feature used to optionally set custom ASSET 1 price in thirty ASEET 2.
+# For example trading BLOCK with LTC, you would rather set BLOCK price manually and BOT value automatically converts into LTC.
+# 
+# format of price redirections:
+#
+#   "BLOCK": { "asset": "USDT", "price": 59},
+#   "LTC": { "asset": "USDT", "price": 1299}
+#
+# full example of price redirections:
+#
+#   price_redirections = {
+#       "BLOCK": { "asset": "USDT", "price": 59},
+#       "LTC": { "asset": "USDT", "price": 1299}
+#   }
+#
+price_redirections = {
+{cc_price_redirections}
+}
+
 botconfig = str(
 # configure bot to sell(maker) for buy(taker), for example BLOCK LTC BTC PIVX XVG DASH DOGE
 # --maker         | asset being sold (default=BLOCK)
@@ -264,12 +283,14 @@ botconfig = str(
 # sleep delay, in seconds, between main loops to process all things to handle
     "--delayinternalcycle {cc_delay_internal_cycle}"
 
-# use custom center price and let dynamic spread handle all the situations
-# automatic maker price gathering
-# 0 = default = disabled
+# Value for live price updates or static price configuration'
+#       0 - live price updates are activated
+#       -1 - local one time price activated, center price is loaded from remote source and saved int cfg file every time bot starts, even not updated after crash
+#       -2 - local long term price activated, center price is loaded from remote source and saved into cfg file only once, even not updated after restart/crash
+#   Other than 0, -1, or -2 values are invalid
+#   Even if center price is configured like-static, spread and dynamic spread should take care about order position management, this like system dexbot is able to handle situations when no pricing source is available, but it is up to user how to configure price movement
+#   There is also another special pricing configuration feature called "price_redirections", seach in this file for details
      "--maker_price {cc_maker_price}"
-# you can optionally set custom maker price in thirty asset. For example trading BLOCK with LTC, you would rather set BLOCK price manually and BOT value automatically converts into LTC
-     "--maker_price_asset {cc_maker_price_asset}"
 
 # Pricing is based off BTC-XXX market pairs. For example, if running on the LTC-DASH market, the bot pulls the price
 # for BTC-LTC and BTC-DASH then automatically calculates LTC-DASH price. This is how it works for all supported pricing sources:
