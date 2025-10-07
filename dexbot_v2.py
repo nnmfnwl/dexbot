@@ -169,8 +169,8 @@ def feature__maker_price__init_preconfig():
     d.feature__maker_price__value_startup = 0
     # price used by bot, could be same as remote price or price customized by price_redirections
     d.feature__maker_price__value_current_used = 0
-    # remote price loaded from markets
-    d.feature__maker_price__value_remote = 0
+    # remote price loaded from markets, even if price redirect is specified, this variable holds value loaded directly from specific market
+    # ~ d.feature__maker_price__value_remote = 0
     # bot price configuration
     c.feature__maker_price__cfg_price = 0
 
@@ -1033,12 +1033,12 @@ def feature__maker_price__pricing_update():
     
     # load pricing from remote source
     price_maker_used = pricing_storage__try_get_price(c.BOTsellmarket, c.BOTbuymarket)
-    price_maker_remote = pricing_storage__try_get_price(c.BOTsellmarket, c.BOTbuymarket, allow_redirect = False)
+    # ~ price_maker_remote = pricing_storage__try_get_price(c.BOTsellmarket, c.BOTbuymarket, allow_redirect = False)
     
     # Check if price been loaded from remote pricing storage or remote
     if price_maker_used != 0:
         # actual remote value
-        d.feature__maker_price__value_remote = price_maker_remote
+        # ~ d.feature__maker_price__value_remote = price_maker_remote
         
         # remote pricing checking activated
         if c.feature__maker_price__cfg_price == 0:
