@@ -140,5 +140,4 @@ python3 dexbot_v2_run.py --config strategy_LTC_BLOCK_strategy1 --cancelall
 ```
 
 ### Donations
-* Many options to support [Dexbot](https://github.com/nnmfnwl/dexbot/tree/merge.2025.03.26), [Dexsetup](https://github.com/nnmfnwl/dexsetup/tree/merge.2025.02.06), [Dexsetup.installer](https://github.com/nnmfnwl/dexsetup.cli.installer) and [Dexsetup.videos](https://github.com/nnmfnwl/dexsetup.videos) continuous development, testing, liquidity providing and making video tutorials could be found [here](https://github.com/nnmfnwl/dexsetup.cli.installer#9-donations)
-
+* Many options to support [Dexbot](https://github.com/nnmfnwl/dexbot/tree/merge.2025.03.26), [Dexsetup](https://github.com/nnmfnwl/dexsetup/tree/merge.2025.02.06), [Dexsetup.installer](https://github.com/nnmfnwl/dexsetup.cli.installer) and [Dexsetup.videos](https://github.com/nnmfnwl/dexsetup.videos) continuous development, testing, liquidity providing and making video tutorials could be found on Dexsetup Installer page [here](https://github.com/nnmfnwl/dexsetup.cli.installer#9-donations)
