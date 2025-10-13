@@ -9,6 +9,7 @@ from utils import dxsettings
 
 import features.glob as glob
 
+from features.reset_afot import *
 from features.flush_co import *
 from features.pricing_storage import *
 from features.pricing_proxy_client import *
@@ -82,8 +83,8 @@ def init_postconfig():
 def global_vars_init_preconfig():
     global c, s, d
     print('>>>> Global variables initialization')
-    d.ordersfinished = 0
-    d.ordersfinishedtime = 0
+    
+    reset_afot__init_preconfig()
     
     # price of asset vs maker in which are orders sizes set
     d.feature__sell_size_asset__price = 0
@@ -544,13 +545,9 @@ def load_config_verify_or_exit():
         print('**** ERROR, <resetafterdelay> value <{0}> is invalid'.format(c.BOTresetafterdelay))
         error_num += 1
     
-    if c.BOTresetafterorderfinishnumber < 0:
-        print('**** ERROR, <resetafterorderfinishnumber> value <{0}> is invalid'.format(c.BOTresetafterorderfinishnumber))
-        error_num += 1
-    
-    if c.BOTresetafterorderfinishdelay < 0:
-        print('**** ERROR, <resetafterorderfinishdelay> value <{0}> is invalid'.format(c.BOTresetafterorderfinishdelay))
-        error_num += 1
+    error_num_tmp, crazy_num_tmp = reset_afot__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
     
     # arguments: internal values changes
     if c.BOTdelayinternal < 1:
@@ -806,8 +803,8 @@ def load_config():
     parser.add_argument('--resetonpricechangepositive', type=float, help='percentual price positive change(you can buy more) when reset all orders. I.e. 0.05 means reset at +5%% change. (default=0 disabled)', default=0)
     parser.add_argument('--resetonpricechangenegative', type=float, help='percentual price negative change(you can buy less) when reset all orders. I.e. 0.05 means reset at -5%% change. (default=0 disabled)', default=0)
     parser.add_argument('--resetafterdelay', type=int, help='keep resetting orders in specific number of seconds (default=0 disabled)', default=0)
-    parser.add_argument('--resetafterorderfinishnumber', type=int, help='number of orders to be finished before resetting orders (default=0 disabled)', default=0)
-    parser.add_argument('--resetafterorderfinishdelay', type=int, help='delay after finishing last order before resetting orders in seconds (default=0 disabled)', default=0)
+    
+    reset_afot__load_config_define(parser, argparse)
 
     # arguments: internal values changes
     parser.add_argument('--delayinternal', type=float, help='sleep delay, in seconds, between place/cancel orders or other internal operations(can be used ie. case of bad internet connection...) (default=2.3)', default=2.3)
@@ -944,8 +941,8 @@ def load_config():
     c.BOTresetonpricechangepositive = float(args.resetonpricechangepositive)
     c.BOTresetonpricechangenegative = float(args.resetonpricechangenegative)
     c.BOTresetafterdelay = int(args.resetafterdelay)
-    c.BOTresetafterorderfinishnumber = int(args.resetafterorderfinishnumber)
-    c.BOTresetafterorderfinishdelay = int(args.resetafterorderfinishdelay)
+    
+    reset_afot__load_config_postparse(args)
     
     # arguments: internal values changes
     c.BOTdelayinternal = float(args.delayinternal)
@@ -1564,11 +1561,9 @@ def virtual_orders__check_status_update_status():
             # if virtual order previous status was not finished or clear and now finished is or was taken by takerbot, count this order in finished number
             if d.ordersvirtual[i]['status'] != s.status_list__finished:
                 if (order is not None) and order['status'] == s.status_list__finished:
-                    d.ordersfinished += 1
-                    d.ordersfinishedtime = time.time()
+                    reset_afot__add()
                 elif feature__takerbot__virtual_order_was_taken_get(d.ordersvirtual[i]) == True:
-                    d.ordersfinished += 1
-                    d.ordersfinishedtime = time.time()
+                    reset_afot__add()
             
             # update "reopen finished feature" data
             events_wait_reopenfinished_update(d.ordersvirtual[i], order, feature__takerbot__virtual_order_was_taken_get(d.ordersvirtual[i]))
@@ -1725,10 +1720,9 @@ def virtual_orders__prepare_once():
     d.reset_on_price_change_start = d.feature__maker_price__value_current_used
     
     # how many orders finished reset
-    d.ordersfinished = 0
+    reset_afot__reset()
     
     d.time_start_reset_orders = time.time()
-    d.ordersfinishedtime = 0
     
     d.time_start_update_pricing = time.time()
     
@@ -2000,15 +1994,8 @@ def events_reset_orders():
     if c.BOTresetafterdelay != 0 and (time.time() - d.time_start_reset_orders) > c.BOTresetafterdelay:
         print('>>>> Maximum orders lifetime {0} / {1} has been reached, going to order reset now...'.format((time.time() - d.time_start_reset_orders), c.BOTresetafterdelay))
         return True
-        
-    # if reset after order finish number is set and already reached break and reset orders
-    if c.BOTresetafterorderfinishnumber != 0 and d.ordersfinished >= c.BOTresetafterorderfinishnumber:
-        print('>>>> Maximum orders finished {0} / {1} has been reached, going to order reset...'.format(d.ordersfinished, c.BOTresetafterorderfinishnumber))
-        return True
-        
-    # if reset after order finish delay is set and already reached break and reset orders
-    if c.BOTresetafterorderfinishdelay != 0 and d.ordersfinished != 0 and d.ordersfinishedtime != 0 and (time.time() - d.ordersfinishedtime) > c.BOTresetafterorderfinishdelay:
-        print('>>>> Maximum orders lifetime {0} / {1} after order finished has been reached, going to order reset now...'.format((time.time() - d.ordersfinishedtime), c.BOTresetafterorderfinishdelay))
+    
+    if reset_afot__check() == True:
         return True
         
     return False
@@ -2203,13 +2190,19 @@ def virtual_orders__handle():
                 
             # first order is min slide
             if i == 0:
-                order_name = 'first staggered order with min-slide'
+                if c.BOTslidestart >= c.BOTslideend:
+                    order_name = 'first staggered order with max-slide'
+                else:
+                    order_name = 'first staggered order with min-slide'
             # last order is max slide
             elif i == (s.ordersvirtualmax - int(c.BOTslidepumpenabled) -1):
-                order_name = 'last staggered order with max-slide'
+                order_name = 'last staggered order'
             # any other orders between min and max slide
             else:
-                order_name = 'middle staggered order with computed-slide'
+                if c.BOTslidestart >= c.BOTslideend:
+                    order_name = 'last staggered order with min-slide'
+                else:
+                    order_name = 'first staggered order with max-slide'
             
             # compute staggered orders slides
             staggeredslide = ((c.BOTslideend - c.BOTslidestart) / max((s.ordersvirtualmax -1 -int(c.BOTslidepumpenabled)),1 ))*i
