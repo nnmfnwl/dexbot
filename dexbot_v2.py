@@ -1058,11 +1058,11 @@ def feature__maker_price__pricing_update():
         elif c.feature__maker_price__cfg_price == -2:
             
             # try to restore maker price always
-            if c.feature__maker_price__value_current_used == 0:
+            if d.feature__maker_price__value_current_used == 0:
                 d.feature__maker_price__value_current_used = feature__tmp_cfg__get_value("feature__maker_price__value_current_used", 0)
             
             # even long term price must be set for the first time
-            if c.feature__maker_price__value_current_used == 0:
+            if d.feature__maker_price__value_current_used == 0:
                 d.feature__maker_price__value_current_used = price_maker_used
                 feature__tmp_cfg__set_value("feature__maker_price__value_current_used", price_maker_used)
                 
