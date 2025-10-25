@@ -32,23 +32,27 @@ if __name__ == '__main__':
     
     # parse configuration argument
     parser = argparse.ArgumentParser()
-    parser.add_argument('--reset', help='reset(useful when address funds are manually changed and dynamic spread zero value is set to automatic by -2,)', action='store_true')
+    parser.add_argument('--action', type=str, help='reset/restore action, default is "none"'
+    'reset is used to force features which implements reset to force to not use values from tmp cfg, rather load new ones'
+    'restore is used to force features which implementes restore to force to try to use values from tmp cfg'
+    'reset spread zero value if is set to automatic by -2,)'
+    'restore spread zero value if set to one time by -1'
+    'restore static or dynamic initial price value'
+    , default="none")
     parser.add_argument('--exitonerror', type=int, help='Maximum number of errors to be occurred before process exit even with error(default=0, do not exit on error)', default=0)
     parser.add_argument('--config', type=str, help='python configuration file', default=None)
     parser.add_argument('--cancelall', help='cancel all orders and exit', action='store_true')
     parser.add_argument('--cancelmarket', help='cancel all orders in market pair specified by --config file', action='store_true')
     parser.add_argument('--canceladdress', help='cancel all orders in market pair and address specified by --config file', action='store_true')
+    
     args = parser.parse_args()
-    reset = args.reset
+    
+    action = str(args.action)
     exitonerror = int(args.exitonerror)
     config = args.config
     cancelall = args.cancelall
     cancelmarket = args.cancelmarket
     canceladdress = args.canceladdress
-    reset_or_restore = ""
-    
-    if reset:
-        reset_or_restore = "--reset True"
     
     # check exit on error validity
     if exitonerror < 0:
@@ -99,12 +103,12 @@ if __name__ == '__main__':
     while 1:
         # run dexbot
         print("[I] starting dexbot")
-        result = subprocess.run("python3 dexbot_v2.py --config " + config + " " + reset_or_restore + " " + cfg.botconfig + " " + cancel_orders_arg, shell=True)
+        result = subprocess.run("python3 dexbot_v2.py --config " + config + " --action " + action + " " + cfg.botconfig + " " + cancel_orders_arg, shell=True)
         # if dexbot process exit success exit program
         if result.returncode == 0:
             break
         
-        reset_or_restore = "--restore True"
+        action = "restore"
         
         # if dexbot process exit with error try to cancel all existing orders and try to start bot again
         while 1:
@@ -113,7 +117,7 @@ if __name__ == '__main__':
             # wait a while, we do not want to burn cpu by recovery process...
             time.sleep(3)
             # try to cancel orders
-            result2 = subprocess.run("python3 dexbot_v2.py --config " + config + " " + reset_or_restore + " " + cfg.botconfig + " --canceladdress", shell=True)
+            result2 = subprocess.run("python3 dexbot_v2.py --config " + config + " --action " + action + " " + cfg.botconfig + " --canceladdress", shell=True)
             # check if cancel all orders success or try to do it again
             if result2.returncode == 0:
                 break
