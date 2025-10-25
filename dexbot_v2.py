@@ -10,6 +10,9 @@ from utils import dxsettings
 import features.glob as glob
 
 from features.reset_afot import *
+from features.slide_dyn import *
+from features.sboundary import *
+from features.rboundary import *
 from features.flush_co import *
 from features.pricing_storage import *
 from features.pricing_proxy_client import *
@@ -43,17 +46,22 @@ def init_preconfig():
 
     global_vars_init_preconfig()
     
+    feature__tmp_cfg__init_preconfig__()
+    
+    reset_afot__init_preconfig__()
+    
     feature__maker_price__init_preconfig()
     
     feature__flush_co__init_preconfig()
     
     feature__balance_save_asset__init_preconfig()
     
-    feature__boundary__init_preconfig()
+    sboundary__init_preconfig__()
+    rboundary__init_preconfig__()
     
     events_wait_reopenfinished_init()
     
-    feature__slide_dyn__init_preconfig()
+    feature__slide_dyn__init_preconfig__()
     
     feature__takerbot__init_preconfig()
 
@@ -83,8 +91,6 @@ def init_postconfig():
 def global_vars_init_preconfig():
     global c, s, d
     print('>>>> Global variables initialization')
-    
-    reset_afot__init_preconfig()
     
     # price of asset vs maker in which are orders sizes set
     d.feature__sell_size_asset__price = 0
@@ -151,18 +157,6 @@ def status_list__init_preconfig():
     # list of virtual order statuses which are in accepted but still in progress
     s.status_list__l_in_progress = [s.status_list__accepting, s.status_list__hold, s.status_list__initialized, s.status_list__created, s.status_list__commited]
 
-def feature__boundary__init_preconfig():
-    global c, s, d
-    # relative pricing to boundary asset - actual
-    d.feature__boundary__price_relative_current = 0
-    # relative pricing to boundary asset - at bot initialization
-    d.feature__boundary__price_relative_initial = 0
-    
-    # initial price of maker for taker
-    d.feature__boundary__price_maker_initial_center = 0
-    # initial price of maker to taker relative to boundary price
-    d.feature__boundary__price_maker_initial_center_relative = 0
-
 def feature__maker_price__init_preconfig():
     global c, s, d
     
@@ -174,17 +168,6 @@ def feature__maker_price__init_preconfig():
     # ~ d.feature__maker_price__value_remote = 0
     # bot price configuration
     c.feature__maker_price__cfg_price = 0
-
-def feature__slide_dyn__init_preconfig():
-    global c, s, d
-    
-    d.feature__slide_dyn__value = 0
-    
-    d.feature__slide_dyn__zero_asset_price = 0
-    
-    c.feature__slide_dyn__zero_value = None
-    
-    c.feature__slide_dyn__maker_price_value_startup = None
 
 def feature__takerbot__init_preconfig():
     global c, s, d
@@ -215,105 +198,6 @@ def feature__maker_price__load_config_verify():
     
     if c.feature__maker_price__cfg_price != -1 and c.feature__maker_price__cfg_price != -2 and c.feature__maker_price__cfg_price != 0:
         print('**** ERROR, <maker_price> value <{0}> is invalid. Allowed values are: -1, -2 and 0'.format(c.feature__maker_price__cfg_price))
-        error_num += 1
-    
-    return error_num, crazy_num
-
-def feature__slide_dyn__load_config_verify():
-    global c, s, d
-    error_num = 0
-    crazy_num = 0
-    
-    if c.BOTslide_dyn_zero != -1 and c.BOTslide_dyn_zero != -2:
-        # type=relative zero more than 1 or less than 0 does not make sense
-        if c.BOTslide_dyn_zero_type == 'relative' and (c.BOTslide_dyn_zero > 1 or c.BOTslide_dyn_zero < 0):
-            print('**** ERROR, <slide_dyn_zero> value <{0}> is invalid'.format(c.BOTslide_dyn_zero))
-            error_num += 1
-        # type=static value less than 0 does not make sense
-        if c.BOTslide_dyn_zero_type == 'static' and (c.BOTslide_dyn_zero < 0):
-            print('**** ERROR, <slide_dyn_zero> value <{0}> is invalid'.format(c.BOTslide_dyn_zero))
-            error_num += 1
-    
-    # SLIDE DYNAMIC FOR MAKER SELL OPERATIONS
-    if c.BOTslide_dyn_sell_ignore < 0:
-        print('**** ERROR, <slide_dyn_sell_ignore> value <{0}> is invalid'.format(c.BOTslide_dyn_sell_ignore))
-        error_num += 1
-    
-    if c.BOTslide_dyn_sell_threshold <= 0:
-        print('**** ERROR, <BOTslide_dyn_sell_threshold> value <{0}> is invalid'.format(c.BOTslide_dyn_sell_threshold))
-        error_num += 1
-    
-    if c.BOTslide_dyn_type == "relative":
-        if c.BOTslide_dyn_sell_ignore > 1:
-            print('**** ERROR, relative <slide_dyn_sell_ignore> value <{0}> is invalid'.format(c.BOTslide_dyn_sell_ignore))
-            error_num += 1
-    
-        if c.BOTslide_dyn_sell_threshold > 1:
-            print('**** ERROR, relative <BOTslide_dyn_sell_threshold> value <{0}> is invalid'.format(c.BOTslide_dyn_sell_threshold))
-            error_num += 1
-    
-    if c.BOTslide_dyn_sell_step < 0:
-        print('**** WARNING, <BOTslide_dyn_sell_step> value <{0}> seems invalid, but yes it can be negative'.format(c.BOTslide_dyn_sell_step))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
-        crazy_num += 1
-    
-    if c.BOTslide_dyn_sell_step_multiplier < 0:
-        print('**** ERROR, <BOTslide_dyn_sell_step_multiplier> value <{0}> is invalid, must be positive'.format(c.BOTslide_dyn_sell_step_multiplier))
-        error_num += 1
-        
-    if c.BOTslide_dyn_sell_step_multiplier < 1:
-        print('**** WARNING, <BOTslide_dyn_sell_step_multiplier> value <{0}> seems invalid, but yes it can be less than 1'.format(c.BOTslide_dyn_sell_step_multiplier))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
-        crazy_num += 1
-    
-    if c.BOTslide_dyn_sell_step > 1 and c.BOTslide_dyn_sell_step < -1:
-        print('**** WARNING, <BOTslide_dyn_sell_step> value <{0}> seems invalid, absolute value more than 1 means 100% slide change, it is possble but:'.format(c.BOTslide_dyn_sell_step))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
-        crazy_num += 1
-    
-    if (c.BOTslide_dyn_sell_max > 0 and c.BOTslide_dyn_sell_step < 0) or (c.BOTslide_dyn_sell_max < 0 and c.BOTslide_dyn_sell_step > 0):
-        print('**** ERROR, <BOTslide_dyn_sell_max> value <{0}> is invalid, must be positive or negative number same as <BOTslide_dyn_sell_step>'.format(c.BOTslide_dyn_sell_max))
-        error_num += 1
-    
-    # SLIDE DYNAMIC FOR MAKER BUY OPERATIONS
-    if c.BOTslide_dyn_buy_ignore < 0:
-        print('**** ERROR, <slide_dyn_buy_ignore> value <{0}> is invalid'.format(c.BOTslide_dyn_buy_ignore))
-        error_num += 1
-    
-    if c.BOTslide_dyn_buy_threshold <= 0:
-        print('**** ERROR, <BOTslide_dyn_buy_threshold> value <{0}> is invalid'.format(c.BOTslide_dyn_buy_threshold))
-        error_num += 1
-    
-    if c.BOTslide_dyn_type == "relative":
-        if c.BOTslide_dyn_buy_ignore > 1:
-            print('**** ERROR, relative <slide_dyn_buy_ignore> value <{0}> is invalid'.format(c.BOTslide_dyn_buy_ignore))
-            error_num += 1
-    
-        if c.BOTslide_dyn_buy_threshold > 1:
-            print('**** ERROR, relative <BOTslide_dyn_buy_threshold> value <{0}> is invalid'.format(c.BOTslide_dyn_buy_threshold))
-            error_num += 1
-    
-    if c.BOTslide_dyn_buy_step < 0:
-        print('**** WARNING, <BOTslide_dyn_buy_step> value <{0}> seems invalid, but yes it can be negative'.format(c.BOTslide_dyn_buy_step))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
-        crazy_num += 1
-    
-    if c.BOTslide_dyn_buy_step_multiplier < 0:
-        print('**** ERROR, <BOTslide_dyn_buy_step_multiplier> value <{0}> is invalid, must be positive'.format(c.BOTslide_dyn_buy_step_multiplier))
-        error_num += 1
-        
-    if c.BOTslide_dyn_buy_step_multiplier < 1:
-        print('**** WARNING, <BOTslide_dyn_buy_step_multiplier> value <{0}> seems invalid, but yes it can be less than 1'.format(c.BOTslide_dyn_buy_step_multiplier))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
-        crazy_num += 1
-    
-    if c.BOTslide_dyn_buy_step > 1 and c.BOTslide_dyn_buy_step < -1:
-        print('**** WARNING, <BOTslide_dyn_buy_step> value <{0}> seems invalid, absolute value more than 1 means 100% slide change, it is possble but:'.format(c.BOTslide_dyn_buy_step))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
-        crazy_num += 1
-    
-    if (c.BOTslide_dyn_buy_max > 0 and c.BOTslide_dyn_buy_step < 0) or (c.BOTslide_dyn_buy_max < 0 and c.BOTslide_dyn_buy_step > 0):
-        print('**** ERROR, <BOTslide_dyn_buy_max> value <{0}> is invalid, must be positive or negative number same as <BOTslide_dyn_buy_step>'.format(c.BOTslide_dyn_buy_max))
         error_num += 1
     
     return error_num, crazy_num
@@ -449,50 +333,18 @@ def load_config_verify_or_exit():
         if c.BOTtakerbot < 0:
             print('**** ERROR when <hidden_orders> {0} are enabled <takerbot> <{1} mut be enabled also>'.format(c.BOThidden_orders, c.BOTtakerbot))
             error_num += 1
-            
-    if c.BOTboundary_start_price != 0:
-        if c.BOTboundary_start_price < 0:
-            print('**** ERROR, <boundary_start_price> value <{0}> is invalid. Center price must be positive number'.format(c.BOTboundary_start_price))
-            error_num += 1
     
-    if c.BOTboundary_max_relative != 0:
-        if c.BOTboundary_max_relative < 0:
-            print('**** ERROR, <boundary_max_relative> value <{0}> is invalid. For example value <1.12> means bot will work up to price relative to +12% of price when bot started'.format(c.BOTboundary_max_relative))
-            error_num += 1
-        elif c.BOTboundary_max_relative < 1:
-            print('**** WARNING, <boundary_max_relative> value <{0}> is invalid. For example value <1.12> means bot will work up to price relative to +12% of price when bot started'.format(c.BOTboundary_max_relative))
-            print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
-            crazy_num += 1
+    error_num_tmp, crazy_num_tmp = feature__tmp_cfg__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
     
-    if c.BOTboundary_min_relative != 0:
-        if c.BOTboundary_min_relative < 0:
-            print('**** ERROR, <boundary_min_relative> value <{0}> is invalid. For example value <0.8> means bot will work at least of 0.8 of price, which is -20% of price when bot started'.format(c.BOTboundary_min_relative))
-            error_num += 1
-            
-        elif c.BOTboundary_min_relative > 1:
-            print('**** WARNING, <boundary_min_relative> value <{0}> seems invalid. For example value <0.8> means bot will work at least of 0.8 of price, which is -20% of price when bot started'.format(c.BOTboundary_min_relative))
-            print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
-            crazy_num += 1
+    error_num_tmp, crazy_num_tmp = sboundary__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
     
-    if (c.BOTboundary_max_relative != 0 or c.BOTboundary_min_relative != 0) and (c.BOTboundary_max_static != 0 and c.BOTboundary_min_static != 0):
-        print('**** ERROR, <boundary_***_relative> and <boundary_***_static> can not be configured at same time')
-        error_num += 1
-    
-    if c.BOTboundary_max_relative != 0 and c.BOTboundary_max_relative < c.BOTboundary_min_relative:
-        print('**** ERROR, <boundary_max_relative> value <{0}> can not be less than <boundary_min_relative> value <{1}>.'.format(c.BOTboundary_max_relative, c.BOTboundary_min_relative))
-        error_num += 1
-    
-    if c.BOTboundary_max_static < 0:
-        print('**** ERROR, <boundary_max_static> value <{0}> is invalid. For example value <100> means bot will sell maker for price maximum of 100 takers by one maker'.format(c.BOTboundary_max_static))
-        error_num += 1
-    
-    if c.BOTboundary_min_static < 0:
-        print('**** ERROR, <boundary_min_static> value <{0}> is invalid. For example value <10> means bot will sell maker for minimum price 10 takers by one maker'.format(c.BOTboundary_min_static))
-        error_num += 1
-    
-    if c.BOTboundary_max_static < c.BOTboundary_min_static:
-        print('**** ERROR, <boundary_max_static> value <{0}> can not be less than <boundary_min_static> value <{1}>.'.format(c.BOTboundary_max_static, c.BOTboundary_min_static))
-        error_num += 1
+    error_num_tmp, crazy_num_tmp = rboundary__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
     
     if c.BOTbalance_save_number < 0:
         print('**** ERROR, <balance_save_number> value <{0}> is invalid'.format(c.BOTbalance_save_number))
@@ -607,93 +459,19 @@ def feature__maker_price__load_config_postparse(args):
     
     c.feature__maker_price__cfg_price = float(args.maker_price)
 
-def feature__slide_dyn__load_config_define(parser, argparse):
-    global c, s, d
-    parser.add_argument('--slide_dyn_asset', type=str, help='dynamic slide static values are set in specific asset instead of maker (default=--maker)', default=None)
-    parser.add_argument('--slide_dyn_asset_track', type=argparse_bool, nargs='?', const=True, help=
-    'track dynamic slide asset price updates True/False'
-    'This means, ie if trading BLOCK/BTC and asset is USD,'
-    'so USD/BLOCK price will be tracked,'
-    'so values will be updated with ASSET/MAKER price change.(default=False disabled)', default=False)
-    parser.add_argument('--slide_dyn_zero_type', type=str, choices=['relative', 'static'], help='relative to maker+taker or static value when dynamic slide is 0.(default=relative)', default='relative')
-    parser.add_argument('--slide_dyn_zero', type=float, help=
-    'Relative(to maker+taker balance) or static specific value when dynamic slide intensity is 0%%.'
-    ' Value -1 means, to autoconfig value to intensity be 0%% for bot startup MAKER/TAKER amounts.'
-    ' Value -2 means, bot will first try to load value from previous run otherwise same like -1 value'
-    ' Otherwise it means value=(maker+taker*dyn_zero) at which dynamic slide is at 0%% intensity.'
-    ' ie, #1 at type=relative, zero=0.5, means 0%% dyn slide at 50:50 balance converted to zero_asset,'
-    ' ie, #2 at type=relative, zero=1.0, means 0%% dyn slide at 100%% of balance in MAKER,'
-    ' ie, #3 at type=relative, zero=0.0, means 0%% intensity at 100%% of balance in TAKER.'
-    'Static value means static amount of maker where dynamic slide intensity is at 0%%.'
-    ' ie, #4 at type=static, zero=120, slide_dyn_asset=USDT, slide_dyn_asset_track=True'
-    '   is zero also updated by price of USDT/MAKER'
-    '(default=-2 autoconfig)', default=-2)
-    
-    parser.add_argument('--slide_dyn_type', type=str, choices=['relative', 'static'], default='relative',
-    help='relative to maker+taker or static values of, ignore, threshold, (default=relative)', )
-    
-    parser.add_argument('--slide_dyn_sell_ignore', type=float, default=0,
-    help='dynamic slide sell ignore is amount of maker that could be sold and no dyn slide will be activated. (default=0 means no sell ignore zone)')
-    parser.add_argument('--slide_dyn_sell_threshold', type=float, default=0.02,
-    help='every reached sell threshold will do a one dynamic slide sell step'
-    '(default=0.02 at slide_dyn_type=relative, it means, every time 2%% of maker is sold, slide will be increased by slide_dyn_sell_step)')
-    
-    parser.add_argument('--slide_dyn_sell_step', type=float, default=0,
-    help='dynamic slide addition for every reached sell threshold.(default=0 means sell slide step is none)')
-    parser.add_argument('--slide_dyn_sell_step_multiplier', type=float, default=1,
-    help='recursive sell step multiplier.(default=1 means no multiply)')
-    
-    parser.add_argument('--slide_dyn_sell_max', type=float, default=0, 
-    help='maximum dynamic slide for sell operations(default=0 means disabled)')
-    
-    parser.add_argument('--slide_dyn_buy_ignore', type=float, default=0, 
-    help='dynamic slide buy ignore is amount of maker that could be bought and no dyn slide will be activated. (default=0 means no buy ignore zone)')
-    parser.add_argument('--slide_dyn_buy_threshold', type=float, default=0.02,
-    help='every reached buy threshold will do a one dynamic slide buy step'
-    '(default=0.02 at slide_dyn_type=relative, it means, every time 2%% of maker is buyght, slide will be increased by slide_dyn_buy_step)')
-    
-    parser.add_argument('--slide_dyn_buy_step', type=float, default=0, 
-    help='every reached buy threshold will do a one dynamic slide buy step(default=0 means buy slide step is none)')
-    parser.add_argument('--slide_dyn_buy_step_multiplier', type=float, default=1,
-    help='recursive buy step multiplier.(default=1 means no multiply)')
-    
-    parser.add_argument('--slide_dyn_buy_max', type=float, default=0,
-    help='maximum dynamic slide for buy operations(default=0 means disabled)')
-
-def feature__slide_dyn__load_config_postparse(args):
-    global c, s, d
-    if args.slide_dyn_asset is None:
-        c.BOTslide_dyn_asset = c.BOTsellmarket
-    else:
-        c.BOTslide_dyn_asset = str(args.slide_dyn_asset)
-    
-    c.BOTslide_dyn_asset_track = bool(args.slide_dyn_asset_track)
-    
-    c.BOTslide_dyn_zero_type = str(args.slide_dyn_zero_type)
-    c.BOTslide_dyn_zero = float(args.slide_dyn_zero)
-    
-    c.BOTslide_dyn_type = str(args.slide_dyn_type)
-    
-    c.BOTslide_dyn_sell_ignore = float(args.slide_dyn_sell_ignore)
-    c.BOTslide_dyn_sell_threshold = float(args.slide_dyn_sell_threshold)
-    c.BOTslide_dyn_sell_step = float(args.slide_dyn_sell_step)
-    c.BOTslide_dyn_sell_step_multiplier = float(args.slide_dyn_sell_step_multiplier)
-    c.BOTslide_dyn_sell_max = float(args.slide_dyn_sell_max)
-    
-    c.BOTslide_dyn_buy_ignore = float(args.slide_dyn_buy_ignore)
-    c.BOTslide_dyn_buy_threshold = float(args.slide_dyn_buy_threshold)
-    c.BOTslide_dyn_buy_step = float(args.slide_dyn_buy_step)
-    c.BOTslide_dyn_buy_step_multiplier = float(args.slide_dyn_buy_step_multiplier)
-    c.BOTslide_dyn_buy_max = float(args.slide_dyn_buy_max)
-    
 def load_config():
     global c, s, d
     print('>>>> Loading program configuration')
     
     parser = argparse.ArgumentParser()
-    
-    parser.add_argument('--reset', type=argparse_bool, nargs='?', const=True, help='Force reset auto-configured values from tmp cfg. (default=False not reset)', default=False)
-    parser.add_argument('--restore', type=argparse_bool, nargs='?', const=True, help='Variable used to let bot know to try restore auto-configured values from tmp cfg. Usable when secondary run script management by, also manual testing... (default=False not restoring)', default=False)
+
+    parser.add_argument('--action', type=str, help='reset/restore action, default is "none"'
+    'reset is used to force features which implements reset to force to not use values from tmp cfg, rather load new ones'
+    'restore is used to force features which implementes restore to force to try to use values from tmp cfg'
+    'reset spread zero value if is set to automatic by -2,)'
+    'restore spread zero value if set to one time by -1'
+    'restore static or dynamic initial price value'
+    , default="none")
     
     # arguments: config file(will be used instead of arguments later)
     parser.add_argument('--config', type=str, help='python bot/strategy config file', default=None)
@@ -763,26 +541,8 @@ def load_config():
     # ~ parser.add_argument('--external_balance_threshold', type=float, help='', default=0.5)
     # liquidity vs arbitrage vs mirroring vs balancing relative
     
-    # arguments: boundaries configuration
-    parser.add_argument('--boundary_asset', type=str, help='boundary measurement asset, i.e.: if maker/taker pair is BLOCK/BTC and boundary_asset_is USDT, so possible boundary min 1.5 and max 3 USD (default= --taker)', default=None)
-    parser.add_argument('--boundary_asset_track', type=argparse_bool, nargs='?', const=True, help='Track boundary asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BTC price and update boundaries by it (default=False disabled)', default=False)
-    
-    parser.add_argument('--boundary_reversed_pricing', type=argparse_bool, nargs='?', const=True, help='reversed set pricing as 1/X, ie BLOCK/BTC vs BTC/BLOCK pricing can set like 0.000145 on both bot trading sides, instead of 0.000145 vs 6896.55.'
-    'Is used in configuration <boundary_start_price>, <boundary_max_static> and <boundary_min_static>.'
-    ' (default=False Disabled)', default=False)
-    
-    parser.add_argument('--boundary_start_price', type=float, help='manually set center price. Its usable only when using relative boundaries and boundary_asset_track is Disabled (default=0 automatic)', default=0)
-    
-    parser.add_argument('--boundary_max_relative', type=float, help='maximum acceptable price of maker(sold one) where bot will stop selling, price is relative to price when bot started,i.e.: Start price:100, config value:3, so bot will sell up to 100*3 = 300 price, (default=0 disabled)', default=0)
-    parser.add_argument('--boundary_min_relative', type=float, help='minimum acceptable price of maker(sold one) where bot will stop selling, price is relative to price when bot started,i.e.: Start price:100, config value:0.8, so bot will sell at least for 100*0.8 = 80 price, (default=0 disabled)', default=0)
-    
-    parser.add_argument('--boundary_max_static', type=float, help='maximum acceptable price of maker(sold one) where bot will stop selling(default=0 disabled)', default=0)
-    parser.add_argument('--boundary_min_static', type=float, help='minimum acceptable price of maker(sold one) where bot will stop selling(default=0 disabled)', default=0)
-    
-    parser.add_argument('--boundary_max_nocancel', help='do not cancel orders, default is to cancel orders', action='store_true')
-    parser.add_argument('--boundary_max_noexit', help='wait instead of exit program, default is to exit program', action='store_true')
-    parser.add_argument('--boundary_min_nocancel', help='do not cancel orders, default is to cancel orders', action='store_true')
-    parser.add_argument('--boundary_min_noexit', help='wait instead of exit program, default is to exit program', action='store_true')
+    sboundary__load_config_define(parser, argparse)
+    rboundary__load_config_define(parser, argparse)
     
     parser.add_argument('--balance_save_asset', type=str, help='size of balance to save is set in specific asset instead of maker (default=--maker)', default=None)
     parser.add_argument('--balance_save_asset_track', type=argparse_bool, nargs='?', const=True, help='Track balance save asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BLOCK price and update balance to save by it (default=False disabled)', default=False)
@@ -825,13 +585,15 @@ def load_config():
     # arguments: special arguments
     parser.add_argument('--imreallysurewhatimdoing', type=int, default=0, help='This argument allows user to specify number of non-standard configuration values for special cases like user want to activate bot trading later relatively higher price than actual is')
     
+    feature__tmp_cfg__load_config_define(parser, argparse)
+    
     args = parser.parse_args()
     
     # check if configuration argument is set
     c.BOTconfigfile = args.config
     
     # try to load auto-generated temporary configuration
-    feature__tmp_cfg__load_cfg(c.BOTconfigfile + ".tmp.cfg")
+    feature__tmp_cfg__load_config_postparse(args)
     
     # arguments: main maker/taker
     c.BOTsellmarket = args.maker.upper()
@@ -851,8 +613,7 @@ def load_config():
     if args.takeraddress is not None:
         c.BOTtakeraddress = args.takeraddress
     
-    c.BOTreset = bool(args.reset)
-    c.BOTrestore = bool(args.restore)
+    c.BOTaction_arg = str(args.action)
     
     c.BOTaddress_funds_only = bool(args.address_funds_only)
     
@@ -868,27 +629,8 @@ def load_config():
     
     pricing_storage__load_config_postparse(args)
     
-    if args.boundary_asset is None:
-        c.BOTboundary_asset = c.BOTbuymarket
-    else:
-        c.BOTboundary_asset = str(args.boundary_asset)
-    
-    c.BOTboundary_asset_track = bool(args.boundary_asset_track)
-    
-    c.BOTboundary_reversed_pricing = bool(args.boundary_reversed_pricing)
-    
-    c.BOTboundary_start_price = float(args.boundary_start_price)
-    
-    c.BOTboundary_max_relative = args.boundary_max_relative
-    c.BOTboundary_min_relative = args.boundary_min_relative
-    
-    c.BOTboundary_max_static = args.boundary_max_static
-    c.BOTboundary_min_static = args.boundary_min_static
-    
-    c.BOTboundary_max_nocancel = args.boundary_max_nocancel
-    c.BOTboundary_max_noexit = args.boundary_max_noexit
-    c.BOTboundary_min_nocancel = args.boundary_min_nocancel
-    c.BOTboundary_min_noexit = args.boundary_min_noexit
+    sboundary__load_config_postparse(args)
+    rboundary__load_config_postparse(args)
     
     # arguments: basic values
     c.BOTsellrandom = args.sellrandom
@@ -1046,7 +788,7 @@ def feature__maker_price__pricing_update():
             
             if d.feature__maker_price__value_current_used == 0:
                 # try to restore maker price only after crash
-                if c.BOTrestore == True:
+                if c.BOTaction_arg == 'restore':
                     d.feature__maker_price__value_current_used = feature__tmp_cfg__get_value("feature__maker_price__value_current_used", 0)
             
             # if bot is started normally local price is zero so it will be stored in tmp cfg
@@ -1074,7 +816,7 @@ def feature__maker_price__pricing_update():
         if d.feature__maker_price__value_startup == 0:
             if c.feature__maker_price__cfg_price == -1 or c.feature__maker_price__cfg_price == -2:
                 d.feature__maker_price__value_startup = d.feature__maker_price__value_current_used
-            elif c.BOTrestore == True:
+            elif c.BOTaction_arg == 'restore':
                 d.feature__maker_price__value_startup = feature__tmp_cfg__get_value("feature__maker_price__value_startup", 0)
             
             if d.feature__maker_price__value_startup == 0:
@@ -1117,33 +859,17 @@ def pricing_check_or_exit():
         print('#### Sell size asset pricing not available')
         sys.exit(1)
     
-    # try to get initial boundary pricing if custom
-    price_boundary = feature__boundary__pricing_update_relative_init()
+    # initial static boundary pricing
+    price_boundary = sboundary__pricing_init(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
     if price_boundary == 0:
-        print('#### Boundary pricing not available')
+        print('#### Static boundary pricing not available')
         sys.exit(1)
-
-# asset which dynamic slide zero size is set in pricing update
-def feature__slide_dyn__asset_pricing_update():
-    global c, s, d
-    
-    temp_price = pricing_storage__try_get_price(c.BOTslide_dyn_asset, c.BOTsellmarket)
-    if temp_price != 0:
-        d.feature__slide_dyn__asset_price = temp_price
-    
-    return temp_price
-
-# convert asset which dynamic slide zero size is set to maker 
-def feature__slide_dyn__asset_convert_to_maker(size_in_slide_dyn_asset):
-    global c, s, d
-    
-    return d.feature__slide_dyn__asset_price * size_in_slide_dyn_asset
-    
-# convert maker to asset which dynamic slide zero size is set in
-def feature__slide_dyn__maker_convert_to_asset(size_in_slide_dyn_maker):
-    global c, s, d
-    
-    return size_in_slide_dyn_maker / d.feature__slide_dyn__asset_price
+        
+    # initial relative boundary pricing
+    price_boundary = rboundary__pricing_init(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
+    if price_boundary == 0:
+        print('#### Relative boundary pricing not available')
+        sys.exit(1)
     
 # price of asset which balance save size is set in initialization
 def feature__balance_save_asset__init_preconfig():
@@ -1176,51 +902,6 @@ def feature__sell_size_asset__pricing_update():
         d.feature__sell_size_asset__price = temp_price
     
     return temp_price
-
-# relative boundaries can be specified as relative to maker taker market so price must be checked separately
-def feature__boundary__pricing_update():
-    global c, s, d
-    
-    tmp_feature__boundary__price_relative_current = 0
-    
-    # not reversed pricing system: BOUNDARY >> TAKER
-    if c.BOTboundary_reversed_pricing is False:
-        price_boundary_for_taker = pricing_storage__try_get_price(c.BOTboundary_asset, c.BOTbuymarket)
-        tmp_feature__boundary__price_relative_current = price_boundary_for_taker
-        print(">>>> Boundary pricing update: not reversed: <{}/{}>: <{}>".format(c.BOTboundary_asset, c.BOTbuymarket, tmp_feature__boundary__price_relative_current))
-    
-    # reversed pricing system: BOUNDARY >> 1/MAKER
-    else:
-        price_boundary_for_maker = pricing_storage__try_get_price(c.BOTboundary_asset, c.BOTsellmarket)
-        if price_boundary_for_maker == 0:
-            tmp_feature__boundary__price_relative_current = 0
-        else:
-            tmp_feature__boundary__price_relative_current = 1/price_boundary_for_maker
-        print(">>>> Boundary pricing update: reversed: <{}/{}>: <{}>".format(c.BOTboundary_asset, c.BOTbuymarket, tmp_feature__boundary__price_relative_current))
-        
-    if tmp_feature__boundary__price_relative_current != 0:
-        d.feature__boundary__price_relative_current = tmp_feature__boundary__price_relative_current
-    
-    return tmp_feature__boundary__price_relative_current
-
-# initial get pricing for relative boundaries
-def feature__boundary__pricing_update_relative_init():
-    global c, s, d
-    
-    tmp_feature__boundary__price_relative_current = feature__boundary__pricing_update()
-    
-    d.feature__boundary__price_relative_initial = tmp_feature__boundary__price_relative_current
-    
-    if c.BOTboundary_start_price > 0:
-        d.feature__boundary__price_maker_initial_center = c.BOTboundary_start_price * tmp_feature__boundary__price_relative_current
-        d.feature__boundary__price_maker_initial_center_relative = c.BOTboundary_start_price
-        print(">>>> Boundary pricing initial update: manual: {} = {} * {}".format(d.feature__boundary__price_maker_initial_center, c.BOTboundary_start_price, tmp_feature__boundary__price_relative_current))
-    else:
-        d.feature__boundary__price_maker_initial_center = d.feature__maker_price__value_current_used
-        d.feature__boundary__price_maker_initial_center_relative = d.feature__maker_price__value_current_used / tmp_feature__boundary__price_relative_current
-        print(">>>> Boundary pricing initial update: auto: {}".format(d.feature__boundary__price_maker_initial_center))
-        
-    return tmp_feature__boundary__price_relative_current
         
 # update balances for specific assset
 def balance_get(token, address_funds_only = None):
@@ -1277,196 +958,6 @@ def update_balances():
     
     print('>>>> Actual balance maker token <{}> <{}> total <{}> available <{}> reserved <{}>'.format(tmp_maker_address, c.BOTsellmarket, d.balance_maker_total, d.balance_maker_available, d.balance_maker_reserved))
     print('>>>> Actual balance taker token <{}> <{}> total <{}> available <{}> reserved <{}>'.format(tmp_taker_address, c.BOTbuymarket, d.balance_taker_total, d.balance_taker_available, d.balance_taker_reserved))
-
-# initialize dynamic slide feature
-def feature__slide_dyn__init_postpricing():
-    global c, s, d
-    
-    # try to restore maker price when slide zero is -2 or restore is true
-    if (c.BOTreset == False) and (c.BOTslide_dyn_zero == -2 or c.BOTrestore == True):
-        c.feature__slide_dyn__maker_price_value_startup = feature__tmp_cfg__get_value("feature__slide_dyn__maker_price_value_startup", None)
-    
-    # if maker price value is None or was not restored, than save actual as default for later usage
-    if c.feature__slide_dyn__maker_price_value_startup == None:
-        c.feature__slide_dyn__maker_price_value_startup = d.feature__maker_price__value_current_used
-        feature__tmp_cfg__set_value("feature__slide_dyn__maker_price_value_startup", c.feature__slide_dyn__maker_price_value_startup)
-    
-    # get total balance maker + taker represented as maker
-    balance_taker_in_maker = (d.balance_taker_total / c.feature__slide_dyn__maker_price_value_startup)
-    balance_total = d.balance_maker_total + balance_taker_in_maker
-    
-    if c.BOTslide_dyn_zero_type == 'relative':
-        
-        # slide dyn zero auto set
-        if c.BOTslide_dyn_zero == -1 or c.BOTslide_dyn_zero == -2:
-            
-            # if slide dyn zero is -2 or restore is true, try to load tmp cfg
-            if (c.BOTreset == False) and (c.BOTslide_dyn_zero == -2 or c.BOTrestore == True):
-                if feature__tmp_cfg__get_value("BOTslide_dyn_zero_type") == 'relative':
-                    c.feature__slide_dyn__zero_value = feature__tmp_cfg__get_value("feature__slide_dyn__zero_value", None)
-                    
-            # if load tmp cfg failed, auto configure value and safe actual value
-            if c.feature__slide_dyn__zero_value == None:
-                
-                if balance_total == 0:
-                    c.feature__slide_dyn__zero_value = 0.5
-                elif balance_taker_in_maker == 0:
-                    c.feature__slide_dyn__zero_value = 1
-                elif d.balance_maker_total == 0:
-                    c.feature__slide_dyn__zero_value = 0
-                else:
-                    c.feature__slide_dyn__zero_value = d.balance_maker_total / balance_total
-                
-                feature__tmp_cfg__set_value("BOTslide_dyn_zero_type", "relative")
-                feature__tmp_cfg__set_value("feature__slide_dyn__zero_value", c.feature__slide_dyn__zero_value)
-                
-            print('>>>> dynamic slide init auto-set <relative> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
-            
-        else:
-            c.feature__slide_dyn__zero_value = c.BOTslide_dyn_zero
-            print('>>>> dynamic slide init manu-set <relative> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
-            
-    elif c.BOTslide_dyn_zero_type == 'static':
-        
-        if c.BOTslide_dyn_zero == -1 or c.BOTslide_dyn_zero == -2:
-            
-            # if slide dyn zero is -2 or restore is true, try to load tmp cfg
-            if (c.BOTreset == False) and (c.BOTslide_dyn_zero == -2 or c.BOTrestore == True):
-                if feature__tmp_cfg__get_value("BOTslide_dyn_zero_type") == 'static':
-                    if feature__tmp_cfg__get_value("BOTslide_dyn_asset") == c.BOTslide_dyn_asset:
-                        c.feature__slide_dyn__zero_value = feature__tmp_cfg__get_value("feature__slide_dyn__zero_value")
-                        
-            # if load tmp cfg failed, auto configure value and safe actual value
-            if c.feature__slide_dyn__zero_value == None:
-                c.feature__slide_dyn__zero_value = feature__slide_dyn__maker_convert_to_asset(d.balance_maker_total)
-                
-                feature__tmp_cfg__set_value("BOTslide_dyn_zero_type", "static")
-                feature__tmp_cfg__set_value("BOTslide_dyn_asset", c.BOTslide_dyn_asset)
-                feature__tmp_cfg__set_value("feature__slide_dyn__zero_value", c.feature__slide_dyn__zero_value)
-                
-            print('>>>> dynamic slide auto auto-set <static> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
-        else:
-            c.feature__slide_dyn__zero_value = c.BOTslide_dyn_zero
-            print('>>>> dynamic slide init manu-set <static> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
-    else:
-        print('!!!! internal BUG Detected <BOTslide_dyn_zero_type> is <{}>'.format(c.BOTslide_dyn_zero_type))
-        sys.exit(1)
-        
-# compute and get dynamic slide value
-def feature__slide_dyn__get_dyn_slide():
-    global c, s, d
-    
-    # additional dynamic price slide == dynamic spread == slide_dyn
-
-    # Theory about:
-    #
-    # if someone is running a MAKER/TAKER dxbot,
-    #
-    # >> and if situation: price of MAKER(TO BE SOLD) is going up, so probably users around are buying MAKER more and more, so this BOT have less and less MAKER(TO SELL) with also placing orders on position of actual (price + slide) of MAKER
-    # >> unfortunately nobody can predict which will be upcoming top price of MAKER, also we must secure liquidity, not doing an empty spread in depth chart.
-    # >> but what we can do is, by every specific sold amount of MAKER, bot could increase slide little bit and this way testing next expected price. And if this pass more and more times, dxbot will predict higher and higher MAKER price by increasing dynamic slide
-    # >> but what is also happening very often is price manipulation, for example pumping price before dumping more. for this like situations, bot could loss because pushing orders on (price + slide + dynamic slide) position. For this case, there is as sell dynamic slide configuration along with buy dynamic slide, which could also increase price of TAKER on oposite dxbot side little bit to prevent pump and dump loss.
-    # 
-    # >> buy and sell dynamic slide is very native market behavior expectation algorithm. as prices will go up and down, up and down bot will profit..., but remember, there are also txfees...
-    
-    print('>>>> dynamic_slide >> recomputing')
-    
-    if c.BOTslide_dyn_asset_track is True:
-        while True:
-            if feature__slide_dyn__asset_pricing_update() != 0:
-                break
-            print('#### Pricing of dynamic slide asset not available... waiting to restore...')
-            time.sleep(c.BOTdelayinternalerror)
-    
-    # zero type = relative >> so we get relative value to both balance total
-    if c.BOTslide_dyn_zero_type == 'relative':
-        tmp_dyn_zero_asset=""
-        if c.BOTslide_dyn_asset_track is True:
-            balance_taker_in_maker = (d.balance_taker_total / d.feature__maker_price__value_current_used) #convert taker balance to by price
-        else:
-            balance_taker_in_maker = (d.balance_taker_total / c.feature__slide_dyn__maker_price_value_startup) #convert taker balance to by price
-        balance_total = d.balance_maker_total + balance_taker_in_maker
-        tmp_bot_slide_dyn_zero = c.feature__slide_dyn__zero_value * balance_total
-        
-    # zero type = static >> so we get static value which could also be relative to zero asset
-    elif c.BOTslide_dyn_zero_type == 'static':
-        tmp_dyn_zero_asset=c.BOTslide_dyn_asset
-        tmp_bot_slide_dyn_zero = feature__slide_dyn__asset_convert_to_maker(c.feature__slide_dyn__zero_value)
-        
-    # check difference between zero point and actual maker balances
-    # negative value means MAKER was sold,
-    # positive value means MAKER was bought by opposite dxbot
-    balance_diff_dirty = (d.balance_maker_total - tmp_bot_slide_dyn_zero)
-    
-    # processing no MAKER OP
-    if balance_diff_dirty == 0:
-        case_buy_sell='no-buy-no-ssel'
-        tmp_step_final = 0
-        tmp_step_multiplier = 0
-        tmp_max_final = 0
-        tmp_ignore_dirty = 0
-        tmp_threshold_dirty = 0
-    # MAKER BUY HAPPEN - total is more than zeropoint
-    elif balance_diff_dirty > 0:
-        case_buy_sell = 'buy'
-        tmp_step_final = c.BOTslide_dyn_buy_step
-        tmp_step_multiplier = c.BOTslide_dyn_buy_step_multiplier
-        tmp_max_final = c.BOTslide_dyn_buy_max
-        tmp_ignore_dirty = c.BOTslide_dyn_buy_ignore
-        tmp_threshold_dirty = c.BOTslide_dyn_buy_threshold
-    # MAKER SELL HAPPEN - total is less than zeropoint
-    elif balance_diff_dirty < 0:
-        case_buy_sell = 'sell'
-        tmp_step_final = c.BOTslide_dyn_sell_step
-        tmp_step_multiplier = c.BOTslide_dyn_sell_step_multiplier
-        tmp_max_final = c.BOTslide_dyn_sell_max
-        tmp_ignore_dirty = c.BOTslide_dyn_sell_ignore
-        tmp_threshold_dirty = c.BOTslide_dyn_sell_threshold
-            
-    # processing relative
-    if c.BOTslide_dyn_type == 'relative':
-        tmp_dyn_asset=""
-        tmp_ignore_final = tmp_ignore_dirty * d.balance_total
-        tmp_threshold_final = tmp_threshold_dirty * d.balance_total
-            
-    # processing static 
-    elif c.BOTslide_dyn_type == 'static':
-        tmp_dyn_asset=c.BOTslide_dyn_asset
-        tmp_ignore_final = feature__slide_dyn__asset_convert_to_maker(tmp_ignore_dirty)
-        tmp_threshold_final = feature__slide_dyn__asset_convert_to_maker(tmp_threshold_dirty)
-        
-    # apply ignore zone
-    balance_diff_final = abs(balance_diff_dirty)
-    balance_diff_final = balance_diff_final - tmp_ignore_final
-    balance_diff_final = max(0, balance_diff_final)
-    
-    # how many buy thresholds happen
-    if tmp_threshold_final == 0:
-        slide_dyn_step_num = 0
-    else:
-        slide_dyn_step_num = balance_diff_final / tmp_threshold_final
-    
-    # compute dynamic slide
-    slide_dyn_final = float(0)
-    slide_dyn_stages="none; "
-    for i in range(int(slide_dyn_step_num)):
-        slide_dyn_stages = slide_dyn_stages + str(i)+"# "+str(slide_dyn_final)+"+"+str(tmp_step_final)+" > "
-        slide_dyn_final = slide_dyn_final + tmp_step_final
-        tmp_step_final = tmp_step_final * tmp_step_multiplier
-    print('>>>> dyn slide stacking: ' + slide_dyn_stages)
-    
-    # ~ slide_dyn_final = slide_dyn_step_num * tmp_step_final
-    
-    # apply dynamic slide maximum boundary, can be also negative, zero means unlimited
-    if tmp_max_final > 0:
-        slide_dyn_final = min(slide_dyn_final, tmp_max_final)
-    elif tmp_max_final < 0:
-        slide_dyn_final = max(slide_dyn_final, tmp_max_final)
-    
-    # ~ print('>>>> dynamic_slide >> <'+str(case_buy_sell)+'> zero type <')
-    print('>>>> DYNAMIC_SLIDE >> <'+str(case_buy_sell)+'> dyn zero at <'+str(c.BOTslide_dyn_zero_type)+' '+str(c.BOTslide_dyn_zero)+'~'+str(c.feature__slide_dyn__zero_value)+' '+str(tmp_dyn_zero_asset)+'> ~~ <'+str(tmp_bot_slide_dyn_zero)+' '+str(c.BOTsellmarket)+'> maker actual balance <'+str(d.balance_maker_total)+'> maker balance diff <'+str(balance_diff_dirty)+'> maker ignore <'+str(tmp_ignore_dirty)+' '+str(tmp_dyn_asset)+' ~~ '+str(tmp_ignore_final)+' '+str(c.BOTsellmarket)+'> maker balance diff final <'+str(balance_diff_final)+'> slide type <'+str(c.BOTslide_dyn_type)+'> slide step threshold <'+str(tmp_threshold_dirty)+'>~<'+str(tmp_threshold_final)+'> slide dyn step num * size <'+str(slide_dyn_step_num)+'*'+str(tmp_step_final)+'> final dyn slide <'+str(slide_dyn_final)+'> at max <'+str(tmp_max_final)+'>')
-    
-    return slide_dyn_final 
 
 def virtual_orders__get_status(order):
     return order.get("status",None)
@@ -1607,9 +1098,9 @@ def events_wait_reopenfinished_update(virtual_order, actual_order, finished_by_t
     # ~ print('%%%% DEBUG orders opened {0} orders finished {1} last time order finished {2}'.format(d.orders_pending_to_reopen_opened, d.orders_pending_to_reopen_finished, d.orders_pending_to_reopen_finished_time))
 
 # create order and update also corresponding virtual-order
-def virtual_orders__create_one(order_id, order_name, price, slide, stageredslide, slide_dyn, sell_amount, sell_amount_min):
+def virtual_orders__create_one(order_id, order_name, price, slide_dyn, price_slide_dyn_boundary, slide, stageredslide, sell_amount, sell_amount_min):
     global c, s, d
-    makermarketpriceslide = float(price) * (slide + stageredslide + slide_dyn)
+    makermarketpriceslide = float(price_slide_dyn_boundary) * (slide + stageredslide)
     
     # limit precision to 6 digits
     sell_amount = '%.6f' % sell_amount
@@ -1619,8 +1110,8 @@ def virtual_orders__create_one(order_id, order_name, price, slide, stageredslide
     # limit precision to 6 digits
     buyamount = '%.6f' % buyamount
     
-    print('>>>> Placing partial<{}> Order id <{}> name <{}> {}->{} at price {} slide {} staggered-slide {} dynamic-slide {} final slide {} final-price {} to sell {} n buy {}'
-          .format(c.BOTpartial_orders, order_id, order_name, c.BOTsellmarket, c.BOTbuymarket, price, slide, stageredslide, slide_dyn, (slide + stageredslide + slide_dyn), makermarketpriceslide, sell_amount, buyamount))
+    print('>>>> Placing partial<{}> Order id <{}> name <{}> {}/{} >> at price {} * dynamic-slide {}/ boundary ->-> boundary-price {} * (slide {} + staggered-slide {}) ->-> final slide {} final-price {} to sell amount {} for buy amount {}'
+          .format(c.BOTpartial_orders, order_id, order_name, c.BOTsellmarket, c.BOTbuymarket, price, slide_dyn, price_slide_dyn_boundary, slide, stageredslide, (slide + stageredslide), makermarketpriceslide, sell_amount, buyamount))
     
     if c.BOTpartial_orders is False:
         try:
@@ -1760,7 +1251,13 @@ def virtual_orders__prepare_recheck():
         time.sleep(c.BOTdelayinternalerror)
     
     while True:
-        if feature__boundary__pricing_update() != 0:
+        if sboundary__pricing_update() != 0:
+            break
+        print('#### Pricing boundaries not available... waiting to restore...')
+        time.sleep(c.BOTdelayinternalerror)
+    
+    while True:
+        if rboundary__pricing_update() != 0:
             break
         print('#### Pricing boundaries not available... waiting to restore...')
         time.sleep(c.BOTdelayinternalerror)
@@ -1770,193 +1267,6 @@ def virtual_orders__prepare_recheck():
     # get open orders, match them with virtual orders, and check how many finished
     virtual_orders__check_status_update_status()
 
-#
-def feature__boundary__get_max_relative():
-    global c, s, d
-    
-    maximum = 0
-    
-    if c.BOTboundary_max_relative != 0:
-        if c.BOTboundary_asset_track is False:
-            maximum = d.feature__boundary__price_maker_initial_center * c.BOTboundary_max_relative
-        else:
-            maximum = (d.feature__boundary__price_maker_initial_center_relative * d.feature__boundary__price_relative_current) * c.BOTboundary_max_relative
-        
-    return maximum
-
-#
-def feature__boundary__get_max_static():
-    global c, s, d
-    
-    maximum = float(0)
-    
-    if c.BOTboundary_max_static != 0:
-        if c.BOTboundary_asset_track is False:
-            maximum = c.BOTboundary_max_static * d.feature__boundary__price_relative_initial
-        else:
-            maximum = c.BOTboundary_max_static * d.feature__boundary__price_relative_current
-        
-    return maximum
-
-#
-def feature__boundary__get_max():
-    global c, s, d
-    
-    maximum = feature__boundary__get_max_relative()
-    
-    if maximum == 0:
-        maximum = feature__boundary__get_max_static()
-    
-    return maximum
-
-#
-def feature__boundary__get_min_relative():
-    global c, s, d
-    
-    minimum = 0
-    
-    if c.BOTboundary_min_relative != 0:
-        if c.BOTboundary_asset_track is False:
-            minimum = d.feature__boundary__price_maker_initial_center * c.BOTboundary_min_relative
-        else:
-            minimum = (d.feature__boundary__price_maker_initial_center_relative * d.feature__boundary__price_relative_current) * c.BOTboundary_min_relative
-        
-    return minimum
-
-#
-def feature__boundary__get_min_static():
-    global c, s, d
-    
-    minimum = 0
-    
-    if c.BOTboundary_min_static != 0:
-        if c.BOTboundary_asset_track is False:
-            minimum = c.BOTboundary_min_static * d.feature__boundary__price_relative_initial
-        else:
-            minimum = c.BOTboundary_min_static * d.feature__boundary__price_relative_current
-            
-    return minimum
-
-#
-def feature__boundary__get_min():
-    global c, s, d
-    
-    minimum = feature__boundary__get_min_relative()
-    
-    if minimum == 0:
-        minimum = feature__boundary__get_min_static()
-    
-    return minimum
-
-# recompute and get price with boundary limits
-def feature__boundary__recompute_price():
-    global c, s, d
-    
-    price = d.feature__maker_price__value_current_used
-    
-    maximum = feature__boundary__get_max()
-    minimum = feature__boundary__get_min()
-    
-    if maximum != 0:
-        price = min(price, maximum)
-    
-    if minimum != 0:
-        price = max(price, minimum)
-    
-    return price
-
-# function to check if price is not out of maximum boundary 
-def feature__boundary__hit_max():
-    global c, s, d
-    
-    # check if relative max boundary is configured
-    if c.BOTboundary_max_relative != 0:
-        # wait if out of price relative boundary happen
-        maximum = feature__boundary__get_max_relative()
-        if maximum < d.feature__maker_price__value_current_used:
-            print('>>>> Maximum relative boundary <{}> hit <{}> / <{}>'.format(c.BOTboundary_max_relative, maximum, d.feature__maker_price__value_current_used))
-            return True
-            
-    # check if static max boundary is configured
-    if c.BOTboundary_max_static != 0:
-        # wait if out of price static boundary happen
-        maximum = feature__boundary__get_max_static()
-        if maximum < d.feature__maker_price__value_current_used:
-            print('>>>> Maximum static boundary <{}> hit <{}> / <{}>'.format(c.BOTboundary_max_static, maximum, d.feature__maker_price__value_current_used))
-            return True
-    
-    return False
-
-# function to check if price is not out of minimum boundary 
-def feature__boundary__hit_min():
-    global c, s, d
-    
-    # check if relative min boundary is configured
-    if c.BOTboundary_min_relative != 0:
-        # wait if out of price relative boundary happen
-        minimum = feature__boundary__get_min_relative()
-        if minimum > d.feature__maker_price__value_current_used:
-            print('>>>> Minimum relative boundary <{}> hit <{}> / <{}>'.format(c.BOTboundary_min_relative, minimum, d.feature__maker_price__value_current_used))
-            return True
-    
-    # check if static min boundary is configured
-    if c.BOTboundary_min_static != 0:
-        # wait if out of price static boundary happen
-        minimum = feature__boundary__get_min_static()
-        if minimum > d.feature__maker_price__value_current_used:
-            print('>>>> Minimum static boundary <{}> hit <{}> / <{}>'.format(c.BOTboundary_min_static, minimum, d.feature__maker_price__value_current_used))
-            return True
-    
-    return False
-
-# function to check if price is not out of maximum boundary 
-def feature__boundary__hit_max_exit():
-    global c, s, d
-    
-    if not c.BOTboundary_max_noexit:
-        if feature__boundary__hit_max() == True:
-            if not c.BOTboundary_max_nocancel:
-                virtual_orders__cancel_all()
-            return True
-            
-    return False
-
-# function to check if price is not out of minimum boundary 
-def feature__boundary__hit_min_exit():
-    global c, s, d
-    
-    if not c.BOTboundary_min_noexit:
-        if feature__boundary__hit_min() == True:
-            if not c.BOTboundary_min_nocancel:
-                virtual_orders__cancel_all()
-            return True
-    
-    return False
-
-# function to check if price is not out of maximum boundary 
-def feature__boundary__hit_max_noexit_cancel():
-    global c, s, d
-    
-    if c.BOTboundary_max_noexit:
-        if not c.BOTboundary_max_nocancel:
-            if feature__boundary__hit_max() == True:
-                virtual_orders__cancel_all()
-                return True
-            
-    return False
-
-# function to check if price is not out of minimum boundary 
-def feature__boundary__hit_min_noexit_cancel():
-    global c, s, d
-    
-    if c.BOTboundary_min_noexit:
-        if not c.BOTboundary_min_nocancel:
-            if feature__boundary__hit_min() == True:
-                virtual_orders__cancel_all()
-                return True
-    
-    return False
-
 # function to scan all events that makes bot to exit
 def events_exit_bot():
     global c, s, d
@@ -1964,12 +1274,32 @@ def events_exit_bot():
     
     print('checking for exit bot events')
     
-    # detect and handle max boundary exit event
-    if feature__boundary__hit_max_exit() == True:
+    # detect and handle max static boundary exit event
+    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    if ret_hit is True and ret_exit is True:
+        if ret_cancel is True:
+            virtual_orders__cancel_all()
         ret = True
     
-    # detect and handle min boundary exit event
-    if feature__boundary__hit_min_exit() == True:
+    # detect and handle min static boundary exit event
+    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    if ret_hit is True and ret_exit is True:
+        if ret_cancel is True:
+            virtual_orders__cancel_all()
+        ret = True
+        
+    # detect and handle max relative boundary exit event
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    if ret_hit is True and ret_exit is True:
+        if ret_cancel is True:
+            virtual_orders__cancel_all()
+        ret = True
+    
+    # detect and handle min relative boundary exit event
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    if ret_hit is True and ret_exit is True:
+        if ret_cancel is True:
+            virtual_orders__cancel_all()
         ret = True
     
     return ret
@@ -2094,12 +1424,32 @@ def events_wait():
     if events_wait_reopenfinished_check() == True:
         ret = True
     
-    # detect and handle max boundary event
-    if feature__boundary__hit_max_noexit_cancel() == True:
+    # detect and handle max static boundary event
+    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    if ret_hit is True and ret_exit is False:
+        if ret_cancel is True:
+            virtual_orders__cancel_all()
         ret = True
     
-    # detect and handle min boundary event
-    if feature__boundary__hit_min_noexit_cancel() == True:
+    # detect and handle min static boundary event
+    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    if ret_hit is True and ret_exit is False:
+        if ret_cancel is True:
+            virtual_orders__cancel_all()
+        ret = True
+        
+    # detect and handle max relative boundary event
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    if ret_hit is True and ret_exit is False:
+        if ret_cancel is True:
+            virtual_orders__cancel_all()
+        ret = True
+    
+    # detect and handle min relative boundary event
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    if ret_hit is True and ret_exit is False:
+        if ret_cancel is True:
+            virtual_orders__cancel_all()
         ret = True
     
     return ret
@@ -2158,10 +1508,10 @@ def virtual_orders__handle():
             if c.BOTslidepumpenabled is True and pumpdump_order_cleared is False and d.ordersvirtual[s.ordersvirtualmax-1]['status'] in s.status_list__with_reserved_balance:
                 pumpdump_order_cleared = True
                 
-            
+            # update total available and reserve balances
             update_balances()
             
-            # sse sell size asset
+            # sse - sell size asset
             # compute dynamic order size range, apply <sell_type> linear/log/exp on maximum amount by order number distribution
             sell_amount_max_sse = sell_amount_recompute(c.BOTsellstart, c.BOTsellend, s.ordersvirtualmax - int(c.BOTslidepumpenabled), i, c.BOTsell_type)
             sell_amount_min_sse = sell_amount_recompute(c.BOTsellstartmin, c.BOTsellendmin, s.ordersvirtualmax - int(c.BOTslidepumpenabled), i, c.BOTsell_type)
@@ -2176,8 +1526,9 @@ def virtual_orders__handle():
             # convert final amount to sell to sell size asset amount
             sell_amount_sse = sell_amount / d.feature__sell_size_asset__price
             
-            # recompute price by configured boundaries
-            price_maker_with_boundaries = feature__boundary__recompute_price()
+            # recompute (price * dynamic slide) with configured boundaries
+            sret_hit, sret_exit, sret_cancel, price_maker_with_boundaries = sboundary__check(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+            rret_hit, rret_exit, rret_cancel, price_maker_with_boundaries = rboundary__check(price_maker_with_boundaries):
             
             print('>>>> Order maker size <{}/{} {}~{} min {}~{} final {}~{}>'.format(c.BOTsellmarket, c.BOTsell_size_asset, sell_amount_max, sell_amount_max_sse, sell_amount_min, sell_amount_min_sse, sell_amount, sell_amount_sse))
             
@@ -2207,7 +1558,7 @@ def virtual_orders__handle():
             # compute staggered orders slides
             staggeredslide = ((c.BOTslideend - c.BOTslidestart) / max((s.ordersvirtualmax -1 -int(c.BOTslidepumpenabled)),1 ))*i
             
-            virtual_orders__create_one(i, order_name, price_maker_with_boundaries, c.BOTslidestart, staggeredslide, d.feature__slide_dyn__value, sell_amount, sell_amount_min)
+            virtual_orders__create_one(i, order_name, d.feature__maker_price__value_current_used, d.feature__slide_dyn__value, price_maker_with_boundaries, c.BOTslidestart, staggeredslide, sell_amount, sell_amount_min)
             time.sleep(c.BOTdelayinternal)
     
     # special pump/dump order handling
@@ -2221,7 +1572,7 @@ def virtual_orders__handle():
         sell_amount = balance_available_to_sell_recompute(sell_amount_pumpdump, sell_amount_min)
         
         if sell_amount > 0:
-            virtual_orders__create_one(s.ordersvirtualmax-1, 'pump/dump', price_maker_with_boundaries, c.BOTslidemax, c.BOTslidepump, d.feature__slide_dyn__value, sell_amount, sell_amount_min)
+            virtual_orders__create_one(s.ordersvirtualmax-1, 'pump/dump', d.feature__maker_price__value_current_used, d.feature__slide_dyn__value, price_maker_with_boundaries, c.BOTslidemax, c.BOTslidepump, sell_amount, sell_amount_min)
             
 # check if virtual order was taken by takerbot
 def feature__takerbot__virtual_order_was_taken_get(virtual_order):
@@ -2378,6 +1729,8 @@ if __name__ == '__main__':
     
     load_config() # load configuration from config file if specified than load program arguments with higher priority by replacing config file options
     
+    feature__tmp_cfg__load_saved_cfg()
+    
     init_postconfig() # initialization of items dependent on config
     
     
@@ -2389,7 +1742,7 @@ if __name__ == '__main__':
     
     update_balances() # update balances information
     
-    feature__slide_dyn__init_postpricing()
+    feature__slide_dyn__init_postpricing(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
     
     while 1:  # primary loop, starting point, after reset-orders-events
         
