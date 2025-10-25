@@ -7,7 +7,7 @@ import time
 import features.glob as glob
 
 # preconfiguration  initialization
-def reset_afot__init_preconfig():
+def reset_afot__init_preconfig__():
     
     glob.d.reset_afot__finished_num = 0
     glob.d.reset_afot__finished_at = 0
@@ -15,6 +15,7 @@ def reset_afot__init_preconfig():
     glob.c.reset_afot__num = 0
     glob.c.reset_afot__delay = 0
     
+reset_afot__init_preconfig__()
 
 # define argument parameter
 def reset_afot__load_config_define(parser, argparse):
