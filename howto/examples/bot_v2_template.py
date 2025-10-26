@@ -28,8 +28,8 @@ rpcpassword = "{cc_rpc_password}"
 rpchostname = "{cc_rpc_hostname}"
 rpcport = {cc_rpc_port}
 
-# Price redirections is feature used to optionally set custom ASSET 1 price in thirty ASEET 2.
-# For example trading BLOCK with LTC, you would rather set BLOCK price manually and BOT value automatically converts into LTC.
+# Price redirections is feature used to optionally set custom ASSET 1 price in thirty ASSET 2.
+# For example trading BLOCK with LTC, you would rather set BLOCK price manually in USDT and BOT automatically converts value into LTC.
 # 
 # format of price redirections:
 #
@@ -233,43 +233,62 @@ botconfig = str(
     "--resetafterorderfinishnumber {cc_reset_after_order_finish_number}"
     "--resetafterorderfinishdelay {cc_reset_after_order_finish_delay}"
 
-#boundaries configuration:
-    # do not exit bot when boundary reached
-        "--boundary_max_noexit --boundary_min_noexit"
-    # cancel orders on max boundary. The reason can be user is not willing to continue selling his maker-asset once price is too high and user i.e rather continue staking
-        # ~ "--boundary_max_nocancel"
-    # do not cancel orders on min boundary, but rather keep open orders on minimum boundary. The reason can be user is not willing to sell his maker-asset by very low price.
-        "--boundary_min_nocancel"
+
+# static boundaries configuration:
+    # set boundaries in specific asset rather than taker
+        "--sboundary_asset {cc_sboundary_asset}"
+    # boundary set in static specific price
+        "--sboundary_max {cc_sboundary_max}"
+        "--sboundary_min {cc_sboundary_min}"
     
-        # set relative maximum and minimum maker price boundaries
-            # set max at 105% and min 95% of price when bot was started
-                # ~ "--boundary_max_relative 1.5 --boundary_min_relative 0.95"
-            # set and track relative boundaries against USDT
-                # ~ "--boundary_asset USD"
-                # ~ "--boundary_asset_track True"
-            
-        # alternative set static boundary configuration, set maximum and minimum bot price boundary at static values relative to bitcoin
-            # set relative boundary pricing to BTC.
-                # ~ "--boundary_asset BTC"
-            # set track boundary asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BTC price and update boundaries by it.
-                # ~ "--boundary_asset_track True"
-            # Enable reversed pricing as 1/X, ie BLOCK/BTC vs BTC/BLOCK pricing can set like 0.000145 on both bot trading sides, instead of 0.000145 vs 6896.55.
-                # ~ "--boundary_reversed_pricing False"
-            # set manually starting center price
-                # ~ "--boundary_start_price 0.00014511"
-            # set manually boundaries
-                # ~ "--boundary_max_static 0.00020015 --boundary_min_static 0.00013715"
-        
-        "{cc_boundary_asset_argval}"
-        "{cc_boundary_asset_track_argval}"
-        
-        "{cc_boundary_reversed_pricing_argval}"
-        
-        "{cc_boundary_start_price_argval}"
-        
-        "{cc_boundary_max_argval}"
-        "{cc_boundary_min_argval}"
-        
+    # enabled disable boundary asset price updates. This means, ie if trading BLOCK/BTC but boundary is set in USD, it also do USD/BTC price updates and dynamically update boundary according to.
+        "--sboundary_max_track_asset {cc_sboundary_max_track_asset}"
+        "--sboundary_min_track_asset {cc_sboundary_min_track_asset}"
+    
+    # Enable reversed pricing as 1/X, ie BLOCK/BTC vs BTC/BLOCK pricing can set like 0.000145 on both bot trading sides, instead of 0.000145 vs 6896.55.
+        "--sboundary_max_min_reverse {cc_sboundary_max_min_reverse}"
+    
+    # maximum boundary hit behavior True/False
+    # cancel orders on max boundary. The reason can be user is not willing to continue selling his maker-asset once price is too high bc expected bullmarket and user rather start staking
+        "--sboundary_max_cancel {cc_sboundary_max_cancel}"
+        "--sboundary_max_exit {cc_sboundary_max_exit}"
+    # minimum boundary hit behavior True/False
+    # do not cancel orders on min boundary, but rather keep open orders on minimum boundary. The reason can be user is not willing to sell his maker-asset by very low price, rather wait for price recover
+        "--sboundary_min_cancel {cc_sboundary_min_cancel}"
+        "--sboundary_min_exit {cc_sboundary_min_exit}"
+
+
+# set relative maximum and minimum maker price boundaries
+    # set relative boundary values in specific asset
+    # ie.: Static boundary with maker/taker BLOCK/BTC and boundary_asset is USDT, so possible boundary min 1.5 and max 3 USD (default= --taker)'
+        "--rboundary_asset {cc_rboundary_asset}"
+    # manually set initial center price. Its usable only when some boundary_max/min_asset_track is Disabled
+        "--rboundary_price_initial {cc_rboundary_price_initial}"
+    
+    # maximum and minimum acceptable price set as relative value to center price
+    # set max at 150% and min 95% of price when bot was started as 1.5 0.95
+        "--rboundary_max {cc_rboundary_max}"
+        "--rboundary_min {cc_rboundary_min}"
+    
+    # Track boundary asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BTC price and update boundaries by it
+    # True/False
+        "--rboundary_max_track_asset {cc_rboundary_max_track_asset}"
+        "--rboundary_min_track_asset {cc_rboundary_min_track_asset}"
+    
+    # reversed set pricing as 1/X, ie BLOCK/BTC vs BTC/BLOCK pricing can set like 0.000145 on both bot trading sides, instead of 0.000145 vs 6896.55.'
+    # this feature works with relative boundary asset as well
+        "--rboundary_price_reverse {cc_rboundary_price_reverse}"
+    
+    # maximum boundary hit behavior True/False
+    # cancel orders on max boundary. The reason can be user is not willing to continue selling his maker-asset once price is too high bc expected bullmarket and user rather start staking
+        "--rboundary_max_cancel {cc_rboundary_max_cancel}"
+        "--rboundary_max_exit {cc_rboundary_max_exit}"
+    # minimum boundary hit behavior True/False
+    # do not cancel orders on min boundary, but rather keep open orders on minimum boundary. The reason can be user is not willing to sell his maker-asset by very low price, rather wait for price recover
+        "--rboundary_min_cancel {cc_rboundary_min_cancel}"
+        "--rboundary_min_exit {cc_rboundary_min_exit}"
+    
+
 # takerbot act like limit orders on your actually created orders, its also taking whole range of dynamic size and multiple orders
     # enabled takerbot feature to check orders to take on 10 second interval
         "--takerbot {cc_takerbot}"
