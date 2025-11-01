@@ -156,6 +156,17 @@ def status_list__init_preconfig():
 
     # list of virtual order statuses which are in accepted but still in progress
     s.status_list__l_in_progress = [s.status_list__accepting, s.status_list__hold, s.status_list__initialized, s.status_list__created, s.status_list__commited]
+    
+    # list of virtual order statuses which could be used to detect order as been finished when been switched from one of these statuses into finished status
+    s.status_list__valid_switch_to_finish =  [s.status_list__hidden,
+                                              s.status_list__creating,
+                                              s.status_list__new,
+                                              s.status_list__open,
+                                              s.status_list__accepting,
+                                              s.status_list__hold,
+                                              s.status_list__initialized,
+                                              s.status_list__created,
+                                              s.status_list__commited]
 
 def feature__maker_price__init_preconfig():
     global c, s, d
@@ -1050,7 +1061,7 @@ def virtual_orders__check_status_update_status():
                     continue
             
             # if virtual order previous status was not finished or clear and now finished is or was taken by takerbot, count this order in finished number
-            if d.ordersvirtual[i]['status'] != s.status_list__finished:
+            if d.ordersvirtual[i]['status'] in s.status_list__valid_switch_to_finish:
                 if (order is not None) and order['status'] == s.status_list__finished:
                     reset_afot__add()
                 elif feature__takerbot__virtual_order_was_taken_get(d.ordersvirtual[i]) == True:
