@@ -87,6 +87,8 @@ def init_postconfig():
     # initialize pricing storage and set proxy client
     pricing_storage__init_postconfig(c.BOTconfigfile + ".tmp.pricing", c.BOTdelaycheckprice, c.BOTuse, 2, 8, pricing_proxy_client__pricing_storage__try_get_price_fn, c.BOTcf.price_redirections)
     
+    feature__slide_dyn__init_postconfig(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
+    
 #global variables initialization
 def global_vars_init_preconfig():
     global c, s, d
@@ -277,7 +279,7 @@ def load_config_verify_or_exit():
             print('**** ERROR, <sellstartmin> value <{0}> is invalid. Must be more than 0'.format(c.BOTsellstartmin))
             error_num += 1
         
-        if c.BOTsellstartmin >= c.BOTsellstart:
+        if c.BOTsellstartmin > c.BOTsellstart:
             print('**** ERROR, <sellstartmin> value <{}> is invalid. Must be less than <sellstart> <{}>'.format(c.BOTsellstartmin, c.BOTsellstart))
             error_num += 1
             
@@ -286,7 +288,7 @@ def load_config_verify_or_exit():
             print('**** ERROR, <sellendmin> value <{}> is invalid. Must be more than 0'.format(c.BOTsellendmin))
             error_num += 1
         
-        if c.BOTsellendmin >= c.BOTsellend:
+        if c.BOTsellendmin > c.BOTsellend:
             print('**** ERROR, <sellendmin> value <{}> is invalid. Must be less than <sellend> <{}>'.format(c.BOTsellendmin, c.BOTsellend))
             error_num += 1
     
@@ -444,17 +446,6 @@ def load_config_verify_or_exit():
     else:
         print('>>>> Verifying configuration success')
 
-def argparse_bool(arg):
-    if isinstance(arg, bool):
-        return arg
-    elif isinstance(arg, str):
-        if arg.lower() in ['true', 'enabled', 'yes', '1']:
-            return True
-        else:
-            return False
-    else:
-        return False
-
 def feature__maker_price__load_config_define(parser, argparse):
     parser.add_argument('--maker_price', type=float, help='Value for live price updates or static price configuration'
     '0 - live price updates are activated'
@@ -492,7 +483,7 @@ def load_config():
     parser.add_argument('--taker', type=str, help='asset being bought (default=LTC)', default='LTC')
     parser.add_argument('--makeraddress', type=str, help='trading address of asset being sold (default=None)', default=None)
     parser.add_argument('--takeraddress', type=str, help='trading address of asset being bought (default=None)', default=None)
-    parser.add_argument('--address_funds_only', type=argparse_bool, nargs='?', const=True, help='limit bot to use and compute funds only from maker and taker address(default=False disabled)', default=False)
+    parser.add_argument('--address_funds_only', type=glob.t.argparse_bool, nargs='?', const=True, help='limit bot to use and compute funds only from maker and taker address(default=False disabled)', default=False)
     
     # ~ parser.add_argument('--maker_address_funds_only', nargs='+', type=str, help='limit bot to use and compute funds from specific maker addresses(or multiple addresses separated by space) only, otherwise all addresses are used', action='store_true')
     # ~ parser.add_argument('--taker_address_funds_only', nargs='+', type=str, help='limit bot to use and compute funds from specific taker addresses(or multiple addresses separated by space) only, otherwise all addresses are used', action='store_true')
@@ -530,12 +521,12 @@ def load_config():
     
     parser.add_argument('--maxopen', type=int, help='Max amount of orders to have open at any given time. Placing orders sequence: first placed order is at slidestart(price slide),sellstart(amount) up to slideend(price slide),sellend(amount), last order placed is slidepump if configured, is not counted into this number (default=5)', default=5)
     
-    parser.add_argument('--make_next_on_hit', type=argparse_bool, nargs='?', const=True, help='create next order on 0 amount hit, so if first order is not created, rather skipped, next is created(default=False disabled)', default=False)
+    parser.add_argument('--make_next_on_hit', type=glob.t.argparse_bool, nargs='?', const=True, help='create next order on 0 amount hit, so if first order is not created, rather skipped, next is created(default=False disabled)', default=False)
     
     parser.add_argument('--reopenfinisheddelay', type=int, help='finished orders will be reopened after specific delay(seconds) of last filled order(default=0 disabled)', default=0)
     parser.add_argument('--reopenfinishednum', type=int, help='finished orders will be reopened after specific number of filled orders(default=0 disabled)', default=0)
     
-    parser.add_argument('--partial_orders', type=argparse_bool, nargs='?', const=True, help='enable or disable partial orders. Partial orders minimum is set by <sellstartmin> <sellendmin> along with dynamic size of orders(default=False disabled)', default=False)
+    parser.add_argument('--partial_orders', type=glob.t.argparse_bool, nargs='?', const=True, help='enable or disable partial orders. Partial orders minimum is set by <sellstartmin> <sellendmin> along with dynamic size of orders(default=False disabled)', default=False)
     parser.add_argument('--takerbot', type=int, help='Keep checking for possible partial orders which meets requirements(size, price) and accept that orders.'
     'If this feature is enabled, takerbot is automatically searching for orders at size between <sellstart-sellend>...<sellstartmin-sellendmin> and at price <slidestart-slideend>+<dynamic slide>*<price> and higher.'
     'This feature can be also understood as higher layer implementation of limit order feature on top of atomic swaps on BlockDX exchange. Takerbot can possible cancel multiple opened orders to autotake orders which meets requirements'
@@ -544,7 +535,7 @@ def load_config():
     '(default=0 disabled)', default=0)
 
     # ~ TODO = not implemented yet
-    parser.add_argument('--hidden_orders', type=argparse_bool, nargs='?', const=True, help='Orders will be created only virtually, hidden from dx and acting like takerbot only.  (default=False disabled)', default=False)
+    parser.add_argument('--hidden_orders', type=glob.t.argparse_bool, nargs='?', const=True, help='Orders will be created only virtually, hidden from dx and acting like takerbot only.  (default=False disabled)', default=False)
     
     # ~ parser.add_argument('--external_type', type=str, choices=[None, 'uniswap', 'bittrex'], help='choose external  (default=None)', default=None)
     # ~ parser.add_argument('--external_balance_type', type=str, choices=['auto','relative', 'static'], help='(default=auto)', default=None)
@@ -556,7 +547,7 @@ def load_config():
     rboundary__load_config_define(parser, argparse)
     
     parser.add_argument('--balance_save_asset', type=str, help='size of balance to save is set in specific asset instead of maker (default=--maker)', default=None)
-    parser.add_argument('--balance_save_asset_track', type=argparse_bool, nargs='?', const=True, help='Track balance save asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BLOCK price and update balance to save by it (default=False disabled)', default=False)
+    parser.add_argument('--balance_save_asset_track', type=glob.t.argparse_bool, nargs='?', const=True, help='Track balance save asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BLOCK price and update balance to save by it (default=False disabled)', default=False)
     parser.add_argument('--balance_save_number', help='min taker balance you want to save and do not use for making orders specified by number (default=0)', default=0)
     parser.add_argument('--balance_save_percent', help='min taker balance you want to save and do not use for making orders specified by percent of maker+taker balance (default=0.05 means 5%%)', default=0.05)
     
@@ -871,13 +862,13 @@ def pricing_check_or_exit():
         sys.exit(1)
     
     # initial static boundary pricing
-    price_boundary = sboundary__pricing_init(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
+    price_boundary = sboundary__pricing_init(c.BOTsellmarket, c.BOTbuymarket, c.BOTaction_arg, pricing_storage__try_get_price)
     if price_boundary == 0:
         print('#### Static boundary pricing not available')
         sys.exit(1)
         
     # initial relative boundary pricing
-    price_boundary = rboundary__pricing_init(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
+    price_boundary = rboundary__pricing_init(c.BOTsellmarket, c.BOTbuymarket, c.BOTaction_arg, pricing_storage__try_get_price)
     if price_boundary == 0:
         print('#### Relative boundary pricing not available')
         sys.exit(1)
@@ -1286,28 +1277,28 @@ def events_exit_bot():
     print('checking for exit bot events')
     
     # detect and handle max static boundary exit event
-    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
     if ret_hit is True and ret_exit is True:
         if ret_cancel is True:
             virtual_orders__cancel_all()
         ret = True
     
     # detect and handle min static boundary exit event
-    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
     if ret_hit is True and ret_exit is True:
         if ret_cancel is True:
             virtual_orders__cancel_all()
         ret = True
         
     # detect and handle max relative boundary exit event
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
     if ret_hit is True and ret_exit is True:
         if ret_cancel is True:
             virtual_orders__cancel_all()
         ret = True
     
     # detect and handle min relative boundary exit event
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
     if ret_hit is True and ret_exit is True:
         if ret_cancel is True:
             virtual_orders__cancel_all()
@@ -1436,28 +1427,28 @@ def events_wait():
         ret = True
     
     # detect and handle max static boundary event
-    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
     if ret_hit is True and ret_exit is False:
         if ret_cancel is True:
             virtual_orders__cancel_all()
         ret = True
     
     # detect and handle min static boundary event
-    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
     if ret_hit is True and ret_exit is False:
         if ret_cancel is True:
             virtual_orders__cancel_all()
         ret = True
         
     # detect and handle max relative boundary event
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
     if ret_hit is True and ret_exit is False:
         if ret_cancel is True:
             virtual_orders__cancel_all()
         ret = True
     
     # detect and handle min relative boundary event
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
     if ret_hit is True and ret_exit is False:
         if ret_cancel is True:
             virtual_orders__cancel_all()
@@ -1538,8 +1529,8 @@ def virtual_orders__handle():
             sell_amount_sse = sell_amount / d.feature__sell_size_asset__price
             
             # recompute (price * dynamic slide) with configured boundaries
-            sret_hit, sret_exit, sret_cancel, price_maker_with_boundaries = sboundary__check(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value):
-            rret_hit, rret_exit, rret_cancel, price_maker_with_boundaries = rboundary__check(price_maker_with_boundaries):
+            sret_hit, sret_exit, sret_cancel, price_maker_with_boundaries = sboundary__check(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
+            rret_hit, rret_exit, rret_cancel, price_maker_with_boundaries = rboundary__check(price_maker_with_boundaries)
             
             print('>>>> Order maker size <{}/{} {}~{} min {}~{} final {}~{}>'.format(c.BOTsellmarket, c.BOTsell_size_asset, sell_amount_max, sell_amount_max_sse, sell_amount_min, sell_amount_min_sse, sell_amount, sell_amount_sse))
             
@@ -1753,7 +1744,7 @@ if __name__ == '__main__':
     
     update_balances() # update balances information
     
-    feature__slide_dyn__init_postpricing(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
+    feature__slide_dyn__init_postpricing()
     
     while 1:  # primary loop, starting point, after reset-orders-events
         
