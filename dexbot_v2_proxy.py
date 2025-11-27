@@ -34,17 +34,6 @@ def init_postconfig():
     # initialize pricing storage and set proxy client
     pricing_storage__init_postconfig("proxy.tmp.pricing", 60, "", 2, 6, pricing_proxy_server__pricing_storage__try_get_price_fn)
 
-def argparse_bool(arg):
-    if isinstance(arg, bool):
-        return arg
-    elif isinstance(arg, str):
-        if arg.lower() in ['true', 'enabled', 'yes', '1']:
-            return True
-        else:
-            return False
-    else:
-        return False
-
 def load_config():
     global c, s, d
     print('>>>> Loading program configuration')
@@ -52,7 +41,7 @@ def load_config():
     # prepare arg parser and define arguments
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--restore', type=argparse_bool, nargs='?', const=True, help='Variable used to let bot know to try restore auto-configured values from tmp cfg. Usable when secondary run script management by, also manual testing... (default=False not restoring)', default=False)
+    parser.add_argument('--restore', type=glob.t.argparse_bool, nargs='?', const=True, help='Variable used to let bot know to try restore auto-configured values from tmp cfg. Usable when secondary run script management by, also manual testing... (default=False not restoring)', default=False)
     
     parser.add_argument('--imreallysurewhatimdoing', type=int, default=0, help='This argument allows user to specify number of non-standard configuration values for special cases like user want to activate bot trading later relatively higher price than actual is')
     
