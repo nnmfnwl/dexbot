@@ -30,7 +30,7 @@ feature__slide_dyn__init_preconfig__()
 def feature__slide_dyn__load_config_define(parser, argparse):
     
     parser.add_argument('--slide_dyn_asset', type=str, help='dynamic slide static values are set in specific asset instead of maker (default=--maker)', default=None)
-    parser.add_argument('--slide_dyn_asset_track', type=argparse_bool, nargs='?', const=True, help=
+    parser.add_argument('--slide_dyn_asset_track', type=glob.t.argparse_bool, nargs='?', const=True, help=
     'track dynamic slide asset price updates True/False'
     'This means, ie if trading BLOCK/BTC and asset is USD,'
     'so USD/BLOCK price will be tracked,'
@@ -203,11 +203,24 @@ def feature__slide_dyn__load_config_verify():
         error_num += 1
     
     return error_num, crazy_num
+
+def feature__slide_dyn__get_price_cb__(maker, taker):
+    print('**** ERROR >>> dexbot.features.slide_dyn.feature__slide_dyn__get_price_cb__() function is just empty default callback, please replace with pricing_storage__try_get_price')
+    return 0
+
+def feature__slide_dyn__init_postconfig(maker, taker, get_price_fn = feature__slide_dyn__get_price_cb__):
+    
+    if c.BOTslide_dyn_asset is None:
+        c.BOTslide_dyn_asset = taker
         
+    d.feature__slide_dyn__maker = maker
+    d.feature__slide_dyn__taker = taker
+    d.feature__slide_dyn__get_price_fn = get_price_fn
+
 # asset which dynamic slide zero size is set in pricing update
 def feature__slide_dyn__asset_pricing_update():
     
-    temp_price = pricing_storage__try_get_price(c.BOTslide_dyn_asset, c.BOTsellmarket)
+    temp_price = d.feature__slide_dyn__get_price_fn(c.BOTslide_dyn_asset, c.BOTsellmarket)
     if temp_price != 0:
         d.feature__slide_dyn__asset_price = temp_price
     
@@ -223,19 +236,8 @@ def feature__slide_dyn__maker_convert_to_asset(size_in_slide_dyn_maker):
     
     return size_in_slide_dyn_maker / d.feature__slide_dyn__asset_price
 
-def feature__slide_dyn__get_price_cb__(maker, taker):
-    print('**** ERROR >>> dexbot.features.slide_dyn.feature__slide_dyn__get_price_cb__() function is just empty default callback, please replace with pricing_storage__try_get_price')
-    return 0
-
 # initialize dynamic slide feature
-def feature__slide_dyn__init_postpricing(maker, taker, get_price_fn = feature__slide_dyn__get_price_cb__):
-    
-    if c.BOTslide_dyn_asset is None:
-        c.BOTslide_dyn_asset = taker
-        
-    d.feature__slide_dyn__maker = maker
-    d.feature__slide_dyn__taker = taker
-    d.feature__slide_dyn__get_price_fn = get_price_fn
+def feature__slide_dyn__init_postpricing():
     
     # try to restore maker price when slide zero is -2 or restore is true
     if (c.BOTaction_arg != "reset") and (c.BOTslide_dyn_zero == -2 or c.BOTaction_arg == 'restore'):
