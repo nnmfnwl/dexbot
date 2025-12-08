@@ -79,7 +79,7 @@ def unit_test__rboundary():
     print('\n>> INFO >> TEST >> rboundary__pricing_init')
     glob.test_rboundary_price=0.01
     price_boundary = rboundary__pricing_init("BLOCK", "BTC", 'none', unit_test__rboundary__get_price_1)
-    if price_boundary == 0.01:
+    if price_boundary == 0.0001:
         print('>> INFO >> TEST >> rboundary__pricing_init >> success')
     else:
         print('** ERROR >> TEST >> rboundary__pricing_init >> return {} >> failed'.format(price_boundary))
@@ -91,10 +91,10 @@ def unit_test__rboundary():
     print('>> INFO >> TEST >> rboundary__pricing_update')
     glob.test_rboundary_price=0.03
     price_boundary = rboundary__pricing_update()
-    if price_boundary == 0.01:
-        print('>> INFO >> TEST >> rboundary__pricing_init >> success')
+    if price_boundary == 0.0001:
+        print('>> INFO >> TEST >> rboundary__pricing_update >> {} >> success'.format(price_boundary))
     else:
-        print('** ERROR >> TEST >> rboundary__pricing_init >> failed')
+        print('** ERROR >> TEST >> rboundary__pricing_update >> return {} >> failed'.format(price_boundary))
         sys.exit(1)
     
     ####################################################################
@@ -105,7 +105,7 @@ def unit_test__rboundary():
     ret_exit_exp = False
     ret_cancel_exp = False
     
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(0.04)
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(0.0004)
     if ret_hit == ret_hit_exp and ret_exit == ret_exit_exp and ret_cancel == ret_cancel_exp:
         print('>> INFO >> TEST >> rboundary__check_max >> ret_hit, ret_exit, ret_cancel {},{},{}'.format(ret_hit, ret_exit, ret_cancel))
     else:
@@ -115,12 +115,12 @@ def unit_test__rboundary():
     ####################################################################
     ## test max boundary hit yes
     
-    print('>> INFO >> TEST >> rboundary__check_max 0.041')
+    print('>> INFO >> TEST >> rboundary__check_max 0.00041')
     ret_hit_exp = True
     ret_exit_exp = True
     ret_cancel_exp = True
     
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(0.041)
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(0.00041)
     if ret_hit == ret_hit_exp and ret_exit == ret_exit_exp and ret_cancel == ret_cancel_exp:
         print('>> INFO >> TEST >> rboundary__check_max >> ret_hit, ret_exit, ret_cancel {},{},{}'.format(ret_hit, ret_exit, ret_cancel))
     else:
@@ -130,12 +130,12 @@ def unit_test__rboundary():
     ####################################################################
     ## test min boundary hit no
     
-    print('>> INFO >> TEST >> rboundary__check_min 0.01')
+    print('>> INFO >> TEST >> rboundary__check_min 0.0001')
     ret_hit_exp = False
     ret_exit_exp = False
     ret_cancel_exp = False
     
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(0.01)
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(0.0001)
     if ret_hit == ret_hit_exp and ret_exit == ret_exit_exp and ret_cancel == ret_cancel_exp:
         print('>> INFO >> TEST >> rboundary__check_min >> ret_hit, ret_exit, ret_cancel {},{},{}'.format(ret_hit, ret_exit, ret_cancel))
     else:
@@ -145,12 +145,12 @@ def unit_test__rboundary():
     ####################################################################
     ## test min boundary hit yes
     
-    print('>> INFO >> TEST >> rboundary__check_min 0.0099')
+    print('>> INFO >> TEST >> rboundary__check_min 0.000099')
     ret_hit_exp = True
     ret_exit_exp = False
     ret_cancel_exp = True
     
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(0.0099)
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(0.000099)
     if ret_hit == ret_hit_exp and ret_exit == ret_exit_exp and ret_cancel == ret_cancel_exp:
         print('>> INFO >> TEST >> rboundary__check_min >> ret_hit, ret_exit, ret_cancel {},{},{}'.format(ret_hit, ret_exit, ret_cancel))
     else:
@@ -160,20 +160,20 @@ def unit_test__rboundary():
     ####################################################################
     ## test price recompute
     
-    print('>> INFO >> TEST >> rboundary__recompute_price(1)')
+    print('>> INFO >> TEST >> rboundary__check(1)')
     ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check(1)
-    if ret_price == 0.04:
-        print('>> INFO >> TEST >> rboundary__recompute_price(1) >> {} OK'.format(ret_price))
+    if ret_price == 0.0004:
+        print('>> INFO >> TEST >> rboundary__check(1) >> {} OK'.format(ret_price))
     else:
-        print('>> ERROR >> TEST >> rboundary__recompute_price(1) >> {}'.format(ret_price))
+        print('>> ERROR >> TEST >> rboundary__check(1) >> {}'.format(ret_price))
         sys.exit(1)
         
-    print('>> INFO >> TEST >> rboundary__recompute_price(0.001)')
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check(0.001)
-    if ret_price == 0.01:
-        print('>> INFO >> TEST >> rboundary__recompute_price(1) >> {} OK'.format(ret_price))
+    print('>> INFO >> TEST >> rboundary__check(0.001)')
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check(0.0001)
+    if ret_price == 0.0001:
+        print('>> INFO >> TEST >> rboundary__check(1) >> {} OK'.format(ret_price))
     else:
-        print('>> ERROR >> TEST >> rboundary__recompute_price(1) >> {}'.format(ret_price))
+        print('>> ERROR >> TEST >> rboundary__check(1) >> {}'.format(ret_price))
         sys.exit(1)
         
     ####################################################################
@@ -220,25 +220,25 @@ def unit_test__rboundary():
     ####################################################################
     ## Test 2 pricing init reverse
     
-    print('>> INFO >> TEST 2 >> rboundary__pricing_init')
+    print('>> INFO >> TEST 2 >> rboundary__pricing_init 0.01')
     glob.test_rboundary_price=0.01
     price_boundary = rboundary__pricing_init("BTC", "BLOCK", 'none', unit_test__rboundary__get_price_1)
-    if price_boundary == 100:
-        print('>> INFO >> TEST 227 >> rboundary__pricing_init >> success')
+    if price_boundary == 10000:
+        print('>> INFO >> TEST 227 >> rboundary__pricing_init >> {} >> success'.format(price_boundary))
     else:
-        print('** ERROR >> TEST 229 >> rboundary__pricing_init >> failed')
+        print('** ERROR >> TEST 229 >> rboundary__pricing_init >> {} >> failed'.format(price_boundary))
         sys.exit(1)
     
     ####################################################################
     ## test 2 pricing update with asset track disabled
     
-    print('>> INFO >> TEST 2 >> rboundary__pricing_update')
+    print('>> INFO >> TEST 2 >> rboundary__pricing_update 0.03')
     glob.test_rboundary_price=0.03
     price_boundary = rboundary__pricing_update()
-    if price_boundary == 100:
-        print('>> INFO >> TEST 2 >> rboundary__pricing_init >> success')
+    if price_boundary == 10000:
+        print('>> INFO >> TEST 239 >> rboundary__pricing_update >> {} >> success'.format(price_boundary))
     else:
-        print('** ERROR >> TEST 2 >> rboundary__pricing_init >> failed')
+        print('** ERROR >> TEST 240 >> rboundary__pricing_update >> {} >> failed'.format(price_boundary))
         sys.exit(1)
     
     ####################################################################
@@ -249,7 +249,7 @@ def unit_test__rboundary():
     ret_exit_exp = False
     ret_cancel_exp = False
     
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(300)
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(30000)
     if ret_hit == ret_hit_exp and ret_exit == ret_exit_exp and ret_cancel == ret_cancel_exp:
         print('>> INFO >> TEST 254 >> rboundary__check_max >> ret_hit, ret_exit, ret_cancel {},{},{}'.format(ret_hit, ret_exit, ret_cancel))
     else:
@@ -264,7 +264,7 @@ def unit_test__rboundary():
     ret_exit_exp = True
     ret_cancel_exp = True
     
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(300.1)
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(30000.1)
     if ret_hit == ret_hit_exp and ret_exit == ret_exit_exp and ret_cancel == ret_cancel_exp:
         print('>> INFO >> TEST 2 >> rboundary__check_max >> ret_hit, ret_exit, ret_cancel {},{},{}'.format(ret_hit, ret_exit, ret_cancel))
     else:
@@ -279,7 +279,7 @@ def unit_test__rboundary():
     ret_exit_exp = False
     ret_cancel_exp = False
     
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(90)
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(90000)
     if ret_hit == ret_hit_exp and ret_exit == ret_exit_exp and ret_cancel == ret_cancel_exp:
         print('>> INFO >> TEST 2 >> rboundary__check_min >> ret_hit, ret_exit, ret_cancel {},{},{}'.format(ret_hit, ret_exit, ret_cancel))
     else:
@@ -294,7 +294,7 @@ def unit_test__rboundary():
     ret_exit_exp = False
     ret_cancel_exp = True
     
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(89)
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(8999)
     if ret_hit == ret_hit_exp and ret_exit == ret_exit_exp and ret_cancel == ret_cancel_exp:
         print('>> INFO >> TEST 2 >> rboundary__check_min >> ret_hit, ret_exit, ret_cancel {},{},{}'.format(ret_hit, ret_exit, ret_cancel))
     else:
@@ -304,18 +304,18 @@ def unit_test__rboundary():
     ####################################################################
     ## test 2 price recompute
     
-    print('>> INFO >> TEST 2 >> rboundary__recompute_price(700)')
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check(700)
-    if ret_price == 300:
-        print('>> INFO >> TEST 2 >> rboundary__recompute_price(1) >> {} OK'.format(ret_price))
+    print('>> INFO >> TEST 307 >> rboundary__check(700)')
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check(70000)
+    if ret_price == 30000:
+        print('>> INFO >> TEST 310 >> rboundary__check(1) >> {} OK'.format(ret_price))
     else:
-        print('>> ERROR >> TEST 2 >> rboundary__recompute_price(1) >> {}'.format(ret_price))
+        print('>> ERROR >> TEST 312 >> rboundary__check(1) >> {}'.format(ret_price))
         sys.exit(1)
         
-    print('>> INFO >> TEST 2 >> rboundary__recompute_price(20)')
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check(20+1)
-    if ret_price == 90:
-        print('>> INFO >> TEST 2 >> rboundary__recompute_price(1) >> {} OK'.format(ret_price))
+    print('>> INFO >> TEST 315 >> rboundary__check(2000+1)')
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check(2000+1)
+    if ret_price == 9000:
+        print('>> INFO >> TEST 318 >> rboundary__check(20) >> {} OK'.format(ret_price))
     else:
-        print('>> ERROR >> TEST 2 >> rboundary__recompute_price(1) >> {}'.format(ret_price))
+        print('>> ERROR >> TEST 319 >> rboundary__check(20) >> {}'.format(ret_price))
         sys.exit(1)
