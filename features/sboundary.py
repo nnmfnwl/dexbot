@@ -4,10 +4,20 @@
 # for example if:
 #   $BLOCK = 1 USD
 #   $DOGE = 2 USD
-#   you can set boundary as 0.7 and 2 USD, so:
+#   so 1 BLOCK == 0.5 DOGE
+#   so you can set max boundary as 1 DOGE or as 2 USD, so:
 #       bot will stop offering to sell $BLOCK if price go over $2 USD converted into $DOGE as 1 $DOGE
-#       and bot will stop selling $BLOCK if price go under $0.7 USD converted into $DOGE as 0.35 $DOGE
-#       but above depends if price tracking is on of off and if $DOGE price changes or not
+#           but above depends if price tracking is on of off and if $DOGE price changes or not
+#       
+#       If price max track asset is enabled and BLOCK stays at price 1, but DOGE goes up to price 4, the bot with max set at 2 USD which was initially 1 DOGE,
+#       will recompute max into 2 USD currently to 0.5 DOGE and stop selling BLOCK coins more soon.
+#       But if DOGE goes down to price 1 USD, the bot with max set to 2 USD which was initially 1 DOGE,
+#       will recompute max into 2 USD currently to 2 DOGE and stop selling BLOCK coins later.
+#       
+#       Same if price min track is enabled and BLOCK stays at price 1, but doge goes to to price 4, the bot with min set at 0.5 USD which was initially 0.25 DOGE,
+#       will recompute max to 0.5 USD currently to 0.125 DOGE and stop selling BLOCK coins later.
+
+
 #   Please see all configuration definition parameters function for details
 
 # static and relative boundary libraries should not be merged in one library, because
@@ -29,7 +39,7 @@ from features.tmp_cfg import *
 def sboundary__init_preconfig__():
     
     # static boundary asset
-    c.sboundary__asset = None
+    c.sboundary__asset = ""
     # static boundary maximum
     c.sboundary__max = 0
     # static boundary minimum
@@ -161,7 +171,7 @@ def sboundary__pricing_init(maker, taker, action, get_price_fn = sboundary__get_
         else:
             d.sboundary__price_initial = sboundary__pricing_update()
             feature__tmp_cfg__set_value(d.sboundary__id_price_initial, d.sboundary__price_initial, False)
-            print('>> INFO >> sboundary >> pricing initialization >> restored from tmp cfg failed, fall back normal init')
+            print('>> INFO >> sboundary >> pricing initialization >> restored from tmp cfg failed, did fall back to normal init')
     # run normal pricing init
     elif d.sboundary__price_initial == 0:
         d.sboundary__price_initial = sboundary__pricing_update()
