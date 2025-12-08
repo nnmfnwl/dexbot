@@ -1277,28 +1277,28 @@ def events_exit_bot():
     print('checking for exit bot events')
     
     # detect and handle max static boundary exit event
-    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
+    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_max(d.feature__maker_price__value_current_used + (d.feature__maker_price__value_current_used * d.feature__slide_dyn__value))
     if ret_hit is True and ret_exit is True:
         if ret_cancel is True:
             virtual_orders__cancel_all()
         ret = True
     
     # detect and handle min static boundary exit event
-    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
+    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_min(d.feature__maker_price__value_current_used + (d.feature__maker_price__value_current_used * d.feature__slide_dyn__value))
     if ret_hit is True and ret_exit is True:
         if ret_cancel is True:
             virtual_orders__cancel_all()
         ret = True
         
     # detect and handle max relative boundary exit event
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(d.feature__maker_price__value_current_used + (d.feature__maker_price__value_current_used * d.feature__slide_dyn__value))
     if ret_hit is True and ret_exit is True:
         if ret_cancel is True:
             virtual_orders__cancel_all()
         ret = True
     
     # detect and handle min relative boundary exit event
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(d.feature__maker_price__value_current_used + (d.feature__maker_price__value_current_used * d.feature__slide_dyn__value))
     if ret_hit is True and ret_exit is True:
         if ret_cancel is True:
             virtual_orders__cancel_all()
@@ -1427,28 +1427,28 @@ def events_wait():
         ret = True
     
     # detect and handle max static boundary event
-    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
+    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_max(d.feature__maker_price__value_current_used + (d.feature__maker_price__value_current_used * d.feature__slide_dyn__value))
     if ret_hit is True and ret_exit is False:
         if ret_cancel is True:
             virtual_orders__cancel_all()
         ret = True
     
     # detect and handle min static boundary event
-    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
+    ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_min(d.feature__maker_price__value_current_used + (d.feature__maker_price__value_current_used * d.feature__slide_dyn__value))
     if ret_hit is True and ret_exit is False:
         if ret_cancel is True:
             virtual_orders__cancel_all()
         ret = True
         
     # detect and handle max relative boundary event
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(d.feature__maker_price__value_current_used + (d.feature__maker_price__value_current_used * d.feature__slide_dyn__value))
     if ret_hit is True and ret_exit is False:
         if ret_cancel is True:
             virtual_orders__cancel_all()
         ret = True
     
     # detect and handle min relative boundary event
-    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
+    ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(d.feature__maker_price__value_current_used + (d.feature__maker_price__value_current_used * d.feature__slide_dyn__value))
     if ret_hit is True and ret_exit is False:
         if ret_cancel is True:
             virtual_orders__cancel_all()
@@ -1529,7 +1529,7 @@ def virtual_orders__handle():
             sell_amount_sse = sell_amount / d.feature__sell_size_asset__price
             
             # recompute (price * dynamic slide) with configured boundaries
-            sret_hit, sret_exit, sret_cancel, price_maker_with_boundaries = sboundary__check(d.feature__maker_price__value_current_used * d.feature__slide_dyn__value)
+            sret_hit, sret_exit, sret_cancel, price_maker_with_boundaries = sboundary__check(d.feature__maker_price__value_current_used + (d.feature__maker_price__value_current_used * d.feature__slide_dyn__value))
             rret_hit, rret_exit, rret_cancel, price_maker_with_boundaries = rboundary__check(price_maker_with_boundaries)
             
             print('>>>> Order maker size <{}/{} {}~{} min {}~{} final {}~{}>'.format(c.BOTsellmarket, c.BOTsell_size_asset, sell_amount_max, sell_amount_max_sse, sell_amount_min, sell_amount_min_sse, sell_amount, sell_amount_sse))
