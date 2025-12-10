@@ -94,15 +94,16 @@ def load_config_verify_or_exit():
 
 # check if pricing works or exit
 def pricing_check_or_exit():
-    print('>>>> Internal test >> Checking pricing information for <{0}> <{1}>'.format("USDT", "LTC"))
+    print('>>>> Internal test >> Checking pricing information for <{0}> <{1}> (skipped to save server req rate limit)'.format("USDT", "LTC"))
     
-    # try to get main pricing
-    price_maker = pricing_storage__try_get_price("USDT", "LTC", "cg", 2, 30)
-    if price_maker == 0:
-        print('#### Internal test >> failed >> pricing not available')
-        sys.exit(1)
+    # Test skip to save req number to server
+        # try to get main pricing
+        # ~ price_maker = pricing_storage__try_get_price("USDT", "LTC", "cg", 2, 30)
+        # ~ if price_maker == 0:
+            # ~ print('#### Internal test >> failed >> pricing not available')
+            # ~ sys.exit(1)
     
-    print('>>>> Internal test >> Get pricing information for <{0}> <{1}> <{2}> >> success'.format("USDT", "LTC", price_maker))
+    # ~ print('>>>> Internal test >> Get pricing information for <{0}> <{1}> <{2}> >> success'.format("USDT", "LTC", price_maker))
 
 def proxy_server__init_preconfig():
     glob.d.proxy_server__server = None
