@@ -143,6 +143,7 @@ def pricing_storage__update_data_redirect(data_redirect = {}):
 def pricing_storage__try_get_price(maker, taker, price_provider = None, try_num = None, try_sleep = None, try_get_price_fn = None, allow_redirect = True):
     
     final_price = 0
+    virtual_price = 0
     
     print('>>>> Pricing storage >> START >> maker/taker {0}/{1}'.format(maker, taker))
     
@@ -196,16 +197,22 @@ def pricing_storage__try_get_price(maker, taker, price_provider = None, try_num 
             virtual_price = glob.d.pricing_storage.data.get(pair, {}).get('price', 0)
             price_time = glob.d.pricing_storage.data.get(pair, {}).get('time', 0)
             if virtual_price != 0:
-                print('>>>> Pricing storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+                if (time.time() - price_time) > glob.d.pricing_storage.update_interval:
+                    print('>>>> Pricing storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached outdated price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+                else:
+                    print('>>>> Pricing storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
                 
             # also try reversed pair and do 1/virtual_price
-            if virtual_price == 0:
+            if virtual_price == 0 or (time.time() - price_time) > glob.d.pricing_storage.update_interval:
                 pair_r = pricing_storage__get_pair_id__(virtual_taker, virtual_maker, price_provider)
                 virtual_price = glob.d.pricing_storage.data.get(pair_r, {}).get('price', 0)
                 price_time = glob.d.pricing_storage.data.get(pair_r, {}).get('time', 0)
                 if virtual_price != 0:
                     virtual_price = 1/virtual_price
-                    print('>>>> Pricing storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached 1/price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+                    if (time.time() - price_time) > glob.d.pricing_storage.update_interval:
+                        print('>>>> Pricing storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached outdated 1/price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+                    else:
+                        print('>>>> Pricing storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached 1/price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
                 
             # if price is not found, try to update price
             if virtual_price == 0:
@@ -215,7 +222,7 @@ def pricing_storage__try_get_price(maker, taker, price_provider = None, try_num 
             # if price is found but out of date, try to update price
             elif (time.time() - price_time) > glob.d.pricing_storage.update_interval:
                 virtual_price = pricing_storage__try_update_price__(virtual_maker, virtual_taker, price_provider, try_num, try_sleep, try_get_price_fn)
-                print('>>>> Pricing storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> timeout, found new remote price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+                print('>>>> Pricing storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> timeout, found updated remote price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
         
     final_price = virtual_maker_price * virtual_price / virtual_taker_price
     print('>>>> Pricing storage >> FINISH >> virtual_maker_price * virtual_price / virtual_taker_price >> {0} = {1} * {2} / {3}\n'.format(final_price, virtual_maker_price, virtual_price, virtual_taker_price))
