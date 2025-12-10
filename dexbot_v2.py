@@ -828,50 +828,52 @@ def feature__maker_price__pricing_update():
     return price_maker_used
 
 # check if pricing works or exit
-def pricing_check_or_exit():
+def pricing_check_or_error():
     global c, s, d
     print('>>>> Checking pricing information for <{0}> <{1}>'.format(c.BOTsellmarket, c.BOTbuymarket))
     
     # check if sell and buy market are not same
     if c.BOTsellmarket == c.BOTbuymarket:
-        print('ERROR: Maker and taker asset cannot be the same')
-        sys.exit(1)
+        print('## ERROR >> Maker and taker asset cannot be the same')
+        return 1
     
     # try to get main pricing
     price_maker = feature__maker_price__pricing_update()
     if price_maker == 0:
-        print('#### Main pricing not available')
-        sys.exit(1)
+        print('## ERROR >> Main pricing not available')
+        return 1
     
     # try to get initial price of asset which balance save size is set in
     price__balance_save_asset = feature__balance_save_asset__pricing_update()
     if price__balance_save_asset == 0:
-        print('#### balance save asset pricing not available')
-        sys.exit(1)
+        print('## ERROR >> balance save asset pricing not available')
+        return 1
     
     # try to get initial price of asset vs maker in which is dynamic slide zero set
     price_slide_dyn_asset = feature__slide_dyn__asset_pricing_update()
     if price_slide_dyn_asset == 0:
-        print('#### dynamic slide asset pricing not available')
-        sys.exit(1)
+        print('## ERROR >> dynamic slide asset pricing not available')
+        return 1
     
     # try to get initial price of asset vs maker in which are orders sizes set, ie USD
     price_sell_size_asset = feature__sell_size_asset__pricing_update()
     if price_sell_size_asset == 0:
-        print('#### Sell size asset pricing not available')
-        sys.exit(1)
+        print('## ERROR >> Sell size asset pricing not available')
+        return 1
     
     # initial static boundary pricing
     price_boundary = sboundary__pricing_init(c.BOTsellmarket, c.BOTbuymarket, c.BOTaction_arg, pricing_storage__try_get_price)
     if price_boundary == 0:
-        print('#### Static boundary pricing not available')
-        sys.exit(1)
+        print('## ERROR >> Static boundary pricing not available')
+        return 1
         
     # initial relative boundary pricing
     price_boundary = rboundary__pricing_init(c.BOTsellmarket, c.BOTbuymarket, c.BOTaction_arg, pricing_storage__try_get_price)
     if price_boundary == 0:
-        print('#### Relative boundary pricing not available')
-        sys.exit(1)
+        print('## ERROR >> Relative boundary pricing not available')
+        return 1
+    
+    return 0
     
 # price of asset which balance save size is set in initialization
 def feature__balance_save_asset__init_preconfig():
@@ -1738,9 +1740,10 @@ if __name__ == '__main__':
     
     do_utils_and_exit() # if some utility are planned do them and exit program
     
+    do_utils_cancel_orders_address()
     
-    pricing_check_or_exit() # check if pricing works
-    
+    if pricing_check_or_error() != 0: # check if pricing works
+        sys.exit(1)
     
     update_balances() # update balances information
     
