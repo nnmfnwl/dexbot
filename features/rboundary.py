@@ -181,7 +181,7 @@ def rboundary__pricing_init(maker, taker, action, get_price_fn = rboundary__get_
             print('>> INFO >> rboundary >> pricing initialization >> restored from tmp cfg')
         # if pricing restore failed, then run normal pricing init
         else:
-            print('>> INFO >> rboundary >> pricing initialization >> restored from tmp cfg failed')
+            print('>> INFO >> rboundary >> pricing initialization >> restore from tmp cfg failed')
     
     # if pricing restore not been called or failed, do normal initialization
     if d.rboundary__price_initial == 0:
