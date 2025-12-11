@@ -40,7 +40,7 @@ def rboundary__init_preconfig__():
     c.rboundary__max_track_asset = False
     # enable disable minimum boundary tracking if other asset is specified
     c.rboundary__min_track_asset = False
-    # reverse 1/x price, usable when manually set initial center price
+    # reverse 1/x price, usable only when manually set initial center price
     c.rboundary__price_reverse = False
     # enable disable to cancel orders when reaching maximum boundary
     c.rboundary__max_cancel = False
