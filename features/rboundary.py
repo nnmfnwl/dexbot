@@ -58,6 +58,7 @@ def rboundary__init_preconfig__():
     # maker to taker
     d.rboundary__price_initial = 0
     # maker to specific asset
+    c.rboundary__price_asset_initial = 0
     d.rboundary__price_asset_initial = 0
     # initial specific asset to taker
     d.rboundary__price_current = 0
@@ -101,7 +102,7 @@ def rboundary__load_config_postparse(args):
     
     c.rboundary__asset = args.rboundary_asset
     
-    d.rboundary__price_asset_initial = float(args.rboundary_price_initial)
+    c.rboundary__price_asset_initial = float(args.rboundary_price_initial)
     
     c.rboundary__max = float(args.rboundary_max)
     c.rboundary__min = float(args.rboundary_min)
@@ -154,6 +155,7 @@ def rboundary__get_price_cb__(maker, taker):
 def rboundary__pricing_init(maker, taker, action, get_price_fn = rboundary__get_price_cb__):
     
     if c.rboundary__asset == "":
+        # asset must be by default always taker because there exist no asset tracking between just two assets, so price updates will be internally always 1
         c.rboundary__asset = taker
     
     d.rboundary__maker = maker
@@ -164,8 +166,6 @@ def rboundary__pricing_init(maker, taker, action, get_price_fn = rboundary__get_
     d.rboundary__id_price_asset_initial = 'feature__rboundary__price_asset_initial' + c.rboundary__asset
     d.rboundary__id_price_current = 'feature__rboundary__price_current' + c.rboundary__asset
     
-    print('>> INFO >> rboundary >> pricing initialization >> started')
-
     # try to restore pricing from tmp cfg if requested
     if action == 'restore':
         print('>> INFO >> rboundary >> pricing initialization >> trying to restore configuration from tmp cfg')
@@ -178,20 +178,63 @@ def rboundary__pricing_init(maker, taker, action, get_price_fn = rboundary__get_
             d.rboundary__price_asset_initial = price_asset_initial
             d.rboundary__price_current = price_current
             rboundary__pricing_update()
-            print('>> INFO >> rboundary >> pricing initialization >> restored from tmp cfg')
+            print('>> INFO >> rboundary >> pricing initialization >> restore from tmp cfg >> success')
         # if pricing restore failed, then run normal pricing init
         else:
-            print('>> INFO >> rboundary >> pricing initialization >> restore from tmp cfg failed')
+            print('>> INFO >> rboundary >> pricing initialization >> restore from tmp cfg >> failed')
     
     # if pricing restore not been called or failed, do normal initialization
     if d.rboundary__price_initial == 0:
-        d.rboundary__price_initial = rboundary__pricing_update()
-        feature__tmp_cfg__set_value(d.rboundary__id_price_initial, d.rboundary__price_initial, True)
         print('>> INFO >> rboundary >> pricing initialization >> normal init')
-    
-    print('>> INFO >> rboundary >> pricing initialization >> maker to asset to taker {}/{}/{} asset-initial/initial/current {}/{}/{}'.format(maker, c.rboundary__asset, taker, d.rboundary__price_asset_initial, d.rboundary__price_initial, d.rboundary__price_current))
-    
+        
+        # static initial price is not set
+        if c.rboundary__price_asset_initial == 0:
+            d.rboundary__price_asset_initial = d.rboundary__get_price_fn(d.rboundary__maker, c.rboundary__asset)
+            if d.rboundary__price_asset_initial != 0:
+                # if asset initial price load success then finally update pricing and set initial price
+                d.rboundary__price_initial = rboundary__pricing_update()
+                if d.rboundary__price_initial != 0:
+                    feature__tmp_cfg__set_value(d.rboundary__id_price_asset_initial, d.rboundary__price_asset_initial, False)
+                    feature__tmp_cfg__set_value(d.rboundary__id_price_initial, d.rboundary__price_initial, True)
+                    print("*** INFO >> rboundary >> pricing init >> remote, not reversed: <{}/{}/{}>: asset-initial/initial/current {}/{}/{} >> success".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial, d.rboundary__price_initial, d.rboundary__price_current))
+                else:
+                    print("*** ERR >> rboundary >> pricing init >> remote, not reversed: <{}/{}/{}>: asset-initial/initial/current {}/{}/{} >> failed".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial, d.rboundary__price_initial, d.rboundary__price_current))
+            else:
+                print("*** ERR >> rboundary >> pricing init >> remote, not reversed: <{}/{}/{}>: asset-initial/initial/current {}/{}/{} >> failed".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial, d.rboundary__price_initial, d.rboundary__price_current))
+                
+        # static initial price is set as not reversed
+        elif c.rboundary__price_reverse is False:
+            # if asset initial price load success then finally update pricing and set initial price
+            d.rboundary__price_asset_initial = c.rboundary__price_asset_initial
+            d.rboundary__price_initial = rboundary__pricing_update()
+            if d.rboundary__price_initial != 0:
+                feature__tmp_cfg__set_value(d.rboundary__id_price_asset_initial, d.rboundary__price_asset_initial, False)
+                feature__tmp_cfg__set_value(d.rboundary__id_price_initial, d.rboundary__price_initial, True)
+                print("*** INFO >> rboundary >> pricing init >> manual, not reversed: <{}/{}/{}>: asset-initial/initial/current {}/{}/{} >> success".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial, d.rboundary__price_initial, d.rboundary__price_current))
+            else:
+                print("*** ERR >> rboundary >> pricing init >> manual, not reversed: <{}/{}/{}>: asset-initial/initial/current {}/{}/{} >> failed".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial, d.rboundary__price_initial, d.rboundary__price_current))
+        
+        # static initial price is set as reversed
+        else:
+            # we get default final price first
+            d.rboundary__price_asset_initial = d.rboundary__get_price_fn(d.rboundary__maker, d.rboundary__taker)
+            # and we convert back taker to asset by its manual initial price
+            d.rboundary__price_asset_initial = d.rboundary__price_asset_initial * c.rboundary__price_asset_initial
+            # if remote price load success
+            if d.rboundary__price_asset_initial != 0:
+                # if asset initial price load success then finally update pricing and set initial price
+                d.rboundary__price_initial = rboundary__pricing_update()
+                if d.rboundary__price_initial != 0:
+                    feature__tmp_cfg__set_value(d.rboundary__id_price_asset_initial, d.rboundary__price_asset_initial, False)
+                    feature__tmp_cfg__set_value(d.rboundary__id_price_initial, d.rboundary__price_initial, True)
+                    print("*** INFO >> rboundary >> pricing init >> manual, reversed: <{}/{}/{}>: asset-initial/initial/current {}/{}/{} >> success".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial, d.rboundary__price_initial, d.rboundary__price_current))
+                else:
+                    print("*** ERR >> rboundary >> pricing init >> manual, reversed: <{}/{}/{}>: asset-initial/initial/current {}/{}/{} >> failed".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial, d.rboundary__price_initial, d.rboundary__price_current))
+            else:
+                print("*** ERR >> rboundary >> pricing init >> manual, reversed: <{}/{}/{}>: asset-initial/initial/current {}/{}/{} >> failed".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial, d.rboundary__price_initial, d.rboundary__price_current))
+                
     return d.rboundary__price_initial
+    
     
 # relative boundaries can be specified as relative to maker taker market so price must be checked separately
 def rboundary__pricing_update():
@@ -200,47 +243,20 @@ def rboundary__pricing_update():
     
     # current price is loaded if is not already set or live tracking of asset price is activated
     if c.rboundary__max_track_asset is True or c.rboundary__min_track_asset is True or d.rboundary__price_current == 0:
-        # normal not reversed pricing system: 1 Maker or Asset to Taker price
-        if c.rboundary__price_reverse is False:
-            # solve custom asset pricing first, it could match also taker asset by default
-            if d.rboundary__price_asset_initial == 0:
-                d.rboundary__price_asset_initial = d.rboundary__get_price_fn(d.rboundary__maker, c.rboundary__asset)
-                feature__tmp_cfg__set_value(d.rboundary__id_price_asset_initial, d.rboundary__price_asset_initial, False)
-            
-            if d.rboundary__price_asset_initial != 0:
-                tmp_rboundary__price_current = d.rboundary__get_price_fn(c.rboundary__asset, d.rboundary__taker)
-                if tmp_rboundary__price_current != 0:
-                    tmp_rboundary__price_current = tmp_rboundary__price_current * d.rboundary__price_asset_initial
-                    d.rboundary__price_current = tmp_rboundary__price_current
-                    feature__tmp_cfg__set_value(d.rboundary__id_price_current, d.rboundary__price_current, False)
-                    print(">>>> INFO >> rboundary >> pricing update >> not reversed: <{}/{}/{}>: <{}/{}> >> success".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial, tmp_rboundary__price_current))
-                else:
-                    print("**** ERROR >> rboundary >> pricing update >> not reversed: <{}/{}>: <{}> >> failed".format(c.rboundary__asset, d.rboundary__taker, tmp_rboundary__price_current))
+        if d.rboundary__price_asset_initial != 0:
+            tmp_rboundary__price_current = d.rboundary__get_price_fn(c.rboundary__asset, d.rboundary__taker)
+            if tmp_rboundary__price_current != 0:
+                tmp_rboundary__price_current = tmp_rboundary__price_current * d.rboundary__price_asset_initial
+                d.rboundary__price_current = tmp_rboundary__price_current
+                feature__tmp_cfg__set_value(d.rboundary__id_price_current, d.rboundary__price_current, False)
+                print(">>>> INFO >> rboundary >> pricing update >> <{}/{}/{}>: <{}/{}> >> success".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial, tmp_rboundary__price_current))
             else:
-                print("*** ERR >> rboundary >> pricing update >> not reversed: <{}/{}/{}>: asset initial <{}> >> failed".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial))
-        # reversed pricing system: 1 
+                print("**** ERROR >> rboundary >> pricing update >> <{}/{}/{}>: <{}/{}> >> failed".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial, tmp_rboundary__price_current))
         else:
-            # solve custom asset pricing first, it could match also taker asset by default
-            if d.rboundary__price_asset_initial == 0:
-                d.rboundary__price_asset_initial = d.rboundary__get_price_fn(d.rboundary__taker, c.rboundary__asset)
-                feature__tmp_cfg__set_value(d.rboundary__id_price_asset_initial, d.rboundary__price_asset_initial, False)
-            
-            if d.rboundary__price_asset_initial != 0:
-                tmp_rboundary__price_current = d.rboundary__get_price_fn(c.rboundary__asset, d.rboundary__maker)
-                if tmp_rboundary__price_current != 0:
-                    tmp_rboundary__price_current = tmp_rboundary__price_current * d.rboundary__price_asset_initial
-                    # reverse price
-                    tmp_rboundary__price_current = 1/tmp_rboundary__price_current
-                    d.rboundary__price_current = tmp_rboundary__price_current
-                    feature__tmp_cfg__set_value(d.rboundary__id_price_current, d.rboundary__price_current, False)
-                    print(">>>> INFO >> rboundary >> pricing update >> reversed: <{}/{}>: <{}> >> success".format(c.rboundary__asset, d.rboundary__taker, tmp_rboundary__price_current))
-                else:
-                    print("**** ERROR >> rboundary >> pricing update >> reversed: <{}/{}>: <{}> >> failed".format(c.rboundary__asset, d.rboundary__taker, tmp_rboundary__price_current))
-            else:
-                print("*** ERR >> rboundary >> pricing update >> reversed: <{}/{}/{}>: asset initial <{}> >> failed".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial))
+            print("*** ERR >> rboundary >> pricing update >> <{}/{}/{}>: asset initial <{}> >> not loaded >> failed".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_asset_initial))
     else:
         tmp_rboundary__price_current = d.rboundary__price_current
-        
+    
     return tmp_rboundary__price_current
 
 #
@@ -252,20 +268,11 @@ def rboundary__get_max__():
     if c.rboundary__max != 0:
         # if asset track is disabled
         if c.rboundary__max_track_asset is False:
-            # if reverse pricing is disabled
-            if c.rboundary__price_reverse is False:
-                maximum = d.rboundary__price_initial * c.rboundary__max
-                print(">>>> INFO >> rboundary >> get maximum >> track no, reverse no, initial * max = final {} * {} = {}".format(d.rboundary__price_initial, c.rboundary__max, maximum))
-            else:
-                maximum = d.rboundary__price_initial * c.rboundary__max
-                print(">>>> INFO >> rboundary >> get maximum >> track no, reverse yes, initial * max = final {} * {} = {}".format(d.rboundary__price_initial, c.rboundary__max, maximum))
+            maximum = d.rboundary__price_initial * c.rboundary__max
+            print(">>>> INFO >> rboundary >> get maximum >> track no, initial * max = final {} * {} = {}".format(d.rboundary__price_initial, c.rboundary__max, maximum))
         else:
-            if c.rboundary__price_reverse is False:
-                maximum = d.rboundary__price_current * c.rboundary__max
-                print(">>>> INFO >> rboundary >> get maximum >> track yes, reverse no, current * max = final {} * {} = {}".format(d.rboundary__price_current, c.rboundary__max, maximum))
-            else:
-                maximum = d.rboundary__price_current * c.rboundary__max
-                print(">>>> INFO >> rboundary >> get maximum >> track yes, reverse yes, current * max = final {} * {} = {}".format(d.rboundary__price_current, c.rboundary__max, maximum))
+            maximum = d.rboundary__price_current * c.rboundary__max
+            print(">>>> INFO >> rboundary >> get maximum >> track yes, current * max = final {} * {} = {}".format(d.rboundary__price_current, c.rboundary__max, maximum))
         
     return maximum
 
@@ -277,20 +284,11 @@ def rboundary__get_min__():
     if c.rboundary__min != 0:
         # if asset track is disabled
         if c.rboundary__min_track_asset is False:
-            # if reverse pricing is disabled
-            if c.rboundary__price_reverse is False:
-                minimum = d.rboundary__price_initial * c.rboundary__min
-                print(">>>> INFO >> rboundary >> get minimim >> track no, reverse no, initial * min = final {} * {} = {}".format(d.rboundary__price_initial, c.rboundary__min, minimum))
-            else:
-                minimum = d.rboundary__price_initial * c.rboundary__min 
-                print(">>>> INFO >> rboundary >> get minimim >> track no, reverse yes, initial * min = final {} * {} = {}".format(d.rboundary__price_initial, c.rboundary__min, minimum))
+            minimum = d.rboundary__price_initial * c.rboundary__min
+            print(">>>> INFO >> rboundary >> get minimim >> track no, initial * min = final {} * {} = {}".format(d.rboundary__price_initial, c.rboundary__min, minimum))
         else:
-            if c.rboundary__price_reverse is False:
-                minimum = d.rboundary__price_current * c.rboundary__min
-                print(">>>> INFO >> rboundary >> get minimim >> track yes, reverse no, current * min = final {} * {} = {}".format(d.rboundary__price_current, c.rboundary__min, minimum))
-            else:
-                minimum = d.rboundary__price_current * c.rboundary__min 
-                print(">>>> INFO >> rboundary >> get minimim >> track yes, reverse yes, current * min = final {} * {} = {}".format(d.rboundary__price_current, c.rboundary__min, minimum))
+            minimum = d.rboundary__price_current * c.rboundary__min
+            print(">>>> INFO >> rboundary >> get minimim >> track yes, current * min = final {} * {} = {}".format(d.rboundary__price_current, c.rboundary__min, minimum))
             
     return minimum
 
