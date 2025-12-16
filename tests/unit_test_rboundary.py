@@ -34,9 +34,6 @@ def unit_test__rboundary():
     args.config = "unit_test_rboundaryy"
     args.rboundary_asset = "USDT"
     
-    d.rboundary__price_initial = 0
-    d.rboundary__price_current = 0
-    
     args.rboundary_max = float(4)
     args.rboundary_min = float(1)
     
@@ -180,11 +177,11 @@ def unit_test__rboundary():
     ####################################################################
     ## test 2 reset relative boundary with another values
     
-    d.rboundary__price_initial = 0
-    d.rboundary__price_current = 0
+    rboundary__init_preconfig__()
     
     # force arguments
     args.rboundary_asset = "USDT"
+    args.rboundary_price_initial = float(0.01)
     
     args.rboundary_max = float(3)
     args.rboundary_min = float(0.9)
@@ -201,6 +198,14 @@ def unit_test__rboundary():
     
     print('>> INFO >> TEST 2 >> rboundary__load_config_postparse')
     rboundary__load_config_postparse(args)
+    
+    print("***********************************************************")
+    print("***********************************************************")
+    print("c.rboundary__price_asset_initial {} ".format(c.rboundary__price_asset_initial))
+    print("d.rboundary__price_asset_initial {} ".format(d.rboundary__price_asset_initial))
+    print("d.rboundary__price_initial {} ".format(d.rboundary__price_initial))
+    print("***********************************************************")
+    print("***********************************************************")
     
     ####################################################################
     ## Test 2 configuration verification 
@@ -220,13 +225,13 @@ def unit_test__rboundary():
     ####################################################################
     ## Test 2 pricing init reverse
     
-    print('>> INFO >> TEST 2 >> rboundary__pricing_init 0.01')
-    glob.test_rboundary_price=0.01
+    print('>> INFO >> TEST 2 >> rboundary_price_initial 0.01')
+    glob.test_rboundary_price=1000
     price_boundary = rboundary__pricing_init("BTC", "BLOCK", 'none', unit_test__rboundary__get_price_1)
     if price_boundary == 10000:
         print('>> INFO >> TEST 227 >> rboundary__pricing_init >> {} >> success'.format(price_boundary))
     else:
-        print('** ERROR >> TEST 229 >> rboundary__pricing_init >> {} >> failed'.format(price_boundary))
+        print('** ERROR >> TEST 231 >> rboundary__pricing_init >> {} >> failed'.format(price_boundary))
         sys.exit(1)
     
     ####################################################################
