@@ -246,7 +246,7 @@ botconfig = str(
         "--sboundary_min_track_asset {cc_sboundary_min_track_asset}"
     
     # Enable reversed pricing as 1/X, ie BLOCK/BTC vs BTC/BLOCK pricing can set like 0.000145 on both bot trading sides, instead of 0.000145 vs 6896.55.
-        "--sboundary_max_min_reverse {cc_sboundary_max_min_reverse}"
+        "--sboundary_price_reverse {cc_sboundary_price_reverse}"
     
     # maximum boundary hit behavior True/False
     # cancel orders on max boundary. The reason can be user is not willing to continue selling his maker-asset once price is too high bc expected bullmarket and user rather start staking
