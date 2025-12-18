@@ -20,7 +20,7 @@
    * [Discord](https://discord.gg/2e6s7H8)
 
 ### Complete Setup
-   * You can completely skip going over this readme/installation process and use one of below options to setup complete DEXBOT and BlockDX environment even from scratch on Debian compatible operating systems:
+   * You can completely skip going over this readme/installation process and use one of below options to setup complete DEXBOT and BlockDX environment even from scratch on Debian/Ubuntu compatible operating systems:
      - Interactive/automatic command line Dexsetup framework installer: [Dexsetup.installer](https://github.com/nnmfnwl/dexsetup.cli.installer)
      - Dexsetup framework: [Dexsetup](https://github.com/nnmfnwl/dexsetup/tree/merge.2025.02.06)
 
@@ -141,3 +141,4 @@ python3 dexbot_v2_run.py --config strategy_LTC_BLOCK_strategy1 --cancelall
 
 ### Donations
 * Many options to support [Dexbot](https://github.com/nnmfnwl/dexbot/tree/merge.2025.03.26), [Dexsetup](https://github.com/nnmfnwl/dexsetup/tree/merge.2025.02.06), [Dexsetup.installer](https://github.com/nnmfnwl/dexsetup.cli.installer) and [Dexsetup.videos](https://github.com/nnmfnwl/dexsetup.videos) continuous development, testing, liquidity providing and making video tutorials could be found on Dexsetup Installer page [here](https://github.com/nnmfnwl/dexsetup.cli.installer#9-donations)
+
