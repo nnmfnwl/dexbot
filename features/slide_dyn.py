@@ -14,6 +14,12 @@ from features.tmp_cfg import *
 # preconfiguration  initialization
 def feature__slide_dyn__init_preconfig__():
     
+    c.BOTslide_dyn_asset = None
+    
+    d.feature__slide_dyn__maker = None
+    
+    d.feature__slide_dyn__taker = None
+    
     d.feature__slide_dyn__value = 0
     
     d.feature__slide_dyn__zero_asset_price = 0
@@ -113,99 +119,99 @@ def feature__slide_dyn__load_config_verify():
     if c.BOTslide_dyn_zero != -1 and c.BOTslide_dyn_zero != -2:
         # type=relative zero more than 1 or less than 0 does not make sense
         if c.BOTslide_dyn_zero_type == 'relative' and (c.BOTslide_dyn_zero > 1 or c.BOTslide_dyn_zero < 0):
-            print('**** ERROR, <slide_dyn_zero> value <{0}> is invalid'.format(c.BOTslide_dyn_zero))
+            print('** ERROR >> dynamic slide >> <slide_dyn_zero> value <{0}> is invalid'.format(c.BOTslide_dyn_zero))
             error_num += 1
         # type=static value less than 0 does not make sense
         if c.BOTslide_dyn_zero_type == 'static' and (c.BOTslide_dyn_zero < 0):
-            print('**** ERROR, <slide_dyn_zero> value <{0}> is invalid'.format(c.BOTslide_dyn_zero))
+            print('** ERROR >> dynamic slide >> <slide_dyn_zero> value <{0}> is invalid'.format(c.BOTslide_dyn_zero))
             error_num += 1
     
     # SLIDE DYNAMIC FOR MAKER SELL OPERATIONS
     if c.BOTslide_dyn_sell_ignore < 0:
-        print('**** ERROR, <slide_dyn_sell_ignore> value <{0}> is invalid'.format(c.BOTslide_dyn_sell_ignore))
+        print('** ERROR >> dynamic slide >> <slide_dyn_sell_ignore> value <{0}> is invalid'.format(c.BOTslide_dyn_sell_ignore))
         error_num += 1
     
     if c.BOTslide_dyn_sell_threshold <= 0:
-        print('**** ERROR, <BOTslide_dyn_sell_threshold> value <{0}> is invalid'.format(c.BOTslide_dyn_sell_threshold))
+        print('** ERROR >> dynamic slide >> <BOTslide_dyn_sell_threshold> value <{0}> is invalid'.format(c.BOTslide_dyn_sell_threshold))
         error_num += 1
     
     if c.BOTslide_dyn_type == "relative":
         if c.BOTslide_dyn_sell_ignore > 1:
-            print('**** ERROR, relative <slide_dyn_sell_ignore> value <{0}> is invalid'.format(c.BOTslide_dyn_sell_ignore))
+            print('** ERROR >> dynamic slide >> relative <slide_dyn_sell_ignore> value <{0}> is invalid'.format(c.BOTslide_dyn_sell_ignore))
             error_num += 1
     
         if c.BOTslide_dyn_sell_threshold > 1:
-            print('**** ERROR, relative <BOTslide_dyn_sell_threshold> value <{0}> is invalid'.format(c.BOTslide_dyn_sell_threshold))
+            print('** ERROR >> dynamic slide >> relative <BOTslide_dyn_sell_threshold> value <{0}> is invalid'.format(c.BOTslide_dyn_sell_threshold))
             error_num += 1
     
     if c.BOTslide_dyn_sell_step < 0:
-        print('**** WARNING, <BOTslide_dyn_sell_step> value <{0}> seems invalid, but yes it can be negative'.format(c.BOTslide_dyn_sell_step))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
+        print('++ WARNING >> dynamic slide >> <BOTslide_dyn_sell_step> value <{0}> seems invalid, but yes it can be negative'.format(c.BOTslide_dyn_sell_step))
+        print('++ HINT >> dynamic slide >> If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
         crazy_num += 1
     
     if c.BOTslide_dyn_sell_step_multiplier < 0:
-        print('**** ERROR, <BOTslide_dyn_sell_step_multiplier> value <{0}> is invalid, must be positive'.format(c.BOTslide_dyn_sell_step_multiplier))
+        print('** ERROR >> dynamic slide >> <BOTslide_dyn_sell_step_multiplier> value <{0}> is invalid, must be positive'.format(c.BOTslide_dyn_sell_step_multiplier))
         error_num += 1
         
     if c.BOTslide_dyn_sell_step_multiplier < 1:
-        print('**** WARNING, <BOTslide_dyn_sell_step_multiplier> value <{0}> seems invalid, but yes it can be less than 1'.format(c.BOTslide_dyn_sell_step_multiplier))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
+        print('++ ERROR >> dynamic slide >> <BOTslide_dyn_sell_step_multiplier> value <{0}> seems invalid, but yes it can be less than 1'.format(c.BOTslide_dyn_sell_step_multiplier))
+        print('++ HINT >> dynamic slide >> If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
         crazy_num += 1
     
     if c.BOTslide_dyn_sell_step > 1 and c.BOTslide_dyn_sell_step < -1:
-        print('**** WARNING, <BOTslide_dyn_sell_step> value <{0}> seems invalid, absolute value more than 1 means 100% slide change, it is possble but:'.format(c.BOTslide_dyn_sell_step))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
+        print('++ WARNING >> dynamic slide >> <BOTslide_dyn_sell_step> value <{0}> seems invalid, absolute value more than 1 means 100% slide change, it is possble but:'.format(c.BOTslide_dyn_sell_step))
+        print('++ HINT >> dynamic slide >> If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
         crazy_num += 1
     
     if (c.BOTslide_dyn_sell_max > 0 and c.BOTslide_dyn_sell_step < 0) or (c.BOTslide_dyn_sell_max < 0 and c.BOTslide_dyn_sell_step > 0):
-        print('**** ERROR, <BOTslide_dyn_sell_max> value <{0}> is invalid, must be positive or negative number same as <BOTslide_dyn_sell_step>'.format(c.BOTslide_dyn_sell_max))
+        print('** ERROR >> dynamic slide >> <BOTslide_dyn_sell_max> value <{0}> is invalid, must be positive or negative number same as <BOTslide_dyn_sell_step>'.format(c.BOTslide_dyn_sell_max))
         error_num += 1
     
     # SLIDE DYNAMIC FOR MAKER BUY OPERATIONS
     if c.BOTslide_dyn_buy_ignore < 0:
-        print('**** ERROR, <slide_dyn_buy_ignore> value <{0}> is invalid'.format(c.BOTslide_dyn_buy_ignore))
+        print('** ERROR >> dynamic slide >> <slide_dyn_buy_ignore> value <{0}> is invalid'.format(c.BOTslide_dyn_buy_ignore))
         error_num += 1
     
     if c.BOTslide_dyn_buy_threshold <= 0:
-        print('**** ERROR, <BOTslide_dyn_buy_threshold> value <{0}> is invalid'.format(c.BOTslide_dyn_buy_threshold))
+        print('** ERROR >> dynamic slide >> <BOTslide_dyn_buy_threshold> value <{0}> is invalid'.format(c.BOTslide_dyn_buy_threshold))
         error_num += 1
     
     if c.BOTslide_dyn_type == "relative":
         if c.BOTslide_dyn_buy_ignore > 1:
-            print('**** ERROR, relative <slide_dyn_buy_ignore> value <{0}> is invalid'.format(c.BOTslide_dyn_buy_ignore))
+            print('** ERROR >> dynamic slide >> relative <slide_dyn_buy_ignore> value <{0}> is invalid'.format(c.BOTslide_dyn_buy_ignore))
             error_num += 1
     
         if c.BOTslide_dyn_buy_threshold > 1:
-            print('**** ERROR, relative <BOTslide_dyn_buy_threshold> value <{0}> is invalid'.format(c.BOTslide_dyn_buy_threshold))
+            print('** ERROR >> dynamic slide >> relative <BOTslide_dyn_buy_threshold> value <{0}> is invalid'.format(c.BOTslide_dyn_buy_threshold))
             error_num += 1
     
     if c.BOTslide_dyn_buy_step < 0:
-        print('**** WARNING, <BOTslide_dyn_buy_step> value <{0}> seems invalid, but yes it can be negative'.format(c.BOTslide_dyn_buy_step))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
+        print('++ WARNING >> dynamic slide >> <BOTslide_dyn_buy_step> value <{0}> seems invalid, but yes it can be negative'.format(c.BOTslide_dyn_buy_step))
+        print('++ HINT >> dynamic slide >> If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
         crazy_num += 1
     
     if c.BOTslide_dyn_buy_step_multiplier < 0:
-        print('**** ERROR, <BOTslide_dyn_buy_step_multiplier> value <{0}> is invalid, must be positive'.format(c.BOTslide_dyn_buy_step_multiplier))
+        print('** ERROR >> dynamic slide >> <BOTslide_dyn_buy_step_multiplier> value <{0}> is invalid, must be positive'.format(c.BOTslide_dyn_buy_step_multiplier))
         error_num += 1
         
     if c.BOTslide_dyn_buy_step_multiplier < 1:
-        print('**** WARNING, <BOTslide_dyn_buy_step_multiplier> value <{0}> seems invalid, but yes it can be less than 1'.format(c.BOTslide_dyn_buy_step_multiplier))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
+        print('++ WARNING >> dynamic slide >> <BOTslide_dyn_buy_step_multiplier> value <{0}> seems invalid, but yes it can be less than 1'.format(c.BOTslide_dyn_buy_step_multiplier))
+        print('++ HINT >> dynamic slide >> If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
         crazy_num += 1
     
     if c.BOTslide_dyn_buy_step > 1 and c.BOTslide_dyn_buy_step < -1:
-        print('**** WARNING, <BOTslide_dyn_buy_step> value <{0}> seems invalid, absolute value more than 1 means 100% slide change, it is possble but:'.format(c.BOTslide_dyn_buy_step))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
+        print('++ WARNING >> dynamic slide >> <BOTslide_dyn_buy_step> value <{0}> seems invalid, absolute value more than 1 means 100% slide change, it is possble but:'.format(c.BOTslide_dyn_buy_step))
+        print('++ HINT >> dynamic slide >> If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
         crazy_num += 1
     
     if (c.BOTslide_dyn_buy_max > 0 and c.BOTslide_dyn_buy_step < 0) or (c.BOTslide_dyn_buy_max < 0 and c.BOTslide_dyn_buy_step > 0):
-        print('**** ERROR, <BOTslide_dyn_buy_max> value <{0}> is invalid, must be positive or negative number same as <BOTslide_dyn_buy_step>'.format(c.BOTslide_dyn_buy_max))
+        print('** ERROR >> dynamic slide >> <BOTslide_dyn_buy_max> value <{0}> is invalid, must be positive or negative number same as <BOTslide_dyn_buy_step>'.format(c.BOTslide_dyn_buy_max))
         error_num += 1
     
     return error_num, crazy_num
 
 def feature__slide_dyn__get_price_cb__(maker, taker):
-    print('**** ERROR >>> dexbot.features.slide_dyn.feature__slide_dyn__get_price_cb__() function is just empty default callback, please replace with pricing_storage__try_get_price')
+    print('** ERROR >> dynamic slide >> dexbot.features.slide_dyn.feature__slide_dyn__get_price_cb__() function is just empty default callback, please replace with pricing_storage__try_get_price')
     return 0
 
 def feature__slide_dyn__init_postconfig(maker, taker, get_price_fn = feature__slide_dyn__get_price_cb__):
@@ -277,11 +283,11 @@ def feature__slide_dyn__init_postpricing():
                 feature__tmp_cfg__set_value("BOTslide_dyn_zero_type", "relative")
                 feature__tmp_cfg__set_value("feature__slide_dyn__zero_value", c.feature__slide_dyn__zero_value)
                 
-            print('>>>> dynamic slide init auto-set <relative> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
+            print('>> INFO >> dynamic slide >> init auto-set <relative> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
             
         else:
             c.feature__slide_dyn__zero_value = c.BOTslide_dyn_zero
-            print('>>>> dynamic slide init manu-set <relative> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
+            print('>> INFO >> dynamic slide >> dynamic slide init manu-set <relative> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
             
     elif c.BOTslide_dyn_zero_type == 'static':
         
@@ -301,16 +307,16 @@ def feature__slide_dyn__init_postpricing():
                 feature__tmp_cfg__set_value("BOTslide_dyn_asset", c.BOTslide_dyn_asset)
                 feature__tmp_cfg__set_value("feature__slide_dyn__zero_value", c.feature__slide_dyn__zero_value)
                 
-            print('>>>> dynamic slide auto auto-set <static> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
+            print('>> INFO >> dynamic slide >> auto auto-set <static> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
         else:
             c.feature__slide_dyn__zero_value = c.BOTslide_dyn_zero
-            print('>>>> dynamic slide init manu-set <static> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
+            print('>> INFO >> dynamic slide >> init manu-set <static> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
     else:
-        print('!!!! internal BUG Detected <BOTslide_dyn_zero_type> is <{}>'.format(c.BOTslide_dyn_zero_type))
+        print('>> FATAL >> dynamic slide >> !!!! internal BUG Detected <BOTslide_dyn_zero_type> is <{}>'.format(c.BOTslide_dyn_zero_type))
         sys.exit(1)
         
 # compute and get dynamic slide value
-def feature__slide_dyn__get_dyn_slide():
+def feature__slide_dyn__update_dyn_slide():
     
     # additional dynamic price slide == dynamic spread == slide_dyn
 
@@ -325,14 +331,11 @@ def feature__slide_dyn__get_dyn_slide():
     # 
     # >> buy and sell dynamic slide is very native market behavior expectation algorithm. as prices will go up and down, up and down bot will profit..., but remember, there are also txfees...
     
-    print('>>>> dynamic_slide >> recomputing')
+    print('>> INFO >> dynamic_slide >> recomputing')
     
     if c.BOTslide_dyn_asset_track is True:
-        while True:
-            if feature__slide_dyn__asset_pricing_update() != 0:
-                break
-            print('#### Pricing of dynamic slide asset not available... waiting to restore...')
-            time.sleep(c.BOTdelayinternalerror)
+        if feature__slide_dyn__asset_pricing_update() == 0:
+            return False
     
     # zero type = relative >> so we get relative value to both balance total
     if c.BOTslide_dyn_zero_type == 'relative':
@@ -420,6 +423,8 @@ def feature__slide_dyn__get_dyn_slide():
         slide_dyn_final = max(slide_dyn_final, tmp_max_final)
     
     # ~ print('>>>> dynamic_slide >> <'+str(case_buy_sell)+'> zero type <')
-    print('>>>> DYNAMIC_SLIDE >> <'+str(case_buy_sell)+'> dyn zero at <'+str(c.BOTslide_dyn_zero_type)+' '+str(c.BOTslide_dyn_zero)+'~'+str(c.feature__slide_dyn__zero_value)+' '+str(tmp_dyn_zero_asset)+'> ~~ <'+str(tmp_bot_slide_dyn_zero)+' '+str(c.BOTsellmarket)+'> maker actual balance <'+str(d.balance_maker_total)+'> maker balance diff <'+str(balance_diff_dirty)+'> maker ignore <'+str(tmp_ignore_dirty)+' '+str(tmp_dyn_asset)+' ~~ '+str(tmp_ignore_final)+' '+str(c.BOTsellmarket)+'> maker balance diff final <'+str(balance_diff_final)+'> slide type <'+str(c.BOTslide_dyn_type)+'> slide step threshold <'+str(tmp_threshold_dirty)+'>~<'+str(tmp_threshold_final)+'> slide dyn step num * size <'+str(slide_dyn_step_num)+'*'+str(tmp_step_final)+'> final dyn slide <'+str(slide_dyn_final)+'> at max <'+str(tmp_max_final)+'>')
+    print('>> INFO >> dynamic slide >> <'+str(case_buy_sell)+'> dyn zero at <'+str(c.BOTslide_dyn_zero_type)+' '+str(c.BOTslide_dyn_zero)+'~'+str(c.feature__slide_dyn__zero_value)+' '+str(tmp_dyn_zero_asset)+'> ~~ <'+str(tmp_bot_slide_dyn_zero)+' '+str(c.BOTsellmarket)+'> maker actual balance <'+str(d.balance_maker_total)+'> maker balance diff <'+str(balance_diff_dirty)+'> maker ignore <'+str(tmp_ignore_dirty)+' '+str(tmp_dyn_asset)+' ~~ '+str(tmp_ignore_final)+' '+str(c.BOTsellmarket)+'> maker balance diff final <'+str(balance_diff_final)+'> slide type <'+str(c.BOTslide_dyn_type)+'> slide step threshold <'+str(tmp_threshold_dirty)+'>~<'+str(tmp_threshold_final)+'> slide dyn step num * size <'+str(slide_dyn_step_num)+'*'+str(tmp_step_final)+'> final dyn slide <'+str(slide_dyn_final)+'> at max <'+str(tmp_max_final)+'>')
     
-    return slide_dyn_final 
+    d.feature__slide_dyn__value = slide_dyn_final
+    
+    return True
