@@ -1239,7 +1239,11 @@ def virtual_orders__prepare_recheck():
         print('#### Pricing main not available... waiting to restore...')
         time.sleep(c.BOTdelayinternalerror)
     
-    d.feature__slide_dyn__value = feature__slide_dyn__get_dyn_slide()
+    while True:
+        if feature__slide_dyn__update_dyn_slide() == True:
+            break
+        print('#### Pricing dynamic slide not available... waiting to restore...')
+        time.sleep(c.BOTdelayinternalerror)
     
     if c.BOTbalance_save_asset_track is True:
         while True:
