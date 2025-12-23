@@ -269,10 +269,10 @@ def rboundary__get_max__():
         # if asset track is disabled
         if c.rboundary__max_track_asset is False:
             maximum = d.rboundary__price_initial * c.rboundary__max
-            print(">>>> INFO >> rboundary >> get maximum >> track no, initial * max = final {} * {} = {}".format(d.rboundary__price_initial, c.rboundary__max, maximum))
+            print(">>>> INFO >> rboundary >> get maximum >> track no >> maker/asset/taker {}/{}/{} >> initial price of maker * max(set as percent) = final >> {} * {} = {}".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker,d.rboundary__price_initial, c.rboundary__max, maximum))
         else:
             maximum = d.rboundary__price_current * c.rboundary__max
-            print(">>>> INFO >> rboundary >> get maximum >> track yes, current * max = final {} * {} = {}".format(d.rboundary__price_current, c.rboundary__max, maximum))
+            print(">>>> INFO >> rboundary >> get maximum >> track yes >> maker/asset/taker {}/{}/{} >> current price of maker * max(set as percent) = final >> {} * {} = {}".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker,d.rboundary__price_current, c.rboundary__max, maximum))
         
     return maximum
 
@@ -285,10 +285,10 @@ def rboundary__get_min__():
         # if asset track is disabled
         if c.rboundary__min_track_asset is False:
             minimum = d.rboundary__price_initial * c.rboundary__min
-            print(">>>> INFO >> rboundary >> get minimim >> track no, initial * min = final {} * {} = {}".format(d.rboundary__price_initial, c.rboundary__min, minimum))
+            print(">>>> INFO >> rboundary >> get minimum >> track no >> maker/asset/taker {}/{}/{} >> initial price of maker * min(set as percent) = final >> {} * {} = {}".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_initial, c.rboundary__min, minimum))
         else:
             minimum = d.rboundary__price_current * c.rboundary__min
-            print(">>>> INFO >> rboundary >> get minimim >> track yes, current * min = final {} * {} = {}".format(d.rboundary__price_current, c.rboundary__min, minimum))
+            print(">>>> INFO >> rboundary >> get minimum >> track yes >> maker/asset/taker {}/{}/{} >> current price of maker * min(set as percent) = final >> {} * {} = {}".format(d.rboundary__maker, c.rboundary__asset, d.rboundary__taker, d.rboundary__price_current, c.rboundary__min, minimum))
             
     return minimum
 
