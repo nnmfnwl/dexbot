@@ -233,10 +233,10 @@ def sboundary__get_max__():
         # if asset track is disabled
         if c.sboundary__max_track_asset is False:
             maximum = d.sboundary__price_initial * c.sboundary__max
-            print(">>>> INFO >> sboundary >> get maximum >> track no, price initial * max = final {} * {} = {}".format(d.sboundary__price_initial, c.sboundary__max, maximum))
+            print(">>>> INFO >> sboundary >> get maximum >> track no >> maker/asset/taker {}/{}/{} >> price initial(price of asset) * max(set in asset) = final >> {} * {} = {}".format(d.sboundary__maker, c.sboundary__asset, d.sboundary__taker, d.sboundary__price_initial, c.sboundary__max, maximum))
         else:
             maximum = d.sboundary__price_current * c.sboundary__max
-            print(">>>> INFO >> sboundary >> get maximum >> track yes, price current * max = final {} * {} = {}".format(d.sboundary__price_current, c.sboundary__max, maximum))
+            print(">>>> INFO >> sboundary >> get maximum >> track yes >> maker/asset/taker {}/{}/{} >> price initial(price of asset) * max(set in asset) = final >> {} * {} = {}".format(d.sboundary__maker, c.sboundary__asset, d.sboundary__taker, d.sboundary__price_current, c.sboundary__max, maximum))
     
     return maximum
 
@@ -250,10 +250,10 @@ def sboundary__get_min__():
         # if asset track is disabled
         if c.sboundary__min_track_asset is False:
             minimum = d.sboundary__price_initial * c.sboundary__min
-            print(">>>> INFO >> sboundary >> get minimum >> track no, price initial * min = final {} * {} = {}".format(d.sboundary__price_initial, c.sboundary__min, minimum))
+            print(">>>> INFO >> sboundary >> get minimum >> track no >> maker/asset/taker {}/{}/{} >> price initial(price of asset) * min(set in asset) = final >> {} * {} = {}".format(d.sboundary__maker, c.sboundary__asset, d.sboundary__taker, d.sboundary__price_initial, c.sboundary__min, minimum))
         else:
             minimum = d.sboundary__price_current * c.sboundary__min
-            print(">>>> INFO >> sboundary >> get minimum >> track yes, price current * min = final {} * {} = {}".format(d.sboundary__price_current, c.sboundary__min, minimum))
+            print(">>>> INFO >> sboundary >> get minimum >> track yes >> maker/asset/taker {}/{}/{} >> price initial(price of asset) * min(set in asset) = final >> {} * {} = {}".format(d.sboundary__maker, c.sboundary__asset, d.sboundary__taker, d.sboundary__price_current, c.sboundary__min, minimum))
             
     return minimum
 
