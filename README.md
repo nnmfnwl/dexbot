@@ -20,8 +20,10 @@
    * [Discord](https://discord.gg/2e6s7H8)
 
 ### Complete Setup
-   * You can skip going over this readme/installation process and use [DEXSETUP](https://github.com/nnmfnwl/dexsetup/tree/main)
-to setup complete DEXBOT and BlockDX even from scratch on Debian compatible operating systems
+   * You can completely skip going over this readme/installation process and use one of below options to setup complete DEXBOT and BlockDX environment even from scratch on Debian/Ubuntu compatible operating systems:
+     - Interactive/automatic command line Dexsetup framework installer: [Dexsetup.installer](https://github.com/nnmfnwl/dexsetup.cli.installer)
+     - Dexsetup framework: [Dexsetup](https://github.com/nnmfnwl/dexsetup/tree/merge.2025.02.06)
+
 
 ### Prerequisites
 1. [Latest Blocknet wallet installed](https://github.com/blocknetdx/blocknet/releases/latest).
@@ -113,38 +115,30 @@ to setup complete DEXBOT and BlockDX even from scratch on Debian compatible oper
    * To prevent multiple bot strategies pulling same data from external sources there is dexbot proxy process
    * So at first there must be running bot pricing proxy instance:
 ```
-python3 dxmakerbot_v2_proxy_run.py
+python3 dexbot_v2_proxy_run.py
 ```
    * dexbot strategy config file represents one way market, for bidirectional trading there are always two strategies needed to run.
    * For example to start specific previously created bidirectional dexbot strategy, where files are named strategy_BLOCK_LTC_liquidity.py and strategy_BLOCK_LTC_liquidity.py, need to run two commands in two terminal tabs:
 ```
-python3 dxmakerbot_v2_run.py --config strategy_BLOCK_LTC_strategy1
+python3 dexbot_v2_run.py --config strategy_BLOCK_LTC_strategy1
 ```
    * and 
 ```
-python3 dxmakerbot_v2_run.py --config strategy_LTC_BLOCK_strategy1
+python3 dexbot_v2_run.py --config strategy_LTC_BLOCK_strategy1
 ```
    * To cancel all orders in market pair and address specified by --config file
 ```
-python3 dxmakerbot_v2_run.py --config strategy_LTC_BLOCK_strategy1 --canceladdress
+python3 dexbot_v2_run.py --config strategy_LTC_BLOCK_strategy1 --canceladdress
 ```
    * To cancel all orders in market pair specified by --config file
 ```
-python3 dxmakerbot_v2_run.py --config strategy_LTC_BLOCK_strategy1 --cancelmarket
+python3 dexbot_v2_run.py --config strategy_LTC_BLOCK_strategy1 --cancelmarket
 ```
    * To cancel all orders
 ```
-python3 dxmakerbot_v2_run.py --config strategy_LTC_BLOCK_strategy1 --cancelall
+python3 dexbot_v2_run.py --config strategy_LTC_BLOCK_strategy1 --cancelall
 ```
 
-### Donations for development, testing and liquidity providing:
-   * For ability of this project to continue it needs your support:
-   * BTC LN: ****
-   * BTC: ****
-   * LTC: ****
-   * DOGE: ****
-   * XVG: ****
-   * PIVX: ****
-   * BLOCK: ****
-   * PKOIN: ****
-   * LBC: ****
+### Donations
+* Many options to support [Dexbot](https://github.com/nnmfnwl/dexbot/tree/merge.2025.03.26), [Dexsetup](https://github.com/nnmfnwl/dexsetup/tree/merge.2025.02.06), [Dexsetup.installer](https://github.com/nnmfnwl/dexsetup.cli.installer) and [Dexsetup.videos](https://github.com/nnmfnwl/dexsetup.videos) continuous development, testing, liquidity providing and making video tutorials could be found on Dexsetup Installer page [here](https://github.com/nnmfnwl/dexsetup.cli.installer#9-donations)
+
