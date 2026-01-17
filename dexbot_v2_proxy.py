@@ -32,7 +32,7 @@ def init_postconfig():
     proxy_server__init_postconfig()
     
     # initialize pricing storage and set proxy client
-    pricing_storage__init_postconfig("proxy.tmp.pricing", 60, "", 2, 6, pricing_proxy_server__pricing_storage__try_get_price_fn)
+    pricing_storage__init_postconfig("proxy.tmp.pricing", 60, 2, 6, pricing_proxy_server__pricing_storage__try_get_price_fn)
 
 def load_config():
     global c, s, d
