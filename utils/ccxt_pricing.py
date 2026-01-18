@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """CCXT Pricing Module - Handles price fetching from CCXT exchanges"""
 
-from typing import Optional, Dict, List, Tuple, Any
 import time
+from typing import Dict, List, Tuple, Any
+
 import ccxt
 
 
@@ -47,12 +48,12 @@ class CCXTPricing:
         quote_upper = quote.upper()
         base_lower = base.lower()
         quote_lower = quote.lower()
-        
+
         return [
-            f"{base_upper}/{quote_upper}",    # Most common: BTC/USDT
-            f"{base_upper}-{quote_upper}",    # Hyphenated: BTC-USDT
-            f"{base_lower}/{quote_lower}",    # Lowercase: btc/usdt
-            f"{base_upper}_{quote_upper}",    # Underscore: BTC_USDT
+            f"{base_upper}/{quote_upper}",  # Most common: BTC/USDT
+            f"{base_upper}-{quote_upper}",  # Hyphenated: BTC-USDT
+            f"{base_lower}/{quote_lower}",  # Lowercase: btc/usdt
+            f"{base_upper}_{quote_upper}",  # Underscore: BTC_USDT
         ]
 
     def _fetch_with_retry(self, func, *args, **kwargs) -> Any:
@@ -71,7 +72,7 @@ class CCXTPricing:
             ccxt.ExchangeError: For non-network related exchange errors
         """
         last_exception = None
-        
+
         for attempt in range(self.retries):
             try:
                 return func(*args, **kwargs)
@@ -90,7 +91,7 @@ class CCXTPricing:
                 # Don't retry exchange-specific errors (invalid symbol, insufficient funds, etc.)
                 print(f"ERROR: Exchange error (not retrying): {e}")
                 raise
-        
+
         # If we exhausted all retries, raise the last exception
         raise last_exception
 
@@ -141,7 +142,7 @@ class CCXTPricing:
             return self.markets[exchange_name]
 
         exchange = self.get_exchange(exchange_name)
-        
+
         try:
             markets = self._fetch_with_retry(exchange.load_markets)
             self.markets[exchange_name] = markets
@@ -184,9 +185,9 @@ class CCXTPricing:
         raise SymbolNotFoundError(f"Symbol {base}/{quote} not found on {exchange_name}")
 
     def get_prices_batch(
-        self, 
-        pairs: List[Tuple[str, str]], 
-        exchange_name: str
+            self,
+            pairs: List[Tuple[str, str]],
+            exchange_name: str
     ) -> Dict[Tuple[str, str], float]:
         """Batch fetch multiple tickers in one CCXT call
         
@@ -221,13 +222,13 @@ class CCXTPricing:
             # Batch fetch all tickers in one call
             valid_symbols = list(pair_to_symbol.values())
             tickers = self._fetch_with_retry(exchange.fetch_tickers, valid_symbols)
-            
+
             # Map results back to original (base, quote) pairs
             result = {}
             for pair, symbol in pair_to_symbol.items():
                 if symbol in tickers:
                     result[pair] = float(tickers[symbol]['last'])
-            
+
             return result
         except Exception as e:
             print(f"ERROR: Failed to fetch tickers batch on {exchange_name}: {e}")

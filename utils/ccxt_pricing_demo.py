@@ -3,19 +3,11 @@
 
 import os
 import sys
-import logging
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.ccxt_pricing import CCXTPricing, SymbolNotFoundError
 import ccxt
-
-# Configure logging for demo
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 
 def demo_exchange(exchange_name: str, demo_pairs: list):
@@ -141,7 +133,7 @@ def demo_resilience():
     print(f'\n{"=" * 60}')
     print('Demo: Resilience Features')
     print(f'{"=" * 60}')
-    
+
     # Demo custom configuration
     print('\n1. Custom timeout and retry configuration')
     ccxt_custom = CCXTPricing(timeout=5000, retries=2, backoff_factor=1.5)
@@ -149,7 +141,7 @@ def demo_resilience():
     print(f'      - Timeout: {ccxt_custom.timeout}ms')
     print(f'      - Retries: {ccxt_custom.retries}')
     print(f'      - Backoff factor: {ccxt_custom.backoff_factor}')
-    
+
     # Demo rate limiting (enabled by default)
     print('\n2. Rate limiting enabled by default')
     try:
@@ -172,12 +164,12 @@ def demo_batch_return_format():
     print(f'\n{"=" * 60}')
     print('Demo: Batch Fetch Return Format')
     print(f'{"=" * 60}')
-    
+
     ccxt_pricing = CCXTPricing()
-    
+
     print('\n1. Batch fetch returns (base, quote) tuples as keys')
     pairs = [('BTC', 'USDT'), ('ETH', 'USDT')]
-    
+
     try:
         batch_prices = ccxt_pricing.get_prices_batch(pairs, 'binance')
         print(f'   ✓ Fetched {len(batch_prices)} prices')
@@ -192,9 +184,9 @@ def demo_batch_return_format():
 if __name__ == '__main__':
     # Run main demos
     demo_all_exchanges()
-    
+
     # Run resilience demo
     demo_resilience()
-    
+
     # Run batch return format demo
     demo_batch_return_format()
