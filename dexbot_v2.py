@@ -85,7 +85,7 @@ def init_postconfig():
     pricing_proxy_client__init_postconfig()
     
     # initialize pricing storage and set proxy client
-    pricing_storage__init_postconfig(c.BOTconfigfile + ".tmp.pricing", c.BOTdelaycheckprice, c.BOTuse, 2, 8, pricing_proxy_client__pricing_storage__try_get_price_fn, c.BOTcf.price_redirections)
+    pricing_storage__init_postconfig(c.BOTconfigfile + ".tmp.pricing", c.BOTdelaycheckprice, 2, 8, pricing_proxy_client__pricing_storage__try_get_price_fn, c.BOTcf.price_redirections)
     
     feature__slide_dyn__init_postconfig(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
     
@@ -574,11 +574,6 @@ def load_config():
     parser.add_argument('--delayinternalcycle', type=float, help='sleep delay, in seconds, between main loops to process all things to handle. (default=8)', default=8)
     parser.add_argument('--delaycheckprice', type=float, help='sleep delay, in seconds to check again pricing (default=180)', default=180)
     
-    # arguments: pricing source arguments
-    parser.add_argument('--usecb', help='enable cryptobridge pricing', action='store_true')
-    parser.add_argument('--usecg', help='enable coingecko pricing', action='store_true')
-    parser.add_argument('--usecustom', help='enable custom pricing', action='store_true')
-
     # arguments: utility arguments
     parser.add_argument('--cancelall', help='cancel all orders and exit', action='store_true')
     parser.add_argument('--cancelmarket', help='cancel all orders in market specified by pair --maker and --taker', action='store_true')
@@ -693,16 +688,6 @@ def load_config():
     c.BOTdelayinternalerror = float(args.delayinternalerror)
     c.BOTdelayinternalcycle = float(args.delayinternalcycle)
     c.BOTdelaycheckprice = int(args.delaycheckprice)
-    
-    # arguments: pricing source arguments
-    if args.usecustom:
-        c.BOTuse = 'custom'
-    elif args.usecg:
-        c.BOTuse = 'cg'
-    elif args.usecb:
-        c.BOTuse = 'cb'
-    else:
-        c.BOTuse = 'bt'
     
     # arguments: utility arguments
     c.cancelall = args.cancelall

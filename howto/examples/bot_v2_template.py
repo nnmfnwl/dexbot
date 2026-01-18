@@ -313,13 +313,14 @@ botconfig = str(
 
 # Pricing is based off BTC-XXX market pairs. For example, if running on the LTC-DASH market, the bot pulls the price
 # for BTC-LTC and BTC-DASH then automatically calculates LTC-DASH price. This is how it works for all supported pricing sources:
-#   * Bittrex: default (no flag)
-#   * CryptoBridge: `--usecb`
-#   * CoinGecko: `--usecg`
-#   * Custom pricing: `--usecustom`
-# use alternative coingecko insted of bittrex
-    # ~ "--usecg"
-    "{cc_price_source_argval}"
+
+    # Price providers: "cg" - coingecko
+    "--price_provider {cc_price_provider}"
+    # Acceptable external pricing outage in seconds, previous price is used for time of outage.
+    "--price_acceptable_outage {cc_price_acceptable_outage}"
+    # Extra slide added to price in percent if outage happens. 1.05 means price+5%
+    "--price_outage_extra_slide {cc_price_outage_extra_slide}"
+    
 # enable exceptions in configuration values
     # ~ "--imreallysurewhatimdoing"
     "{cc_im_really_sure_what_im_doing_argval}"
