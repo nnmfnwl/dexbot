@@ -137,7 +137,7 @@ def pricing_storage__try_update_price__(maker, taker, price_provider, try_num, t
         price_time = glob.d.pricing_storage.data.get(pair, {}).get('time', 0)
         
         outage = time.time() - (price_time + glob.d.pricing_storage.update_interval)
-        if outage > glob.d.pricing_storage.price_acceptable_outage:
+        if outage < glob.d.pricing_storage.price_acceptable_outage:
             price = previous_price * glob.d.pricing_storage.price_outage_extra_slide
             print('>>>> Pricing storage >> get external pricing >> maker/taker {0}/{1} >> outage accepted {2}/{3} >> using previous price * price_outage_extra_slide >> {4}*{5}={6}'.format(maker, taker, outage, glob.d.pricing_storage.price_acceptable_outage, previous_price, glob.d.pricing_storage.price_outage_extra_slide, price))
             
