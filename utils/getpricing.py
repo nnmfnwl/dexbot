@@ -6,17 +6,14 @@ __license__ = 'GPL'
 __version__ = '0.0.1'
 __maintainer__ = 'atcsecure'
 __status__ = 'Alpha'
+__update__ = '2026.01.19 nnmfnwl7'
 
 import time
 import sys
 import requests
 from utils import coingecko
-from bittrex.bittrex import Bittrex, API_V2_0
 from utils import custompricing
 from utils import dxsettings
-
-my_bittrex = Bittrex(None, None)
-
 
 def getmarketprice(marketname, BOTuse):
   # get market price
@@ -40,7 +37,7 @@ def getmarketprice(marketname, BOTuse):
         sys.exit(1)
     print(lastprice)
 
-  if BOTuse == 'cg':
+  if BOTuse == 'cg' or lastprice == 0:
     print('>>>> Looking up CoinGecko pricing: {}'.format(markets[1]))
     cg = coingecko.CoinGeckoAPI()
     cg_coin_list = cg.get_coins_list()
@@ -56,29 +53,6 @@ def getmarketprice(marketname, BOTuse):
         lastprice = lastprice[vsmarket]
         break
 
-  if BOTuse == 'cb' and dxsettings.cryptobridgeURL:
-    resp = requests.get(url=dxsettings.cryptobridgeURL)
-    data = resp.json()
-    cbmarketname = '{}_{}'.format(markets[1], markets[0])
-    print('>>>> Looking up CryptoBridge market: {}'.format(cbmarketname))
-    for z in data:
-      if (z['id']) == cbmarketname:
-        lastprice = z['last']
-        print('>>>> Found market: {}, Price: {}'.format(cbmarketname,lastprice))
-
-  if not lastprice:
-    print('>>>> Looking up Bittrex market: {}'.format(marketname))
-    for attempt in range(0,5):
-      summary = my_bittrex.get_market_summary(marketname)
-      try:
-        lastprice = summary['result'][0]['Last'] 
-      except Exception as e:
-        print('#### API call attempt #{2} - exception/error: {0}, Bittrex call failed for: {1}'.format(e, marketname, attempt))
-        print(summary)
-        time.sleep(2.5)
-        lastprice = 0
-        continue
-      break
   return float(lastprice)
 
 
