@@ -577,6 +577,7 @@ def load_config():
     # arguments: pricing source arguments
     parser.add_argument('--usecb', help='enable cryptobridge pricing', action='store_true')
     parser.add_argument('--usecg', help='enable coingecko pricing', action='store_true')
+    parser.add_argument('--useccxt', help='enable CCXT pricing', action='store_true')
     parser.add_argument('--usecustom', help='enable custom pricing', action='store_true')
 
     # arguments: utility arguments
@@ -697,6 +698,8 @@ def load_config():
     # arguments: pricing source arguments
     if args.usecustom:
         c.BOTuse = 'custom'
+    elif args.useccxt:
+        c.BOTuse = 'ccxt'
     elif args.usecg:
         c.BOTuse = 'cg'
     elif args.usecb:

@@ -6,6 +6,8 @@ from typing import Dict, List, Tuple, Any
 
 import ccxt
 
+CCXT_EXCHANGE = 'binance'
+
 
 class SymbolNotFoundError(Exception):
     """Raised when a trading symbol is not found on an exchange"""
@@ -171,16 +173,27 @@ class CCXTPricing:
         exchange = self.get_exchange(exchange_name)
         markets = self.get_markets(exchange_name)
 
-        symbols = self._generate_symbol_variants(base, quote)
+        # Generate all symbol variants for requested pair
+        requested_symbols = self._generate_symbol_variants(base, quote)
 
-        for symbol in symbols:
+        # Check if any requested symbol exists
+        for symbol in requested_symbols:
             if symbol in markets:
-                try:
-                    ticker = self._fetch_with_retry(exchange.fetch_ticker, symbol)
-                    return float(ticker['last'])
-                except Exception as e:
-                    print(f"ERROR: Failed to fetch ticker for {symbol} on {exchange_name}: {e}")
-                    raise
+                ticker = self._fetch_with_retry(exchange.fetch_ticker, symbol)
+                price = float(ticker['last'])
+                if price == 0:
+                    raise ValueError(f"Price is zero for symbol {symbol} on {exchange_name}")
+                return 1.0 / price
+
+        # Generate all symbol variants for reversed pair
+        reversed_symbols = self._generate_symbol_variants(quote, base)
+
+        # Check if any reversed symbol exists
+        for symbol in reversed_symbols:
+            if symbol in markets:
+                ticker = self._fetch_with_retry(exchange.fetch_ticker, symbol)
+                # print(f"ccxt get_price, reversed symbol {symbol}")
+                return float(ticker['last'])
 
         raise SymbolNotFoundError(f"Symbol {base}/{quote} not found on {exchange_name}")
 
