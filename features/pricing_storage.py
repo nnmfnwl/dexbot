@@ -27,18 +27,24 @@ def pricing_storage__init_preconfig__():
     glob.d.pricing_storage.auto_save_file_name = ""
     glob.d.pricing_storage__try_num = 2
     glob.d.pricing_storage__try_sleep = 6
+    glob.d.pricing_storage.price_acceptable_outage = 0
+    glob.d.pricing_storage.price_outage_extra_slide = 1
 
 pricing_storage__init_preconfig__()
 
 # define argument parameter
 def pricing_storage__load_config_define(parser, argparse):
     
-    parser.add_argument('--price_provider', type=str, help='price provider (default="")', default="")
+    parser.add_argument('--price_provider', type=str, help='price provider (default="cg" coingecko)', default="cg")
+    parser.add_argument('--price_acceptable_outage', type=int, help='Acceptable external pricing outage in seconds, previous price is used for time of outage. (default=0)', default=0)
+    parser.add_argument('--price_outage_extra_slide', type=float, help='Xtra slide added to price in percent if outage happens. 1.05 is +5%. Default 0%', default=1)
 
 # parse configuration value
 def pricing_storage__load_config_postparse(args):
     
     glob.d.pricing_storage.price_provider = str(args.price_provider)
+    glob.d.pricing_storage.price_acceptable_outage = int(args.price_acceptable_outage)
+    glob.d.pricing_storage.price_outage_extra_slide = float(args.price_outage_extra_slide)
 
 # verify argument value after load
 def pricing_storage__load_config_verify():
@@ -46,18 +52,29 @@ def pricing_storage__load_config_verify():
     error_num = 0
     crazy_num = 0
     
-    if glob.d.pricing_storage.price_provider == None:
+    if glob.d.pricing_storage.price_provider == "":
         print('**** ERROR, <price_provider> value <{0}> is invalid'.format(glob.d.pricing_storage.price_provider))
         error_num += 1
+        
+    if glob.d.pricing_storage.price_acceptable_outage < 0:
+        print('**** ERROR, <price_acceptable_outage> value <{0}> is invalid'.format(glob.d.pricing_storage.price_acceptable_outage))
+        error_num += 1
+    
+    if glob.d.pricing_storage.price_outage_extra_slide <= 0:
+        print('**** ERROR, <price_outage_extra_slide> value <{0}> is invalid'.format(glob.d.pricing_storage.price_outage_extra_slide))
+        error_num += 1
+        
+    if glob.d.pricing_storage.price_outage_extra_slide < 1:
+        print('**** WARNING, <price_outage_extra_slide> value <{0}> seems abnormal value'.format(glob.d.pricing_storage.price_outage_extra_slide))
+        crazy_num += 1
     
     return error_num, crazy_num
 
 # set update interval in seconds
-def pricing_storage__init_postconfig(auto_save_file_name, update_interval, price_provider, try_num = 2, try_sleep = 6, try_get_price_fn = pricing_storage__try_get_price_empty_fn, data_redirect = {}):
+def pricing_storage__init_postconfig(auto_save_file_name, update_interval, try_num = 2, try_sleep = 6, try_get_price_fn = pricing_storage__try_get_price_empty_fn, data_redirect = {}, price_acceptable_outage = 0):
     
     glob.d.pricing_storage.auto_save_file_name = auto_save_file_name
     glob.d.pricing_storage.update_interval = update_interval
-    glob.d.pricing_storage.price_provider = price_provider
     glob.d.pricing_storage.try_get_price_fn = try_get_price_fn
     glob.d.pricing_storage__try_num = try_num
     glob.d.pricing_storage__try_sleep = try_sleep
@@ -114,7 +131,19 @@ def pricing_storage__try_update_price__(maker, taker, price_provider, try_num, t
             if glob.d.pricing_storage.auto_save_threshold_status >= glob.d.pricing_storage.auto_save_threshold:
                 glob.d.pricing_storage.auto_save_threshold_status = 0
                 pricing_storage__file_save()
-
+    
+    # if external price get failed, the temporay price outage could be ignored for a while
+    elif price == 0 and previous_price > 0:
+        price_time = glob.d.pricing_storage.data.get(pair, {}).get('time', 0)
+        
+        outage = time.time() - (price_time + glob.d.pricing_storage.update_interval)
+        if outage < glob.d.pricing_storage.price_acceptable_outage:
+            price = previous_price * glob.d.pricing_storage.price_outage_extra_slide
+            print('>>>> Pricing storage >> get external pricing >> maker/taker {0}/{1} >> outage accepted {2}/{3} >> using previous price * price_outage_extra_slide >> {4}*{5}={6}'.format(maker, taker, outage, glob.d.pricing_storage.price_acceptable_outage, previous_price, glob.d.pricing_storage.price_outage_extra_slide, price))
+            
+        else:
+            print('>>>> Pricing storage >> get external pricing >> maker/taker {0}/{1} >> outage not accepted {2}/{3} >> using price >> {4}'.format(maker, taker, outage, glob.d.pricing_storage.price_acceptable_outage, price))
+    
     return price
 
 # feature used to specify price of any asset by redirection to another asset
