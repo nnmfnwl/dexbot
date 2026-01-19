@@ -9,7 +9,6 @@ tradingaddress = {}
 rpcport = 41414
 rpcuser = 'BlockDXBlocknet'
 rpcpassword = 'a4c84e11-69fc-4640-a0fe-de27b9537565'
-cryptobridgeURL = 'https://api.crypto-bridge.org/api/v1/ticker' # required if using the --usecb flag
 
 
 # Custom price settings: Required if using the --usecustom flag.
