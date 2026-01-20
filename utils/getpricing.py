@@ -14,9 +14,10 @@ from utils import coingecko
 from bittrex.bittrex import Bittrex, API_V2_0
 from utils import custompricing
 from utils import dxsettings
+from utils.ccxtpricing import CCXTPricing, SymbolNotFoundError, CCXT_EXCHANGE
 
 my_bittrex = Bittrex(None, None)
-
+my_ccxt = CCXTPricing()
 
 def getmarketprice(marketname, BOTuse):
   # get market price
@@ -65,6 +66,16 @@ def getmarketprice(marketname, BOTuse):
       if (z['id']) == cbmarketname:
         lastprice = z['last']
         print('>>>> Found market: {}, Price: {}'.format(cbmarketname,lastprice))
+
+  if BOTuse == 'ccxt':
+    print('>>>> Looking up CCXT market: {} on {}'.format(marketname, CCXT_EXCHANGE))
+    try:
+      lastprice = my_ccxt.get_price(markets[0], markets[1], CCXT_EXCHANGE)
+      print('>>>> Found CCXT market: {}, Price: {}'.format(marketname, lastprice))
+    except SymbolNotFoundError as e:
+      print('WARNING: Symbol not found on {}: {}'.format(CCXT_EXCHANGE, e))
+    except Exception as e:
+      print('ERROR: CCXT pricing failed: {}'.format(e))
 
   if not lastprice:
     print('>>>> Looking up Bittrex market: {}'.format(marketname))
