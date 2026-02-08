@@ -35,10 +35,10 @@ pricing_storage__init_preconfig__()
 # define argument parameter
 def pricing_storage__load_config_define(parser, argparse):
     
-    parser.add_argument('--price_provider', type=str, help='price provider (default="cg" coingecko)', default="cg")
-    parser.add_argument('--price_acceptable_outage', type=int, help='Acceptable external pricing outage in seconds, previous price is used for time of outage. (default=0)', default=0)
-    parser.add_argument('--price_outage_extra_slide', type=float, help='Xtra slide added to price in percent if outage happens. 1.05 is +5%. Default 0%', default=1)
-
+    feature__main_cfg__add_variable('price_provider', "cg", feature__main_cfg__validate_str, None, """price provider (default="cg" coingecko)""", None)
+    feature__main_cfg__add_variable('price_acceptable_outage', 0, feature__main_cfg__validate_int, None, """Acceptable external pricing outage in seconds, previous price is used for time of outage. (default=0)""", None)
+    feature__main_cfg__add_variable('price_outage_extra_slide', 1, feature__main_cfg__validate_float, None, """Xtra slide added to price in percent if outage happens. 1.05 is +5%. Default 0%""", [['no added slide', 1],['slide outage is considered as market pressure so automatically rise price 20%', 1.2]])
+    
 # parse configuration value
 def pricing_storage__load_config_postparse(args):
     
