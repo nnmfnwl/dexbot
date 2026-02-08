@@ -13,9 +13,9 @@ def feature__flush_co__init_preconfig():
     glob.d.feature__flush_co__time_start = time.time()
 
 # define argument parameter
-def feature__flush_co__load_config_define(parser, argparse):
+def feature__flush_co__load_config_define():
     
-    parser.add_argument('--flush_canceled_orders', type=int, help='timer in seconds to remove all canceled orders from xbridge orders history(default=0 disabled)', default=0)
+    feature__main_cfg__add_variable("flush_canceled_orders", 0, feature__main_cfg__validate_int, None, """timer in seconds to remove all canceled orders from xbridge orders history(default=0 disabled)""", [["flush canceled orders every 60 seconds", "60"]])
 
 # verify argument value after load
 def feature__flush_co__load_config_verify():
