@@ -13,9 +13,9 @@ def pricing_proxy_client__init_preconfig__():
 
 pricing_proxy_client__init_preconfig__()
 
-def pricing_proxy_client__load_config_define(parser, argparse):
+def pricing_proxy_client__load_config_define():
     
-    parser.add_argument('--pricing_proxy_url', type=str, help='pricing proxy url address (default="'+glob.c.pricing_proxy_client__default_url+'")', default=glob.c.pricing_proxy_client__default_url)
+    feature__main_cfg__add_variable("pricing_proxy_url", glob.c.pricing_proxy_client__default_url, feature__main_cfg__validate_str, None, """pricing proxy url address (default='"""+glob.c.pricing_proxy_client__default_url+"""')""", None)
 
 def pricing_proxy_client__load_config_postparse(args):
     
