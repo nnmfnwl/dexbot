@@ -76,27 +76,31 @@ def sboundary__init_preconfig__():
 sboundary__init_preconfig__()
 
 # define argument parameter
-def sboundary__load_config_define(parser, argparse):
+def sboundary__load_config_define():
     
-    parser.add_argument('--sboundary_asset', type=str, help=
-    'set static boundary values in specific asset'
-    'ie.: Static boundary with maker/taker BLOCK/BTC and boundary_asset is USDT, so possible boundary min 1.5 and max 3 USD (default= --taker)'
-    , default="")
+    feature__main_cfg__add_variable('hidden_orders', False, feature__main_cfg__validate_bool, None, """Orders will be created only virtually, hidden from dx and acting like takerbot only.  (default=False disabled)""", None)
     
-    parser.add_argument('--sboundary_max', type=float, help='maximum acceptable price of maker(sold one) where bot will stop selling(default=0 disabled)', default=0)
-    parser.add_argument('--sboundary_min', type=float, help='minimum acceptable price of maker(sold one) where bot will stop selling(default=0 disabled)', default=0)
+    feature__main_cfg__add_variable('sboundary_asset', "", feature__main_cfg__validate_str, None, """static boundaries configuration:
+    set boundaries in specific asset rather than taker
+    set static boundary values in specific asset'
+    'ie.: Static boundary with maker/taker BLOCK/BTC and boundary_asset is USDT, so possible boundary min 1.5 and max 3 USD (default= --taker)""", None)
     
-    parser.add_argument('--sboundary_max_track_asset', type=glob.t.argparse_bool, nargs='?', const=True, help='Track boundary asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BTC price and update boundaries by it (default=False disabled)', default=False)
-    parser.add_argument('--sboundary_min_track_asset', type=glob.t.argparse_bool, nargs='?', const=True, help='Track boundary asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BTC price and update boundaries by it (default=False disabled)', default=False)
+    feature__main_cfg__add_variable('sboundary_max', 0, feature__main_cfg__validate_float, None, """maximum acceptable price of maker(sold one) where bot will stop selling(default=0 disabled)""", None)
+    feature__main_cfg__add_variable('sboundary_min', 0, feature__main_cfg__validate_float, None, """minimum acceptable price of maker(sold one) where bot will stop selling(default=0 disabled)""", None)
     
-    parser.add_argument('--sboundary_price_reverse', type=glob.t.argparse_bool, nargs='?', const=True, help='reversed set pricing as 1/X, ie BLOCK/BTC vs BTC/BLOCK pricing can set like 0.000145 on both bot trading sides, instead of 0.000145 vs 6896.55.'
+    feature__main_cfg__add_variable('sboundary_max_track_asset', False, feature__main_cfg__validate_bool, None, """Track boundary asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BTC price and update boundaries by it (default=False disabled)""", None)
+    feature__main_cfg__add_variable('sboundary_min_track_asset', False, feature__main_cfg__validate_bool, None, """Track boundary asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BTC price and update boundaries by it (default=False disabled)""", None)
+    
+    feature__main_cfg__add_variable('sboundary_price_reverse', False, feature__main_cfg__validate_bool, None, """reversed set pricing as 1/X, ie BLOCK/BTC vs BTC/BLOCK pricing can set like 0.000145 on both bot trading sides, instead of 0.000145 vs 6896.55.'
     'this feature works with sboundary asset as well'
-    ' (default=False Disabled)', default=False)
+    ' (default=False Disabled)""", None)
     
-    parser.add_argument('--sboundary_max_cancel', type=glob.t.argparse_bool, nargs='?', const=True, help='cancel orders at max boundary hit, (default=True enabled)', default=True)
-    parser.add_argument('--sboundary_max_exit', type=glob.t.argparse_bool, nargs='?', const=True, help='exit bot at max boundary hit, (default=True enabled)', default=True)
-    parser.add_argument('--sboundary_min_cancel', type=glob.t.argparse_bool, nargs='?', const=True, help='cancel orders at min boundary hit, (default=True enabled)', default=True)
-    parser.add_argument('--sboundary_min_exit', type=glob.t.argparse_bool, nargs='?', const=True, help='exit bot at min boundary hit, (default=False disabled)', default=False)
+    feature__main_cfg__add_variable('sboundary_max_cancel', True, feature__main_cfg__validate_bool, None, """cancel orders at max boundary hit, (default=True enabled)""", None)
+    feature__main_cfg__add_variable('sboundary_max_exit', True, feature__main_cfg__validate_bool, None, """exit bot at max boundary hit, (default=True enabled)
+The reason can be user is not willing to continue selling his maker-asset once price is too high bc expected bullmarket and user rather exit bot and start staking""", None)
+    feature__main_cfg__add_variable('sboundary_min_cancel', True, feature__main_cfg__validate_bool, None, """cancel orders at min boundary hit, (default=True enabled)""", None)
+    feature__main_cfg__add_variable('sboundary_min_exit', False, feature__main_cfg__validate_bool, None, """exit bot at min boundary hit, (default=False disabled)
+The reason can be user is not willing to continue selling his maker-asset once price is too low bc expected bearmarket and user rather exit bot and start staking or sell all""", None)
 
 # parse configuration value
 def sboundary__load_config_postparse(args):
