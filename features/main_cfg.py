@@ -1,0 +1,311 @@
+#!/usr/bin/python3
+
+# main configuration definition and base checking module
+
+import os.path
+
+import features.glob as glob
+
+# main configuration initialization
+def feature__main_cfg__init_preconfig__():
+   
+   glob.d.main_cfg = glob.GlobVars()
+   glob.d.main_cfg.cfg = {}
+   glob.c.main_cfg = glob.GlobVars()
+   glob.c.main_cfg.cfg = glob.GlobVars()
+   
+# main configuration automatic initialization
+feature__main_cfg__init_preconfig__()
+
+# add one more item to configuration variable definition
+def feature__main_cfg__add_variable(var_name, default_val = None, validation_fn = None, validation_arg = None, description_str = None, examples_list = None):
+   
+   if var_name is None or var_name == "":
+      print('*** ERROR >> main_cfg >> variable name {} >> name is invalid'.format(var_name))
+      return False
+      
+   if description_str is None or description_str == "":
+      print('*** ERROR >> main_cfg >> variable name {} >> description {} >> is invalid'.format(var_name, description_str))
+      return False
+   
+   if glob.d.main_cfg.cfg.get(var_name, None) is not None:
+      print('*** ERROR >> main_cfg >> variable name {} >> add failed because already exist'.format(var_name))
+      return False
+   
+   glob.d.main_cfg.cfg[var_name] = {}
+   glob.d.main_cfg.cfg[var_name]['description'] = description_str
+   glob.d.main_cfg.cfg[var_name]['defaultvalue'] = default_val
+   glob.d.main_cfg.cfg[var_name]['value'] = default_val
+   glob.d.main_cfg.cfg[var_name]['validationfn'] = validation_fn
+   glob.d.main_cfg.cfg[var_name]['validationarg'] = validation_arg
+   glob.d.main_cfg.cfg[var_name]['examples'] = examples_list
+   
+   return True
+
+# validate configuration value
+def feature__main_cfg__add_value(var_name, value):
+   
+   if var_name is None or var_name == "":
+      print('*** ERROR >> main_cfg >> variable >> {} >> name is invalid'.format(var_name))
+      return False
+      
+   cfg = glob.d.main_cfg.cfg.get(var_name, None)
+   if cfg is None:
+      print('*** ERROR >> main_cfg >> variable >> {} >> not defined'.format(var_name))
+      return False
+      
+   descr = cfg.get('description', None)
+   default = cfg.get('defaultvalue', None)
+   fn = cfg.get('validationfn', None)
+   arg = cfg.get('validationarg', None)
+   examples = cfg.get('examples', None)
+   
+   if value is not None: # else there is already default value
+      if fn is None:
+         cfg['value'] = value
+      else:
+         ret, value2 = fn(var_name, value, arg)
+         if ret is True:
+            cfg['value'] = value2
+         else
+            print('*** ERROR >> main_cfg >> variable >> {} >> value >> {} >> is invalid'.format(var_name, value))
+            return False
+            
+   return True
+
+# load all configuration values from .py file
+def feature__main_cfg__load_cfg(filename):
+   error_num = 0
+   
+   if filename is None:
+      print("*** ERROR >> main_cfg >> --config filename is None")
+      error_num +=1
+      return error_num
+   
+   # TODO analyze file extension and load by format
+   
+   print(">>> INFO >> main_cfg >> using --config file >> <{}>".format(filename))
+   glob.d.main_cfg.filedata = __import__(filename)
+   
+   # try to load and validate all configuration from file by main_cfg feature
+   for cfg_name in glob.d.main_cfg.filedata.cfg.keys():
+      ret = feature__main_cfg__add_value(cfg_name, glob.d.main_cfg.filedata.cfg[cfg_name])
+      if ret is not True:
+         error_num +=1
+   
+   return error_num
+
+# convert all cfg variables into object format
+def feature__main_cfg__parse_cfg():
+   
+   for cfg_name in glob.d.main_cfg.cfg.keys():
+        setattr(glob.c.main_cfg.cfg, cfg_name, glob.d.main_cfg.cfg[cfg_name]["value"])
+
+# return parsed cfg obj
+def feature__main_cfg__get_cfg_obj():
+   return glob.c.main_cfg.cfg
+
+# get configuration variable value
+def feature__main_cfg__get_value(var_name):
+   
+   if var_name is None or var_name == "":
+      print('*** ERROR >> main_cfg >> variable >> {} >> name is invalid'.format(var_name))
+      return False, None
+   
+   cfg = glob.d.main_cfg.cfg.get(var_name, None)
+   if cfg is None:
+      print('*** ERROR >> main_cfg >> variable >> {} >> not defined'.format(var_name))
+      return False, None
+      
+   return True, cfg['value']
+   
+# get configuration variable object
+def feature__main_cfg__get_cfg(var_name):
+   
+   if var_name is None or var_name == "":
+      print('*** ERROR >> main_cfg >> variable >> {} >> name is invalid'.format(var_name))
+      return False, None
+   
+   cfg = glob.d.main_cfg.cfg.get(var_name, None)
+   if cfg is None:
+      print('*** ERROR >> main_cfg >> variable >> {} >> not defined'.format(var_name))
+      return False, None
+      
+   return True, cfg
+
+# generate new configuration template file
+def feature__main_cfg__generate_cfg(filename, action):
+   
+   # check action validity
+   if action == "defaults":
+      print('>> INFO >> generate_cfg >> generating configuration file >> {} >> style >> {}'.format(filename, action))
+   elif action == "template":
+      print('>> INFO >> generate_cfg >> generating configuration file >> {} >> style >> {}'.format(filename, action))
+   else:
+      print('>> ERROR >> generate_cfg >> generating configuration file >> {} >> invalid style >> {}'.format(filename, action))
+      return False
+   
+   # check if file not exist
+   if os.path.exists(filename) is True:
+      print('>> ERROR >> generate_cfg >> generating configuration file >> {} >> file already exist >> {} >> please remove configuration file first'.format(filename, action))
+      return False
+   
+   # open file
+   file = open(filename,'w', encoding="utf-8")
+   
+   # write down copyright
+   f.write("""#!/usr/bin/env python3
+
+# ~ MIT License
+
+# ~ Copyright (c) 2020-2026 NNMFNWL
+
+# ~ Permission is hereby granted, free of charge, to any person obtaining a copy
+# ~ of this software and associated documentation files (the "Software"), to deal
+# ~ in the Software without restriction, including without limitation the rights
+# ~ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# ~ copies of the Software, and to permit persons to whom the Software is
+# ~ furnished to do so, subject to the following conditions:
+
+# ~ The above copyright notice and this permission notice shall be included in all
+# ~ copies or substantial portions of the Software.
+
+# ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# ~ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# ~ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# ~ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# ~ SOFTWARE.\n""")
+   
+   # write down main cfg dict variable
+   f.write('cfg = {}')
+
+   # iterate all configuration and write em all into file
+   for cfg_name in glob.d.main_cfg.cfg.keys():
+      
+      # write down description
+      description = glob.d.main_cfg.cfg[cfg_name]["description"]
+      f.write('"""{}"""\n'.format(cfg_name, description))
+      
+      # write down default values
+      if action == "defaults":
+         defaultvalue = glob.d.main_cfg.cfg[cfg_name]["defaultvalue"]
+         if defaultvalue is None:
+            f.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, ""))
+         else:
+            f.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, defaultvalue))
+      # write down as template
+      else:
+         f.write('cfg[\'{}\'] = "\{cc_{}\}"\n'.format(cfg_name, cfg_name))
+      
+   # close file
+   file.close()
+
+   return True
+   
+# validate boolean
+def feature__main_cfg__validate_bool(var_name, val, arg):
+   
+   if arg is not None:
+      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      return False, False
+   
+   if isinstance(val, bool):
+      return True, val
+   elif isinstance(val, str):
+      if val.lower() in ['true', 'enabled', 'yes', '1']:
+         return True, True
+      else:
+         return True, False
+   elif isinstance(val, int):
+      if val > 0:
+         return True, True
+      else:
+         return False, False
+      
+   return False, False
+      
+# validate int
+def feature__main_cfg__validate_int(var_name, val, arg):
+   
+   if arg is not None:
+      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      return False, int(0)
+   
+   if isinstance(val, int):
+      return True, val
+   elif isinstance(val, str):
+      return True, int(val)
+   
+   return False, int(0)
+
+# validate float
+def feature__main_cfg__validate_float(var_name, val, arg):
+   
+   if arg is not None:
+      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      return False, float(0)
+   
+   if isinstance(val, float):
+      return True, val
+   elif isinstance(val, str):
+      return True, float(val)
+   
+   return False, float(0)
+
+# validate str
+def feature__main_cfg__validate_str(var_name, val, arg):
+   
+   if arg is not None:
+      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      return False, str("")
+   
+   if isinstance(val, str):
+      return True, val
+   
+   return True str(val)
+
+def feature__main_cfg__validate_password(var_name, val, arg):
+   
+   if arg is not None:
+      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      return False, str("")
+   
+   if isinstance(val, str):
+      return True, val
+   
+   return False None
+
+# validate select
+def feature__main_cfg__validate_select(var_name, val, arg):
+   
+   if arg is None:
+      print('*** ERROR >> main_cfg >> variable >> {} = {} >> expected argument not found {}'.format(var_name, val, arg))
+      return False, str("")
+   
+   return True, val
+   
+# validate dict
+def feature__main_cfg__validate_dict(var_name, val, arg):
+   
+   if arg is not None:
+      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      return False, dict({})
+   
+   if isinstance(val, dict):
+      return True, val
+   
+   return True dict(val)
+   
+# validate list
+def feature__main_cfg__validate_list(var_name, val, arg):
+   
+   if arg is not None:
+      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      return False, list([])
+   
+   if isinstance(val, list):
+      return True, val
+   
+   return True list(val)
