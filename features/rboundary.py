@@ -73,29 +73,31 @@ def rboundary__init_preconfig__():
 rboundary__init_preconfig__()
 
 # define argument parameter
-def rboundary__load_config_define(parser, argparse):
+def rboundary__load_config_define():
     
-    parser.add_argument('--rboundary_asset', type=str, help=
-    'set relative boundary values in specific asset'
-    'ie.: Static boundary with maker/taker BLOCK/BTC and boundary_asset is USDT, so possible boundary min 1.5 and max 3 USD (default= --taker)'
-    , default="")
+    feature__main_cfg__add_variable('rboundary_asset', "", feature__main_cfg__validate_str, None, """# set relative maximum and minimum maker price boundaries
+
+    # set relative boundary initial price values in specific asset"""
+    , None)
     
-    parser.add_argument('--rboundary_price_initial', type=float, help='manually set initial center price. If asset is not specified, the price is set as taker (default=0 automatic)', default=0)
+    feature__main_cfg__add_variable('rboundary_price_initial', 0, feature__main_cfg__validate_float, """manually set initial center price. If asset is not specified, the price is set as taker (default=0 automatic)""", None)
     
-    parser.add_argument('--rboundary_max', type=float, help='maximum acceptable price of maker(sold one) where bot will stop selling(default=0 disabled)', default=0)
-    parser.add_argument('--rboundary_min', type=float, help='minimum acceptable price of maker(sold one) where bot will stop selling(default=0 disabled)', default=0)
+    feature__main_cfg__add_variable('rboundary_max', 0, feature__main_cfg__validate_float, None, """maximum acceptable price set as relative value to center price.
+To set maximum to 150% value is 1.5. (default=0 disabled)""", None)
+    feature__main_cfg__add_variable('rboundary_min', 0, feature__main_cfg__validate_float, None, """minimum acceptable price set as relative value to center price.
+To set minimum to 95% value is 0.95.(default=0 disabled)""", None)
     
-    parser.add_argument('--rboundary_max_track_asset', type=glob.t.argparse_bool, nargs='?', const=True, help='Track boundary asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BTC price and update boundaries by it (default=False disabled)', default=False)
-    parser.add_argument('--rboundary_min_track_asset', type=glob.t.argparse_bool, nargs='?', const=True, help='Track boundary asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BTC price and update boundaries by it (default=False disabled)', default=False)
+    feature__main_cfg__add_variable('rboundary_max_track_asset', False, feature__main_cfg__validate_bool, None, """Track boundary asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BTC price and update boundaries by it (default=False disabled)""", None)
+    feature__main_cfg__add_variable('rboundary_min_track_asset', False, feature__main_cfg__validate_bool, None, """Track boundary asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BTC price and update boundaries by it (default=False disabled)""", None)
     
-    parser.add_argument('--rboundary_price_reverse', type=glob.t.argparse_bool, nargs='?', const=True, help='reversed set pricing as 1/X, ie BLOCK/BTC vs BTC/BLOCK pricing can set like 0.000145 on both bot trading sides, instead of 0.000145 vs 6896.55.'
-    'this feature works with relative boundary asset as well'
-    ' (default=False Disabled)', default=False)
+    feature__main_cfg__add_variable('rboundary_price_reverse', False, feature__main_cfg__validate_bool, None, """initial center pricing been set as reversed as 1/X, ie BLOCK/BTC vs BTC/BLOCK pricing can set like 0.000145 on both bot trading sides, instead of 0.000145 vs 6896.55.
+    (default=False Disabled)""", None)
     
-    parser.add_argument('--rboundary_max_cancel', type=glob.t.argparse_bool, nargs='?', const=True, help='cancel orders at max boundary hit, (default=True enabled)', default=True)
-    parser.add_argument('--rboundary_max_exit', type=glob.t.argparse_bool, nargs='?', const=True, help='exit bot at max boundary hit, (default=True enabled)', default=True)
-    parser.add_argument('--rboundary_min_cancel', type=glob.t.argparse_bool, nargs='?', const=True, help='cancel orders at min boundary hit, (default=True enabled)', default=True)
-    parser.add_argument('--rboundary_min_exit', type=glob.t.argparse_bool, nargs='?', const=True, help='exit bot at min boundary hit, (default=False disabled)', default=False)
+    feature__main_cfg__add_variable('rboundary_max_cancel', True, feature__main_cfg__validate_bool, None, """cancel orders at max boundary hit, (default=True enabled)""", None)
+    feature__main_cfg__add_variable('rboundary_max_exit', True, feature__main_cfg__validate_bool, None, """exit bot at max boundary hit, (default=True enabled)
+The reason can be user is not willing to continue selling his maker-asset once price is too high bc expected bullmarket and user rather start staking""", None)
+    feature__main_cfg__add_variable('rboundary_min_cancel', True, feature__main_cfg__validate_bool, None, """cancel orders at min boundary hit, (default=True enabled)""", None)
+    feature__main_cfg__add_variable('rboundary_min_exit', False, feature__main_cfg__validate_bool, None, """exit bot at min boundary hit, (default=False disabled)""", None)
 
 # parse configuration value
 def rboundary__load_config_postparse(args):
