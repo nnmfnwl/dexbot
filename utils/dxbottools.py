@@ -19,12 +19,12 @@ class MyJSONEncoder(JSONEncoder):
         return super(MyJSONEncoder, self).default(obj)
 
 
-def init_postconfig(rpcuser = dxsettings.rpcuser,
-                    rpcpassword = dxsettings.rpcpassword,
-                    rpchostname = "127.0.0.1",
-                    rpcport = dxsettings.rpcport):
+def init_postconfig(rpc_user = dxsettings.rpc_user,
+                    rpc_password = dxsettings.rpc_password,
+                    rpc_hostname = "127.0.0.1",
+                    rpc_port = dxsettings.rpc_port):
     global rpc_connection
-    rpc_connection = AuthServiceProxy("http://%s:%s@%s:%s"%(rpcuser, rpcpassword, rpchostname, rpcport))
+    rpc_connection = AuthServiceProxy("http://%s:%s@%s:%s"%(rpc_user, rpc_password, rpc_hostname, rpc_port))
 
 def lookup_order_id(orderid, myorders):
   # find my orders, returns order if orderid passed is inside myorders
