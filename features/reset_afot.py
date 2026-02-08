@@ -18,10 +18,10 @@ def reset_afot__init_preconfig__():
 reset_afot__init_preconfig__()
 
 # define argument parameter
-def reset_afot__load_config_define(parser, argparse):
+def reset_afot__load_config_define():
     
-    parser.add_argument('--resetafterorderfinishnumber', type=int, help='number of orders to be finished before resetting orders (default=0 disabled)', default=0)
-    parser.add_argument('--resetafterorderfinishdelay', type=int, help='delay after finishing last order before resetting orders in seconds (default=0 disabled)', default=0)
+    feature__main_cfg__add_variable('reset_after_order_finish_number', 0,  feature__main_cfg__validate_int, None, """number of orders to be finished before resetting orders (default=0 disabled)""", None)
+    feature__main_cfg__add_variable('reset_after_order_finish_delay', 0, feature__main_cfg__validate_int, None, """delay after finishing last order before resetting orders in seconds (default=0 disabled)""", None)
 
 # verify argument value after load
 def reset_afot__load_config_verify():
@@ -30,11 +30,11 @@ def reset_afot__load_config_verify():
     crazy_num = 0
     
     if glob.c.reset_afot__num < 0:
-        print('**** ERROR, <resetafterorderfinishnumber> value <{0}> is invalid'.format(glob.c.reset_afot__num))
+        print('**** ERROR, <reset_after_order_finish_number> value <{0}> is invalid'.format(glob.c.reset_afot__num))
         error_num += 1
     
     if glob.c.reset_afot__delay < 0:
-        print('**** ERROR, <resetafterorderfinishdelay> value <{0}> is invalid'.format(glob.c.reset_afot__delay))
+        print('**** ERROR, <reset_after_order_finish_delay> value <{0}> is invalid'.format(glob.c.reset_afot__delay))
         error_num += 1
     
     return error_num, crazy_num
@@ -42,8 +42,8 @@ def reset_afot__load_config_verify():
 # parse configuration value
 def reset_afot__load_config_postparse(args):
     
-    glob.c.reset_afot__num = int(args.resetafterorderfinishnumber)
-    glob.c.reset_afot__delay = int(args.resetafterorderfinishdelay)
+    glob.c.reset_afot__num = int(args.reset_after_order_finish_number)
+    glob.c.reset_afot__delay = int(args.reset_after_order_finish_delay)
 
 # reset counters and timers
 def reset_afot__reset():
