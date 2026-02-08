@@ -41,6 +41,8 @@ if __name__ == '__main__':
     , default="none")
     parser.add_argument('--exitonerror', type=int, help='Maximum number of errors to be occurred before process exit even with error(default=0, do not exit on error)', default=0)
     parser.add_argument('--config', type=str, help='python configuration file', default=None)
+    parser.add_argument('--configaction', type=str, default=None, help='defaults/template configuration action'
+    'instead of using configuration file, just generate new template file or defaults values None/template/defaults. (default = None)')
     parser.add_argument('--cancelall', help='cancel all orders and exit', action='store_true')
     parser.add_argument('--cancelmarket', help='cancel all orders in market pair specified by --config file', action='store_true')
     parser.add_argument('--canceladdress', help='cancel all orders in market pair and address specified by --config file', action='store_true')
@@ -50,6 +52,7 @@ if __name__ == '__main__':
     action = str(args.action)
     exitonerror = int(args.exitonerror)
     config = args.config
+    configaction = args.configaction
     cancelall = args.cancelall
     cancelmarket = args.cancelmarket
     canceladdress = args.canceladdress
@@ -72,15 +75,15 @@ if __name__ == '__main__':
     cfg = __import__(config)
     
     # check configuration file
-    if not cfg.botconfig:
+    if not cfg.cfg or not isinstance(cfg.cfg, dict):
         print("[E] --config file is invalid")
         sys.exit(1)
     
-    # update configuration to be valid
-    cfg.botconfig = cfg.botconfig.replace(" --", "--")
-    cfg.botconfig = cfg.botconfig.replace("--", " --")
-    
-    print("[I] --config arguments <{}>".format(cfg.botconfig))
+    # check configaction
+    if configaction is None:
+        configaction = ""
+    else:
+        configaction = "--configaction " + configaction
     
     # check if cancel all or market orders orders
     cancel_orders_arg = ""
@@ -103,7 +106,7 @@ if __name__ == '__main__':
     while 1:
         # run dexbot
         print("[I] starting dexbot")
-        result = subprocess.run("python3 dexbot_v2.py --config " + config + " --action " + action + " " + cfg.botconfig + " " + cancel_orders_arg, shell=True)
+        result = subprocess.run("python3 dexbot_v2.py --config " + config + " --action " + action + " " + configaction + " " + cancel_orders_arg, shell=True)
         # if dexbot process exit success exit program
         if result.returncode == 0:
             break
@@ -117,7 +120,7 @@ if __name__ == '__main__':
             # wait a while, we do not want to burn cpu by recovery process...
             time.sleep(3)
             # try to cancel orders
-            result2 = subprocess.run("python3 dexbot_v2.py --config " + config + " --action " + action + " " + cfg.botconfig + " --canceladdress", shell=True)
+            result2 = subprocess.run("python3 dexbot_v2.py --config " + config + " --action " + action + " --canceladdress", shell=True)
             # check if cancel all orders success or try to do it again
             if result2.returncode == 0:
                 break
