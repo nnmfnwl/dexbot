@@ -6,9 +6,9 @@ tradingaddress = {}
 # ~ tradingaddress['BLOCK'] = '_address_'
 # ~ tradingaddress['PIVX'] = '_address_'
 # ~ tradingaddress['MUE'] = '_address_'
-rpcport = 41414
-rpcuser = 'BlockDXBlocknet'
-rpcpassword = 'a4c84e11-69fc-4640-a0fe-de27b9537565'
+rpc_port = 41414
+rpc_user = 'BlockDXBlocknet'
+rpc_password = 'a4c84e11-69fc-4640-a0fe-de27b9537565'
 
 
 # Custom price settings: Required if using the --usecustom flag.
