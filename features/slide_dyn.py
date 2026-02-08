@@ -33,17 +33,19 @@ def feature__slide_dyn__init_preconfig__():
 feature__slide_dyn__init_preconfig__()
 
 # define argument parameter
-def feature__slide_dyn__load_config_define(parser, argparse):
+def feature__slide_dyn__load_config_define():
     
-    parser.add_argument('--slide_dyn_asset', type=str, help='dynamic slide static values are set in specific asset instead of maker (default=--maker)', default=None)
-    parser.add_argument('--slide_dyn_asset_track', type=glob.t.argparse_bool, nargs='?', const=True, help=
-    'track dynamic slide asset price updates True/False'
+    feature__main_cfg__add_variable('slide_dyn_asset', None, feature__main_cfg__validate_str, None, """Enable dynamic slide based on maker amount and selling or buying maker.
+static type is based on difference between configured static maker amount and actual maker amount
+relative type is based on difference between relative to maker+taker amount and actual maker amount
+    Value means that dynamic slide static values are set in specific asset instead of maker (default=--maker)""", None)
+    feature__main_cfg__add_variable('slide_dyn_asset_track', False, feature__main_cfg__validate_bool, None, """track dynamic slide asset price updates True/False'
     'This means, ie if trading BLOCK/BTC and asset is USD,'
     'so USD/BLOCK price will be tracked,'
-    'so values will be updated with ASSET/MAKER price change.(default=False disabled)', default=False)
-    parser.add_argument('--slide_dyn_zero_type', type=str, choices=['relative', 'static'], help='relative to maker+taker or static value when dynamic slide is 0.(default=relative)', default='relative')
-    parser.add_argument('--slide_dyn_zero', type=float, help=
-    'Relative(to maker+taker balance) or static specific value when dynamic slide intensity is 0%%.'
+    'so values will be updated with ASSET/MAKER price change.(default=False disabled)""", None)
+    feature__main_cfg__add_variable('slide_dyn_zero_type', 'relative', feature__main_cfg__validate_select, ['relative', 'static'], """relative to maker+taker or static maker value when dynamic slide is 0.(default=relative)""", None)
+    feature__main_cfg__add_variable('slide_dyn_zero_value', -2, feature__main_cfg__validate_float, None,
+    """Relative(to maker+taker balance) or static specific value when dynamic slide intensity is 0%%.'
     ' Value -1 means, to autoconfig value to intensity be 0%% for bot startup MAKER/TAKER amounts.'
     ' Value -2 means, bot will first try to load value from previous run otherwise same like -1 value'
     ' Otherwise it means value=(maker+taker*dyn_zero) at which dynamic slide is at 0%% intensity.'
@@ -53,38 +55,37 @@ def feature__slide_dyn__load_config_define(parser, argparse):
     'Static value means static amount of maker where dynamic slide intensity is at 0%%.'
     ' ie, #4 at type=static, zero=120, slide_dyn_asset=USDT, slide_dyn_asset_track=True'
     '   is zero also updated by price of USDT/MAKER'
-    '(default=-2 autoconfig)', default=-2)
+    '(default=-2 autoconfig)""", None)
     
-    parser.add_argument('--slide_dyn_type', type=str, choices=['relative', 'static'], default='relative',
-    help='relative to maker+taker or static values of, ignore, threshold, (default=relative)', )
+    feature__main_cfg__add_variable('slide_dyn_type', 'relative', feature__main_cfg__validate_select, ['relative', 'static'], """relative to maker+taker or static values of, ignore, threshold, (default=relative)""", None)
     
-    parser.add_argument('--slide_dyn_sell_ignore', type=float, default=0,
-    help='dynamic slide sell ignore is amount of maker that could be sold and no dyn slide will be activated. (default=0 means no sell ignore zone)')
-    parser.add_argument('--slide_dyn_sell_threshold', type=float, default=0.02,
-    help='every reached sell threshold will do a one dynamic slide sell step'
-    '(default=0.02 at slide_dyn_type=relative, it means, every time 2%% of maker is sold, slide will be increased by slide_dyn_sell_step)')
+    feature__main_cfg__add_variable('slide_dyn_sell_ignore', 0, feature__main_cfg__validate_float, None,
+    """dynamic slide sell ignore is amount of maker that could be sold and no dyn slide will be activated. (default=0 means no sell ignore zone)""")
+    feature__main_cfg__add_variable('slide_dyn_sell_threshold', 0.02, feature__main_cfg__validate_float, None,
+    """every reached sell threshold will do a one dynamic slide sell step'
+    '(default=0.02 at slide_dyn_type=relative, it means, every time 2%% of maker is sold, slide will be increased by slide_dyn_sell_step)""")
     
-    parser.add_argument('--slide_dyn_sell_step', type=float, default=0,
-    help='dynamic slide addition for every reached sell threshold.(default=0 means sell slide step is none)')
-    parser.add_argument('--slide_dyn_sell_step_multiplier', type=float, default=1,
-    help='recursive sell step multiplier.(default=1 means no multiply)')
+    feature__main_cfg__add_variable('slide_dyn_sell_step', 0, feature__main_cfg__validate_float, None,
+    """dynamic slide addition for every reached sell threshold.(default=0 means sell slide step is none)""")
+    feature__main_cfg__add_variable('slide_dyn_sell_step_multiplier', 1, feature__main_cfg__validate_float, None,
+    """recursive sell step multiplier.(default=1 means no multiply)""")
     
-    parser.add_argument('--slide_dyn_sell_max', type=float, default=0, 
-    help='maximum dynamic slide for sell operations(default=0 means disabled)')
+    feature__main_cfg__add_variable('slide_dyn_sell_max', 0, feature__main_cfg__validate_float, None,
+    """maximum dynamic slide for sell operations(default=0 means disabled)""")
     
-    parser.add_argument('--slide_dyn_buy_ignore', type=float, default=0, 
-    help='dynamic slide buy ignore is amount of maker that could be bought and no dyn slide will be activated. (default=0 means no buy ignore zone)')
-    parser.add_argument('--slide_dyn_buy_threshold', type=float, default=0.02,
-    help='every reached buy threshold will do a one dynamic slide buy step'
-    '(default=0.02 at slide_dyn_type=relative, it means, every time 2%% of maker is buyght, slide will be increased by slide_dyn_buy_step)')
+    feature__main_cfg__add_variable('slide_dyn_buy_ignore', 0, feature__main_cfg__validate_float, None,
+    """dynamic slide buy ignore is amount of maker that could be bought and no dyn slide will be activated. (default=0 means no buy ignore zone)""")
+    feature__main_cfg__add_variable('slide_dyn_buy_threshold', 0.02, feature__main_cfg__validate_float, None,
+    """every reached buy threshold will do a one dynamic slide buy step
+    (default=0.02 at slide_dyn_type=relative, it means, every time 2%% of maker is buyght, slide will be increased by slide_dyn_buy_step)""")
     
-    parser.add_argument('--slide_dyn_buy_step', type=float, default=0, 
-    help='every reached buy threshold will do a one dynamic slide buy step(default=0 means buy slide step is none)')
-    parser.add_argument('--slide_dyn_buy_step_multiplier', type=float, default=1,
-    help='recursive buy step multiplier.(default=1 means no multiply)')
+    feature__main_cfg__add_variable('slide_dyn_buy_step', 0, feature__main_cfg__validate_float, None,
+    """every reached buy threshold will do a one dynamic slide buy step(default=0 means buy slide step is none)""")
+    feature__main_cfg__add_variable('slide_dyn_buy_step_multiplier', 1, feature__main_cfg__validate_float, None,
+    """recursive buy step multiplier.(default=1 means no multiply)""")
     
-    parser.add_argument('--slide_dyn_buy_max', type=float, default=0,
-    help='maximum dynamic slide for buy operations(default=0 means disabled)')
+    feature__main_cfg__add_variable('slide_dyn_buy_max', 0, feature__main_cfg__validate_float, None,
+    """maximum dynamic slide for buy operations(default=0 means disabled)""")
 
 # parse configuration value
 def feature__slide_dyn__load_config_postparse(args):
@@ -94,7 +95,7 @@ def feature__slide_dyn__load_config_postparse(args):
     c.BOTslide_dyn_asset_track = bool(args.slide_dyn_asset_track)
     
     c.BOTslide_dyn_zero_type = str(args.slide_dyn_zero_type)
-    c.BOTslide_dyn_zero = float(args.slide_dyn_zero)
+    c.BOTslide_dyn_zero_value = float(args.slide_dyn_zero_value)
     
     c.BOTslide_dyn_type = str(args.slide_dyn_type)
     
@@ -116,14 +117,14 @@ def feature__slide_dyn__load_config_verify():
     error_num = 0
     crazy_num = 0
     
-    if c.BOTslide_dyn_zero != -1 and c.BOTslide_dyn_zero != -2:
+    if c.BOTslide_dyn_zero_value != -1 and c.BOTslide_dyn_zero_value != -2:
         # type=relative zero more than 1 or less than 0 does not make sense
-        if c.BOTslide_dyn_zero_type == 'relative' and (c.BOTslide_dyn_zero > 1 or c.BOTslide_dyn_zero < 0):
-            print('** ERROR >> dynamic slide >> <slide_dyn_zero> value <{0}> is invalid'.format(c.BOTslide_dyn_zero))
+        if c.BOTslide_dyn_zero_type == 'relative' and (c.BOTslide_dyn_zero_value > 1 or c.BOTslide_dyn_zero_value < 0):
+            print('** ERROR >> dynamic slide >> <slide_dyn_zero_value> value <{0}> is invalid'.format(c.BOTslide_dyn_zero_value))
             error_num += 1
         # type=static value less than 0 does not make sense
-        if c.BOTslide_dyn_zero_type == 'static' and (c.BOTslide_dyn_zero < 0):
-            print('** ERROR >> dynamic slide >> <slide_dyn_zero> value <{0}> is invalid'.format(c.BOTslide_dyn_zero))
+        if c.BOTslide_dyn_zero_type == 'static' and (c.BOTslide_dyn_zero_value < 0):
+            print('** ERROR >> dynamic slide >> <slide_dyn_zero_value> value <{0}> is invalid'.format(c.BOTslide_dyn_zero_value))
             error_num += 1
     
     # SLIDE DYNAMIC FOR MAKER SELL OPERATIONS
@@ -246,7 +247,7 @@ def feature__slide_dyn__maker_convert_to_asset(size_in_slide_dyn_maker):
 def feature__slide_dyn__init_postpricing():
     
     # try to restore maker price when slide zero is -2 or restore is true
-    if (c.BOTaction_arg != "reset") and (c.BOTslide_dyn_zero == -2 or c.BOTaction_arg == 'restore'):
+    if (c.BOTaction_arg != "reset") and (c.BOTslide_dyn_zero_value == -2 or c.BOTaction_arg == 'restore'):
         c.feature__slide_dyn__maker_price_value_startup = feature__tmp_cfg__get_value("feature__slide_dyn__maker_price_value_startup", None)
     
     # if maker price value is None or was not restored, than save actual as default for later usage
@@ -261,10 +262,10 @@ def feature__slide_dyn__init_postpricing():
     if c.BOTslide_dyn_zero_type == 'relative':
         
         # slide dyn zero auto set
-        if c.BOTslide_dyn_zero == -1 or c.BOTslide_dyn_zero == -2:
+        if c.BOTslide_dyn_zero_value == -1 or c.BOTslide_dyn_zero_value == -2:
             
             # if slide dyn zero is -2 or restore is true, try to load tmp cfg
-            if (c.BOTaction_arg != 'reset') and (c.BOTslide_dyn_zero == -2 or c.BOTaction_arg == 'restore'):
+            if (c.BOTaction_arg != 'reset') and (c.BOTslide_dyn_zero_value == -2 or c.BOTaction_arg == 'restore'):
                 if feature__tmp_cfg__get_value("BOTslide_dyn_zero_type") == 'relative':
                     c.feature__slide_dyn__zero_value = feature__tmp_cfg__get_value("feature__slide_dyn__zero_value", None)
                     
@@ -283,18 +284,18 @@ def feature__slide_dyn__init_postpricing():
                 feature__tmp_cfg__set_value("BOTslide_dyn_zero_type", "relative")
                 feature__tmp_cfg__set_value("feature__slide_dyn__zero_value", c.feature__slide_dyn__zero_value)
                 
-            print('>> INFO >> dynamic slide >> init auto-set <relative> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
+            print('>> INFO >> dynamic slide >> init auto-set <relative> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero_value, c.feature__slide_dyn__zero_value))
             
         else:
-            c.feature__slide_dyn__zero_value = c.BOTslide_dyn_zero
-            print('>> INFO >> dynamic slide >> dynamic slide init manu-set <relative> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
+            c.feature__slide_dyn__zero_value = c.BOTslide_dyn_zero_value
+            print('>> INFO >> dynamic slide >> dynamic slide init manu-set <relative> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero_value, c.feature__slide_dyn__zero_value))
             
     elif c.BOTslide_dyn_zero_type == 'static':
         
-        if c.BOTslide_dyn_zero == -1 or c.BOTslide_dyn_zero == -2:
+        if c.BOTslide_dyn_zero_value == -1 or c.BOTslide_dyn_zero_value == -2:
             
             # if slide dyn zero is -2 or restore is true, try to load tmp cfg
-            if (c.BOTaction_arg != 'reset') and (c.BOTslide_dyn_zero == -2 or c.BOTaction_arg == 'restore'):
+            if (c.BOTaction_arg != 'reset') and (c.BOTslide_dyn_zero_value == -2 or c.BOTaction_arg == 'restore'):
                 if feature__tmp_cfg__get_value("BOTslide_dyn_zero_type") == 'static':
                     if feature__tmp_cfg__get_value("BOTslide_dyn_asset") == c.BOTslide_dyn_asset:
                         c.feature__slide_dyn__zero_value = feature__tmp_cfg__get_value("feature__slide_dyn__zero_value")
@@ -307,10 +308,10 @@ def feature__slide_dyn__init_postpricing():
                 feature__tmp_cfg__set_value("BOTslide_dyn_asset", c.BOTslide_dyn_asset)
                 feature__tmp_cfg__set_value("feature__slide_dyn__zero_value", c.feature__slide_dyn__zero_value)
                 
-            print('>> INFO >> dynamic slide >> auto auto-set <static> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
+            print('>> INFO >> dynamic slide >> auto auto-set <static> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero_value, c.feature__slide_dyn__zero_value))
         else:
-            c.feature__slide_dyn__zero_value = c.BOTslide_dyn_zero
-            print('>> INFO >> dynamic slide >> init manu-set <static> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero, c.feature__slide_dyn__zero_value))
+            c.feature__slide_dyn__zero_value = c.BOTslide_dyn_zero_value
+            print('>> INFO >> dynamic slide >> init manu-set <static> zero intensity at value <{} ~ {}>'.format(c.BOTslide_dyn_zero_value, c.feature__slide_dyn__zero_value))
     else:
         print('>> FATAL >> dynamic slide >> !!!! internal BUG Detected <BOTslide_dyn_zero_type> is <{}>'.format(c.BOTslide_dyn_zero_type))
         sys.exit(1)
@@ -345,17 +346,17 @@ def feature__slide_dyn__update_dyn_slide():
         else:
             balance_taker_in_maker = (d.balance_taker_total / c.feature__slide_dyn__maker_price_value_startup) #convert taker balance to by price
         balance_total = d.balance_maker_total + balance_taker_in_maker
-        tmp_bot_slide_dyn_zero = c.feature__slide_dyn__zero_value * balance_total
+        tmp_bot_slide_dyn_zero_value = c.feature__slide_dyn__zero_value * balance_total
         
     # zero type = static >> so we get static value which could also be relative to zero asset
     elif c.BOTslide_dyn_zero_type == 'static':
         tmp_dyn_zero_asset=c.BOTslide_dyn_asset
-        tmp_bot_slide_dyn_zero = feature__slide_dyn__asset_convert_to_maker(c.feature__slide_dyn__zero_value)
+        tmp_bot_slide_dyn_zero_value = feature__slide_dyn__asset_convert_to_maker(c.feature__slide_dyn__zero_value)
         
     # check difference between zero point and actual maker balances
     # negative value means MAKER was sold,
     # positive value means MAKER was bought by opposite dxbot
-    balance_diff_dirty = (d.balance_maker_total - tmp_bot_slide_dyn_zero)
+    balance_diff_dirty = (d.balance_maker_total - tmp_bot_slide_dyn_zero_value)
     
     # processing no MAKER OP
     if balance_diff_dirty == 0:
@@ -423,7 +424,7 @@ def feature__slide_dyn__update_dyn_slide():
         slide_dyn_final = max(slide_dyn_final, tmp_max_final)
     
     # ~ print('>>>> dynamic_slide >> <'+str(case_buy_sell)+'> zero type <')
-    print('>> INFO >> dynamic slide >> <'+str(case_buy_sell)+'> dyn zero at <'+str(c.BOTslide_dyn_zero_type)+' '+str(c.BOTslide_dyn_zero)+'~'+str(c.feature__slide_dyn__zero_value)+' '+str(tmp_dyn_zero_asset)+'> ~~ <'+str(tmp_bot_slide_dyn_zero)+' '+str(c.BOTsellmarket)+'> maker actual balance <'+str(d.balance_maker_total)+'> maker balance diff <'+str(balance_diff_dirty)+'> maker ignore <'+str(tmp_ignore_dirty)+' '+str(tmp_dyn_asset)+' ~~ '+str(tmp_ignore_final)+' '+str(c.BOTsellmarket)+'> maker balance diff final <'+str(balance_diff_final)+'> slide type <'+str(c.BOTslide_dyn_type)+'> slide step threshold <'+str(tmp_threshold_dirty)+'>~<'+str(tmp_threshold_final)+'> slide dyn step num * size <'+str(slide_dyn_step_num)+'*'+str(tmp_step_final)+'> final dyn slide <'+str(slide_dyn_final)+'> at max <'+str(tmp_max_final)+'>')
+    print('>> INFO >> dynamic slide >> <'+str(case_buy_sell)+'> dyn zero at <'+str(c.BOTslide_dyn_zero_type)+' '+str(c.BOTslide_dyn_zero_value)+'~'+str(c.feature__slide_dyn__zero_value)+' '+str(tmp_dyn_zero_asset)+'> ~~ <'+str(tmp_bot_slide_dyn_zero_value)+' '+str(c.BOTsellmarket)+'> maker actual balance <'+str(d.balance_maker_total)+'> maker balance diff <'+str(balance_diff_dirty)+'> maker ignore <'+str(tmp_ignore_dirty)+' '+str(tmp_dyn_asset)+' ~~ '+str(tmp_ignore_final)+' '+str(c.BOTsellmarket)+'> maker balance diff final <'+str(balance_diff_final)+'> slide type <'+str(c.BOTslide_dyn_type)+'> slide step threshold <'+str(tmp_threshold_dirty)+'>~<'+str(tmp_threshold_final)+'> slide dyn step num * size <'+str(slide_dyn_step_num)+'*'+str(tmp_step_final)+'> final dyn slide <'+str(slide_dyn_final)+'> at max <'+str(tmp_max_final)+'>')
     
     d.feature__slide_dyn__value = slide_dyn_final
     
