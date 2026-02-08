@@ -76,16 +76,16 @@ def init_postconfig():
     # it is not loaded by program arguments rather included.
     # Reason because args are system wide public and these config parameters are 
     # sensitive information
-    dxbottools.init_postconfig(c.BOTcf.rpcuser,
-                               c.BOTcf.rpcpassword,
-                               c.BOTcf.rpchostname,
-                               c.BOTcf.rpcport)
+    dxbottools.init_postconfig(c.BOTrpc_user,
+                               c.BOTrpc_password,
+                               c.BOTrpc_hostname,
+                               c.BOTrpc_port)
     
     # initialize pricing proxy client
     pricing_proxy_client__init_postconfig()
     
     # initialize pricing storage and set proxy client
-    pricing_storage__init_postconfig(c.BOTconfigfile + ".tmp.pricing", c.BOTdelaycheckprice, 2, 8, pricing_proxy_client__pricing_storage__try_get_price_fn, c.BOTcf.price_redirections)
+    pricing_storage__init_postconfig(c.BOTconfig + ".tmp.pricing", c.BOTdelay_check_price, 2, 8, pricing_proxy_client__pricing_storage__try_get_price_fn, c.BOTcfg.price_redirections)
     
     feature__slide_dyn__init_postconfig(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
     
@@ -215,50 +215,17 @@ def feature__maker_price__load_config_verify():
     
     return error_num, crazy_num
 
-def load_config_verify_or_exit():
+def load_config_verify_or_exit(error_num, crazy_num):
     global c, s, d
     print('>>>> Verifying configuration')
     
-    error_num = 0
-    crazy_num = 0
-    
-    if c.BOTconfigfile is None:
-        print("**** ERROR, --config file is invalid")
-        sys.exit(1)
-    
-    print("**** INFO, --config file <{}>".format(c.BOTconfigfile))
-    
-    # try to import configuration file cf
-    c.BOTcf = __import__(c.BOTconfigfile)
-    
-    # check configuration file
-    if not c.BOTcf.rpchostname:
-        print("**** ERROR, config.rpchostname is invalid")
-        error_num += 1
-    print("**** INFO, config.rpchostname <{}>".format(c.BOTcf.rpchostname))
-    
-    if not c.BOTcf.rpcport:
-        print("**** ERROR, config.rpcport is invalid")
-        error_num += 1
-    print("**** INFO, config.rpcport <{}>".format(c.BOTcf.rpcport))
-    
-    if not c.BOTcf.rpcuser:
-        print("**** ERROR, config.rpcuser is invalid")
-        error_num += 1
-    print("**** INFO, config.rpcuser <{}>".format(c.BOTcf.rpcuser))
-    
-    if not c.BOTcf.rpcpassword:
-        print("**** ERROR, config.rpcpassword is invalid")
-        error_num += 1
-    print("**** INFO, config.rpcpassword <{}>".format("****"))
-    
     # arguments: main maker/taker
-    if hasattr(c, 'BOTmakeraddress') == False:
-        print('**** ERROR, <makeraddress> is not specified')
+    if hasattr(c, 'BOTmaker_address') == False:
+        print('**** ERROR, <maker_address> is not specified')
         error_num += 1
         
-    if hasattr(c, 'BOTtakeraddress') == False:
-        print('**** ERROR, <takeraddress> is not specified')
+    if hasattr(c, 'BOTtaker_address') == False:
+        print('**** ERROR, <taker_address> is not specified')
         error_num += 1
     
     if c.BOTsell_type <= -1 or c.BOTsell_type >= 1:
@@ -266,30 +233,30 @@ def load_config_verify_or_exit():
         error_num += 1
     
     # arguments: basic values
-    if c.BOTsellstart <= 0:
-        print('**** ERROR, <sellstart> value <{0}> is invalid'.format(c.BOTsellstart))
+    if c.BOTsell_start_max <= 0:
+        print('**** ERROR, <sell_start_max> value <{0}> is invalid'.format(c.BOTsell_start_max))
         error_num += 1
     
-    if c.BOTsellend <= 0:
-        print('**** ERROR, <sellend> value <{0}> is invalid'.format(c.BOTsellend))
+    if c.BOTsell_end_max <= 0:
+        print('**** ERROR, <sell_end_max> value <{0}> is invalid'.format(c.BOTsell_end_max))
         error_num += 1
     
-    if c.BOTsellstartmin != 0:
-        if c.BOTsellstartmin < 0:
-            print('**** ERROR, <sellstartmin> value <{0}> is invalid. Must be more than 0'.format(c.BOTsellstartmin))
+    if c.BOTsell_start_min != 0:
+        if c.BOTsell_start_min < 0:
+            print('**** ERROR, <sell_start_min> value <{0}> is invalid. Must be more than 0'.format(c.BOTsell_start_min))
             error_num += 1
         
-        if c.BOTsellstartmin > c.BOTsellstart:
-            print('**** ERROR, <sellstartmin> value <{}> is invalid. Must be less than <sellstart> <{}>'.format(c.BOTsellstartmin, c.BOTsellstart))
+        if c.BOTsell_start_min > c.BOTsell_start_max:
+            print('**** ERROR, <sell_start_min> value <{}> is invalid. Must be less than <sell_start_max> <{}>'.format(c.BOTsell_start_min, c.BOTsell_start_max))
             error_num += 1
             
-    if c.BOTsellendmin != 0:
-        if c.BOTsellendmin < 0:
-            print('**** ERROR, <sellendmin> value <{}> is invalid. Must be more than 0'.format(c.BOTsellendmin))
+    if c.BOTsell_end_min != 0:
+        if c.BOTsell_end_min < 0:
+            print('**** ERROR, <sell_end_min> value <{}> is invalid. Must be more than 0'.format(c.BOTsell_end_min))
             error_num += 1
         
-        if c.BOTsellendmin > c.BOTsellend:
-            print('**** ERROR, <sellendmin> value <{}> is invalid. Must be less than <sellend> <{}>'.format(c.BOTsellendmin, c.BOTsellend))
+        if c.BOTsell_end_min > c.BOTsell_end_max:
+            print('**** ERROR, <sell_end_min> value <{}> is invalid. Must be less than <sell_end_max> <{}>'.format(c.BOTsell_end_min, c.BOTsell_end_max))
             error_num += 1
     
     # ~ if c.BOTmarking != 0:
@@ -299,43 +266,43 @@ def load_config_verify_or_exit():
         
         # ~ if c.BOTmarking >= 0.001:
             # ~ print('**** WARNING, <marking> value <{}> seems invalid. Values more than 0.001 can possibly have very impact on order value'.format(c.BOTmarking))
-            # ~ print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
+            # ~ print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --im_really_sure_what_im_doing argument')
             # ~ crazy_num += 1
                 
-    if c.BOTslidestart <= 1:
-        print('**** WARNING, <slidestart> value <{0}> seems invalid. Values less than 1 means selling something under price.'.format(c.BOTslidestart))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
+    if c.BOTsell_start_slide <= 1:
+        print('**** WARNING, <sell_start_slide> value <{0}> seems invalid. Values less than 1 means selling something under price.'.format(c.BOTsell_start_slide))
+        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --im_really_sure_what_im_doing argument')
         crazy_num += 1
     
-    if c.BOTslidestart > 10:
-        print('**** WARNING, <slidestart> value <{0}> seems invalid. <1.01> means +1%, <1.10> means +10%, more than <2> means +100% of actual price'.format(c.BOTslidestart))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
+    if c.BOTsell_start_slide > 10:
+        print('**** WARNING, <sell_start_slide> value <{0}> seems invalid. <1.01> means +1%, <1.10> means +10%, more than <2> means +100% of actual price'.format(c.BOTsell_start_slide))
+        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --im_really_sure_what_im_doing argument')
         crazy_num += 1
     
-    if c.BOTslideend <= 1:
-        print('**** WARNING, <slideend> value <{0}> seems invalid. Values less than 1 means selling something under price.'.format(c.BOTslideend))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
+    if c.BOTsell_end_slide <= 1:
+        print('**** WARNING, <sell_end_slide> value <{0}> seems invalid. Values less than 1 means selling something under price.'.format(c.BOTsell_end_slide))
+        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --im_really_sure_what_im_doing argument')
         crazy_num += 1
     
-    if c.BOTslideend > 10:
-        print('**** WARNING, <slideend> value <{0}> seems invalid. <1.01> means +1%, <1.10> means +10%, more than <2> means +100% of actual price'.format(c.BOTslideend))
-        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --imreallysurewhatimdoing argument')
+    if c.BOTsell_end_slide > 10:
+        print('**** WARNING, <sell_end_slide> value <{0}> seems invalid. <1.01> means +1%, <1.10> means +10%, more than <2> means +100% of actual price'.format(c.BOTsell_end_slide))
+        print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --im_really_sure_what_im_doing argument')
         crazy_num += 1
     
-    if c.BOTmaxopenorders < 1:
-        print('**** ERROR, <maxopen> value <{0}> is invalid'.format(c.BOTmaxopenorders))
+    if c.BOTmax_open_orders < 1:
+        print('**** ERROR, <max_open_orders> value <{0}> is invalid'.format(c.BOTmax_open_orders))
         error_num += 1
     
-    if c.BOTreopenfinisheddelay < 0:
-        print('**** ERROR, <reopenfinisheddelay> value <{0}> is invalid'.format(c.BOTreopenfinisheddelay))
+    if c.BOTreopen_finished_delay < 0:
+        print('**** ERROR, <reopen_finished_delay> value <{0}> is invalid'.format(c.BOTreopen_finished_delay))
         error_num += 1
     
-    if c.BOTreopenfinishednum < 0:
-        print('**** ERROR, <reopenfinishednum> value <{0}> is invalid'.format(c.BOTreopenfinishednum))
+    if c.BOTreopen_finished_num < 0:
+        print('**** ERROR, <reopen_finished_num> value <{0}> is invalid'.format(c.BOTreopen_finished_num))
         error_num += 1
     
-    if c.BOTreopenfinishednum > c.BOTmaxopenorders:
-        print('**** ERROR, <reopenfinishednum> can not be more than <maxopenorders> value <{0}>/<{1}> is invalid'.format(c.BOTreopenfinishednum, c.BOTmaxopenorders))
+    if c.BOTreopen_finished_num > c.BOTmax_open_orders:
+        print('**** ERROR, <reopen_finished_num> can not be more than <max_open_ordersorders> value <{0}>/<{1}> is invalid'.format(c.BOTreopen_finished_num, c.BOTmax_open_orders))
         error_num += 1
     
     if c.BOTtakerbot < 0:
@@ -389,25 +356,25 @@ def load_config_verify_or_exit():
     error_num += error_num_tmp
     crazy_num += crazy_num_tmp
     
-    if c.BOTslidepump < 0:
-        print('**** ERROR, <slidepump> value <{0}> is invalid'.format(c.BOTslidepump))
+    if c.BOTpump_slide < 0:
+        print('**** ERROR, <pump_slide> value <{0}> is invalid'.format(c.BOTpump_slide))
         error_num += 1
     
-    if c.BOTpumpamount < 0 and c.BOTslidepump > 0:
-        print('**** ERROR, <pumpamount> value <{0}> is invalid'.format(c.BOTpumpamount))
+    if c.BOTpump_amount_max < 0 and c.BOTpump_slide > 0:
+        print('**** ERROR, <pump_amount_max> value <{0}> is invalid'.format(c.BOTpump_amount_max))
         error_num += 1
         
     # arguments: reset orders by events
-    if c.BOTresetonpricechangepositive < 0:
-        print('**** ERROR, <resetonpricechangepositive> value <{0}> is invalid'.format(c.BOTresetonpricechangepositive))
+    if c.BOTreset_on_price_change_positive < 0:
+        print('**** ERROR, <reset_on_price_change_positive> value <{0}> is invalid'.format(c.BOTreset_on_price_change_positive))
         error_num += 1
     
-    if c.BOTresetonpricechangenegative < 0:
-        print('**** ERROR, <resetonpricechangenegative> value <{0}> is invalid'.format(c.BOTresetonpricechangenegative))
+    if c.BOTreset_on_price_change_negative < 0:
+        print('**** ERROR, <reset_on_price_change_negative> value <{0}> is invalid'.format(c.BOTreset_on_price_change_negative))
         error_num += 1
     
-    if c.BOTresetafterdelay < 0:
-        print('**** ERROR, <resetafterdelay> value <{0}> is invalid'.format(c.BOTresetafterdelay))
+    if c.BOTreset_after_delay < 0:
+        print('**** ERROR, <reset_after_delay> value <{0}> is invalid'.format(c.BOTreset_after_delay))
         error_num += 1
     
     error_num_tmp, crazy_num_tmp = reset_afot__load_config_verify()
@@ -415,58 +382,56 @@ def load_config_verify_or_exit():
     crazy_num += crazy_num_tmp
     
     # arguments: internal values changes
-    if c.BOTdelayinternal < 1:
-        print('**** ERROR, <delayinternal> value <{0}> is invalid'.format(c.BOTdelayinternal))
+    if c.BOTdelay_internal_op < 1:
+        print('**** ERROR, <delay_internal_op> value <{0}> is invalid'.format(c.BOTdelay_internal_op))
         error_num += 1
         
-    if c.BOTdelayinternalerror < 1:
-        print('**** ERROR, <delayinternalerror> value <{0}> is invalid'.format(c.BOTdelayinternalerror))
+    if c.BOTdelay_internal_error < 1:
+        print('**** ERROR, <delay_internal_error> value <{0}> is invalid'.format(c.BOTdelay_internal_error))
         error_num += 1
         
     # arguments: internal values changes
-    if c.BOTdelayinternalcycle < 1:
-        print('**** ERROR, <delayinternalcycle> value <{0}> is invalid'.format(c.BOTdelayinternalcycle))
+    if c.BOTdelay_internal_loop < 1:
+        print('**** ERROR, <delay_internal_loop> value <{0}> is invalid'.format(c.BOTdelay_internal_loop))
         error_num += 1
     
-    if c.BOTdelaycheckprice < 1:
-        print('**** ERROR, <delaycheckprice> value <{0}> is invalid'.format(c.BOTdelaycheckprice))
+    if c.BOTdelay_check_price < 1:
+        print('**** ERROR, <delay_check_price> value <{0}> is invalid'.format(c.BOTdelay_check_price))
         error_num += 1
         
-    if crazy_num != c.BOTimreallysurewhatimdoing or error_num != 0:
+    if crazy_num != c.BOTim_really_sure_what_im_doing or error_num != 0:
         if error_num != 0:
             print("**** ERROR > errors in configuration detected > {}".format(error_num))
         if crazy_num != 0:
-            print("**** WARNING > crazy config values detected, but not expected> {}/{}".format(crazy_num, c.BOTimreallysurewhatimdoing))
-        if crazy_num < c.BOTimreallysurewhatimdoing:
-            print("**** WARNING > crazy config values not detected, but expected > {}/{}".format(crazy_num, c.BOTimreallysurewhatimdoing))
+            print("**** WARNING > crazy config values detected, but not expected> {}/{}".format(crazy_num, c.BOTim_really_sure_what_im_doing))
+        if crazy_num < c.BOTim_really_sure_what_im_doing:
+            print("**** WARNING > crazy config values not detected, but expected > {}/{}".format(crazy_num, c.BOTim_really_sure_what_im_doing))
             
         print('>>>> Verifying configuration failed.'
-        'Please read help and use <imreallysurewhatimdoing> argument correctly, it allows you to specify number of crazy/meaningless/special configuration values, which are expected, to confirm you are sure what you are doing.')
+        'Please read help and use <im_really_sure_what_im_doing> argument correctly, it allows you to specify number of crazy/meaningless/special configuration values, which are expected, to confirm you are sure what you are doing.')
         sys.exit(1)
     else:
         print('>>>> Verifying configuration success')
 
-def feature__maker_price__load_config_define(parser, argparse):
-    parser.add_argument('--maker_price', type=float, help='Value for live price updates or static price configuration'
+def feature__maker_price__load_config_define():
+    feature__main_cfg__add_variable('maker_price', 0, feature__main_cfg__validate_float, None, """Value for live price updates or static price configuration'
     '0 - live price updates are activated'
     '-1 - local one time price activated, center price is loaded from remote source and saved int cfg file every time bot starts, even not updated after crash'
     '-2 - local long term price activated, center price is loaded from remote source and saved into cfg file only once, even not updated after restart/crash'
     'Other than 0, -1, or -2 values are invalid'
     'Even if center price is configured like-static, spread and dynamic spread should take care about order position management, this like system dexbot is able to handle situations when no pricing source is available, but it is up to user how to configure price movement'
     'There is also another special pricing configuration feature called "price_redirections"(see bot_v2_template.py file for details)'
-    '(default=0 live price update)', default=0)
+    '(default=0 live price update)""", None)
 
 def feature__maker_price__load_config_postparse(args):
     global c, s, d
     
     c.feature__maker_price__cfg_price = float(args.maker_price)
 
-def load_config():
+def load_config_argument_parser_define(parser):
     global c, s, d
-    print('>>>> Loading program configuration')
     
-    parser = argparse.ArgumentParser()
-
+    # arguments: action arg
     parser.add_argument('--action', type=str, help='reset/restore action, default is "none"'
     'reset is used to force features which implements reset to force to not use values from tmp cfg, rather load new ones'
     'restore is used to force features which implementes restore to force to try to use values from tmp cfg'
@@ -478,226 +443,311 @@ def load_config():
     # arguments: config file(will be used instead of arguments later)
     parser.add_argument('--config', type=str, help='python bot/strategy config file', default=None)
     
-    # arguments: main maker/taker
-    parser.add_argument('--maker', type=str, help='asset being sold (default=BLOCK)', default='BLOCK')
-    parser.add_argument('--taker', type=str, help='asset being bought (default=LTC)', default='LTC')
-    parser.add_argument('--makeraddress', type=str, help='trading address of asset being sold (default=None)', default=None)
-    parser.add_argument('--takeraddress', type=str, help='trading address of asset being bought (default=None)', default=None)
-    parser.add_argument('--address_funds_only', type=glob.t.argparse_bool, nargs='?', const=True, help='limit bot to use and compute funds only from maker and taker address(default=False disabled)', default=False)
-    
-    # ~ parser.add_argument('--maker_address_funds_only', nargs='+', type=str, help='limit bot to use and compute funds from specific maker addresses(or multiple addresses separated by space) only, otherwise all addresses are used', action='store_true')
-    # ~ parser.add_argument('--taker_address_funds_only', nargs='+', type=str, help='limit bot to use and compute funds from specific taker addresses(or multiple addresses separated by space) only, otherwise all addresses are used', action='store_true')
-    
-    feature__flush_co__load_config_define(parser, argparse)
-    
-    pricing_proxy_client__load_config_define(parser, argparse)
-    
-    pricing_storage__load_config_define(parser, argparse)
-    
-    # arguments: basic values
-    parser.add_argument('--sell_type', type=float, choices=range(-1, 1), help='<float> number between -1 and 1. -1 means maximum exponential to 0 means linear to 1 means maximum logarithmic. '
-    'Recommended middle range log and exp values are 0.8 and -0.45'
-    ' (default=0 linear)', default=0)
-    
-    parser.add_argument('--sell_size_asset', type=str, help='size of orders are set in specific asset instead of maker (default=--maker)', default=None)
-    
-    parser.add_argument('--sellstart', type=float, help='size of first order or random from range sellstart and sellend (default=0.001)', default=0.001)
-    parser.add_argument('--sellend', type=float, help='size of last order or random from range sellstart and sellend (default=0.001)', default=0.001)
-    
-    parser.add_argument('--sellstartmin', type=float, help='Minimum acceptable size of first order.'
-    'If this is configured and there is not enough balance to create first order at <sellstart> size, order will be created at maximum possible size between <sellstart> and <sellstartmin>'
-    'By default this feature is disabled.'
-    '(default=0 disabled)', default=0)
-    parser.add_argument('--sellendmin', type=float, help='Minimum acceptable size of last order.'
-    'If this is configured and there is not enough balance to create last order at <sellend> size, order will be created at maximum possible size between <sellend> and <sellendmin>'
-    'By default this feature is disabled.'
-    '(default=0 disabled)', default=0)
-    # ~ parser.add_argument('--marking', type=float, help='mark order amount by decimal number for example 0.000777 (default=0 disabled)', default=0)
-    
-    parser.add_argument('--sellrandom', help='orders size will be random number between sellstart and sellend, otherwise sequence of orders starting by sellstart amount and ending with sellend amount(default=disabled)', action='store_true')
-    
-    parser.add_argument('--slidestart', type=float, help='price of first order will be equal to (slidestart * actual_price) (default=1.01 means +1%%)', default=1.01)
-    parser.add_argument('--slideend', type=float, help='price of last order will be equal to (slideend * actual price) (default=1.021 means +2.1%%)', default=1.021)
-    
-    parser.add_argument('--maxopen', type=int, help='Max amount of orders to have open at any given time. Placing orders sequence: first placed order is at slidestart(price slide),sellstart(amount) up to slideend(price slide),sellend(amount), last order placed is slidepump if configured, is not counted into this number (default=5)', default=5)
-    
-    parser.add_argument('--make_next_on_hit', type=glob.t.argparse_bool, nargs='?', const=True, help='create next order on 0 amount hit, so if first order is not created, rather skipped, next is created(default=False disabled)', default=False)
-    
-    parser.add_argument('--reopenfinisheddelay', type=int, help='finished orders will be reopened after specific delay(seconds) of last filled order(default=0 disabled)', default=0)
-    parser.add_argument('--reopenfinishednum', type=int, help='finished orders will be reopened after specific number of filled orders(default=0 disabled)', default=0)
-    
-    parser.add_argument('--partial_orders', type=glob.t.argparse_bool, nargs='?', const=True, help='enable or disable partial orders. Partial orders minimum is set by <sellstartmin> <sellendmin> along with dynamic size of orders(default=False disabled)', default=False)
-    parser.add_argument('--takerbot', type=int, help='Keep checking for possible partial orders which meets requirements(size, price) and accept that orders.'
-    'If this feature is enabled, takerbot is automatically searching for orders at size between <sellstart-sellend>...<sellstartmin-sellendmin> and at price <slidestart-slideend>+<dynamic slide>*<price> and higher.'
-    'This feature can be also understood as higher layer implementation of limit order feature on top of atomic swaps on BlockDX exchange. Takerbot can possible cancel multiple opened orders to autotake orders which meets requirements'
-    '(I.e. value 30 means check every 30 seconds)'
-    'By default this feature is disabled.'
-    '(default=0 disabled)', default=0)
-
-    # ~ TODO = not implemented yet
-    parser.add_argument('--hidden_orders', type=glob.t.argparse_bool, nargs='?', const=True, help='Orders will be created only virtually, hidden from dx and acting like takerbot only.  (default=False disabled)', default=False)
-    
-    # ~ parser.add_argument('--external_type', type=str, choices=[None, 'uniswap', 'bittrex'], help='choose external  (default=None)', default=None)
-    # ~ parser.add_argument('--external_balance_type', type=str, choices=['auto','relative', 'static'], help='(default=auto)', default=None)
-    # ~ parser.add_argument('--external_balance_min', type=float, help='minimum unbalance size when bot trigger balancing', default=0)
-    # ~ parser.add_argument('--external_balance_threshold', type=float, help='', default=0.5)
-    # liquidity vs arbitrage vs mirroring vs balancing relative
-    
-    sboundary__load_config_define(parser, argparse)
-    rboundary__load_config_define(parser, argparse)
-    
-    parser.add_argument('--balance_save_asset', type=str, help='size of balance to save is set in specific asset instead of maker (default=--maker)', default=None)
-    parser.add_argument('--balance_save_asset_track', type=glob.t.argparse_bool, nargs='?', const=True, help='Track balance save asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BLOCK price and update balance to save by it (default=False disabled)', default=False)
-    parser.add_argument('--balance_save_number', help='min taker balance you want to save and do not use for making orders specified by number (default=0)', default=0)
-    parser.add_argument('--balance_save_percent', help='min taker balance you want to save and do not use for making orders specified by percent of maker+taker balance (default=0.05 means 5%%)', default=0.05)
-    
-    feature__maker_price__load_config_define(parser, argparse)
-    
-    # arguments: dynamic values, special pump/dump order
-    
-    feature__slide_dyn__load_config_define(parser, argparse)
-    
-    parser.add_argument('--slidepump', type=float, help='if slide pump is non zero a special order out of slidemax is set, this order will be filled when pump happen(default=0 disabled, 0.5 means order will be placed +50%% out of maximum slide)', default=0)
-    parser.add_argument('--pumpamount', type=float, help='pump order size, 0 means maximum, otherwise sellend is used(default=--sellend)', default=0)
-    parser.add_argument('--pumpamountmin', type=float, help='minimum acceptable pump order size, otherwise sellendmin is used(default=--sellendmin)', default=0)
-
-    # arguments: reset orders by events
-    parser.add_argument('--resetonpricechangepositive', type=float, help='percentual price positive change(you can buy more) when reset all orders. I.e. 0.05 means reset at +5%% change. (default=0 disabled)', default=0)
-    parser.add_argument('--resetonpricechangenegative', type=float, help='percentual price negative change(you can buy less) when reset all orders. I.e. 0.05 means reset at -5%% change. (default=0 disabled)', default=0)
-    parser.add_argument('--resetafterdelay', type=int, help='keep resetting orders in specific number of seconds (default=0 disabled)', default=0)
-    
-    reset_afot__load_config_define(parser, argparse)
-
-    # arguments: internal values changes
-    parser.add_argument('--delayinternal', type=float, help='sleep delay, in seconds, between place/cancel orders or other internal operations(can be used ie. case of bad internet connection...) (default=2.3)', default=2.3)
-    parser.add_argument('--delayinternalerror', type=float, help='sleep delay, in seconds, when error happen to try again. (default=10)', default=10)
-    parser.add_argument('--delayinternalcycle', type=float, help='sleep delay, in seconds, between main loops to process all things to handle. (default=8)', default=8)
-    parser.add_argument('--delaycheckprice', type=float, help='sleep delay, in seconds to check again pricing (default=180)', default=180)
-    
     # arguments: utility arguments
+    parser.add_argument('--configaction', type=str, default=None, help='defaults/template configuration action'
+    'instead of using configuration file, just generate new template file or defaults values None/template/defaults. (default = None)')
     parser.add_argument('--cancelall', help='cancel all orders and exit', action='store_true')
     parser.add_argument('--cancelmarket', help='cancel all orders in market specified by pair --maker and --taker', action='store_true')
-    parser.add_argument('--canceladdress', help='cancel all orders in market specified by pair --maker + --taker + --makeraddress + --takeraddress ', action='store_true')
-    
-    # arguments: special arguments
-    parser.add_argument('--imreallysurewhatimdoing', type=int, default=0, help='This argument allows user to specify number of non-standard configuration values for special cases like user want to activate bot trading later relatively higher price than actual is')
-    
-    feature__tmp_cfg__load_config_define(parser, argparse)
-    
-    args = parser.parse_args()
-    
-    # check if configuration argument is set
-    c.BOTconfigfile = args.config
-    
-    # try to load auto-generated temporary configuration
-    feature__tmp_cfg__load_config_postparse(args)
-    
-    # arguments: main maker/taker
-    c.BOTsellmarket = args.maker.upper()
-    c.BOTbuymarket = args.taker.upper()
-    
-    # try to autoselect maker/taker address from config file
-    if c.BOTsellmarket in dxsettings.tradingaddress:
-        c.BOTmakeraddress = dxsettings.tradingaddress[c.BOTsellmarket]
-    
-    if c.BOTbuymarket in dxsettings.tradingaddress:
-        c.BOTtakeraddress = dxsettings.tradingaddress[c.BOTbuymarket]
-    
-    # try to autoselect maker/taker address from program arguments
-    if args.makeraddress is not None:
-        c.BOTmakeraddress = args.makeraddress
-        
-    if args.takeraddress is not None:
-        c.BOTtakeraddress = args.takeraddress
+    parser.add_argument('--canceladdress', help='cancel all orders in market specified by configuration variables maker= + taker= + maker_address= + taker_address= ', action='store_true')
+
+def load_config_argument_parser_postparse(args):
+    global c, s, d
     
     c.BOTaction_arg = str(args.action)
     
-    c.BOTaddress_funds_only = bool(args.address_funds_only)
+    # arguments: utility arguments
+    c.BOTcancelall = args.cancelall
+    c.BOTcancelmarket = args.cancelmarket
+    c.BOTcanceladdress = args.canceladdress
     
-    c.BOTpartial_orders = bool(args.partial_orders)
+    # check if configuration argument is set as --config and try to import configuration file
+    c.BOTconfig = args.config
+    if c.BOTconfig is None:
+        print("**** ERROR, --config file is invalid")
+        sys.exit(1)
     
-    c.BOThidden_orders = bool(args.hidden_orders)
+    c.BOTconfigaction = args.configaction
     
-    feature__maker_price__load_config_postparse(args)
+    # temporary configuration
+    feature__tmp_cfg__load_config_postparse(c.BOTconfig)
+
+def load_config_main_cfg_define():
     
-    feature__flush_co__load_config_postparse(args)
+    # configuration file variables rules definition
+    feature__main_cfg__add_variable("rpc_user", None, feature__main_cfg__validate_str, None, """RPC authentication username used to connect to Blocknet node wallet""", [["use JohnSmith", "JohnSmith"]])
+    feature__main_cfg__add_variable("rpc_password", None, feature__main_cfg__validate_password, None, """RPC authentication password used to connect to Blocknet node wallet""", None)
+    feature__main_cfg__add_variable("rpc_hostname", None, feature__main_cfg__validate_str, None, """Blocknet node wallet hostname or ip address""", [["use localhost 127.0.0.1", "127.0.0.1"]])
+    feature__main_cfg__add_variable("rpc_port", None, feature__main_cfg__validate_int, None, """RPC authentication port used to connect to Blocknet node wallet""", [["use port 41414", "41414"]])
     
-    pricing_proxy_client__load_config_postparse(args)
+    # arguments: main maker/taker
+    feature__main_cfg__add_variable('maker_ticker', 'BLOCK', feature__main_cfg__validate_str, None, """asset being sold (default=BLOCK). For example BLOCK LTC BTC PIVX XVG DASH DOGE""")
+    feature__main_cfg__add_variable('taker_ticker', 'LTC', feature__main_cfg__validate_str, """asset being bought (default=LTC). For example BLOCK LTC BTC PIVX XVG DASH DOGE""")
+    feature__main_cfg__add_variable('maker_address', None, feature__main_cfg__validate_str, """trading address of asset being sold (default=None)""")
+    feature__main_cfg__add_variable('taker_address', None, feature__main_cfg__validate_str, """trading address of asset being bought (default=None)""")
+    feature__main_cfg__add_variable('address_funds_only', None, feature__main_cfg__validate_bool, """limit bot to use and compute funds only from maker and taker address(default=False disabled)""")
     
-    pricing_storage__load_config_postparse(args)
+    feature__main_cfg__add_variable('price_redirections', dict({}), feature__main_cfg__validate_dict, None, """Price redirections is feature used to optionally set custom ASSET 1 price in thirty ASSET 2.
+For example trading BLOCK with LTC, you would rather set BLOCK price manually in USDT and BOT automatically converts value into LTC.""",
+[["example to redirect Blocknet price by $59 USDT per $BLOCK, and $1299 LTC ", """ "BLOCK": { "asset": "USDT", "price": 59} , "LTC": { "asset": "USDT", "price": 1299}"""]])
     
-    sboundary__load_config_postparse(args)
-    rboundary__load_config_postparse(args)
+    feature__flush_co__load_config_define()
+    
+    pricing_proxy_client__load_config_define()
+    
+    pricing_storage__load_config_define()
     
     # arguments: basic values
-    c.BOTsellrandom = args.sellrandom
+    feature__main_cfg__add_variable('sell_type', 0, feature__main_cfg__validate_int, None, """<float> number between -1 and 1. -1 means maximum exponential to 0 means linear to 1 means maximum logarithmic.
+Recommended middle range log and exp values are 0.8 and -0.45
+(default=0 linear)
+# EXAMPLE INFOGRAPHIC:
+#      ^
+#      |                                                
+# O    |                                              8  > order number #1 up to order number #8 with LINEAR --sell_type 0 order amount distribution
+# R    |                                           7  | 
+# D    |                                        6  |--| 
+# E    |                                     5  |--|--| 
+# R S  |                                  4  |--|--|--| 
+#   I  |                               3  |--|--|--|--| 
+#   Z  |                            2  |--|--|--|--|--| 
+#   E  |                         1  |--|--|--|--|--|--| 
+#      |                         |--|--|--|--|--|--|--| 
+#      ------------------------------------------------------>
+#                                ^                        price
+#                          center price
+#
+
+#      ^
+#      |                                                
+# O    |                                           7  8  > order number #1 up to order number #8 with EXPONENTIAL --sell_type -0.45 order amount distribution
+# R    |                                           |--| 
+# D    |                                        6  |--| 
+# E    |                                        |--|--| 
+# R S  |                                     5  |--|--| 
+#   I  |                                     |--|--|--| 
+#   Z  |                                  4  |--|--|--| 
+#   E  |                         1  2  3  |--|--|--|--| 
+#      |                         |--|--|--|--|--|--|--| 
+#      ------------------------------------------------------>
+#                                ^                        price
+#                          center price
+#""", None)
     
-    if args.sell_size_asset is None:
+    feature__main_cfg__add_variable('sell_size_asset', None, feature__main_cfg__validate_str, None, """size of orders are set in specific asset instead of maker (default=--maker)""",None)
+    
+    feature__main_cfg__add_variable('sell_start_max', 0.001, feature__main_cfg__validate_float, None, """First order maximum possible size or random from range sell_start_max and sell_end_max (default=0.001).
+In theory we need bot to try to create orders in dynamic size if there is not enough balance available to create order at maximum. But only between <value, min value>, because of transaction fees.""",None)
+    feature__main_cfg__add_variable('sell_end_max', 0.001, feature__main_cfg__validate_float, None, """size of last order or random from range sell_start_max and sell_end_max (default=0.001)""", None)
+    
+    feature__main_cfg__add_variable('sell_start_min', 0, feature__main_cfg__validate_float, None, """Minimum acceptable size of first order.'
+    'If this is configured and there is not enough balance to create first order at <sell_start_max> size, order will be created at maximum possible size between <sell_start_max> and <sell_start_min>'
+    'By default this feature is disabled.'
+    '(default=0 disabled)', default=0)""", None)
+    feature__main_cfg__add_variable('sell_end_min', 0, feature__main_cfg__validate_float, None, """Minimum acceptable size of last order.
+    'If this is configured and there is not enough balance to create last order at <sell_end_max> size, order will be created at maximum possible size between <sell_end_max> and <sell_end_min>'
+    'By default this feature is disabled.'
+    '(default=0 disabled)""", None)
+    
+    
+    feature__main_cfg__add_variable('sell_random', False, feature__main_cfg__validate_bool, None, """orders size will be random number between sell_start_max and sell_end_max, otherwise sequence of orders starting by sell_start_max amount and ending with sell_end_max amount(default=disabled)""", None)
+    
+    feature__main_cfg__add_variable('sell_start_slide', 1.01, feature__main_cfg__validate_float, None, """price of first order will be equal to (sell_start_slide * actual_price) (default=1.01 means +1%%)""", None)
+    feature__main_cfg__add_variable('sell_end_slide', 1.021, feature__main_cfg__validate_float, None, """price of last order will be equal to (sell_end_slide * actual price) (default=1.021 means +2.1%%)""", None)
+    
+    feature__main_cfg__add_variable('max_open_orders', 5, feature__main_cfg__validate_int, None, """Max amount of orders to have open at any given time. Placing orders sequence: first placed order is at sell_start_slide(price slide),sell_start_max(amount) up to sell_end_slide(price slide),sell_end_max(amount), last order placed is pump_slide if configured, is not counted into this number (default=5)""", None)
+    
+    feature__main_cfg__add_variable('make_next_on_hit', False, feature__main_cfg__validate_bool, None, """create next order on 0 amount hit, so if first order is not created, rather skipped, next is created(default=False disabled)""", None)
+    
+    feature__main_cfg__add_variable('reopen_finished_delay', 0, feature__main_cfg__validate_int, None, """finished orders will be reopened after specific delay(seconds) of last filled order(default=0 disabled)""", None)
+    feature__main_cfg__add_variable('reopen_finished_num', 0, feature__main_cfg__validate_int, None, """finished orders will be reopened after specific number of filled orders(default=0 disabled)
+    Example reopen_finished_num=2 means recreate orders when 2 orders are accepted.""", None)
+    
+    feature__main_cfg__add_variable('partial_orders', False, feature__main_cfg__validate_bool, None, """enable or disable partial orders. Partial orders minimum is set by <sell_start_min> <sell_end_min> along with dynamic size of orders(default=False disabled)""", None)
+    
+    feature__main_cfg__add_variable('takerbot', 0, feature__main_cfg__validate_int, None, """Keep checking for possible partial orders which meets requirements(size, price) and accept that orders.'
+    'If this feature is enabled, takerbot is automatically searching for orders at size between <sell_start_max-sell_end_max>...<sell_start_min-sell_end_min> and at price <sell_start_slide-sell_end_slide>+<dynamic slide>*<price> and higher.'
+    'This feature can be also understood as higher layer implementation of limit order feature on top of atomic swaps on BlockDX exchange. Takerbot can possible cancel multiple opened orders to autotake orders which meets requirements'
+    '(I.e. value 30 means check every 30 seconds)'
+    'By default this feature is disabled.'
+    '(default=0 disabled)""", None)
+
+    # ~ TODO = not implemented yet
+    feature__main_cfg__add_variable('hidden_orders', False, feature__main_cfg__validate_bool, None, """Orders will be created only virtually, hidden from dx and acting like takerbot only.  (default=False disabled)""", None)
+    
+    sboundary__load_config_define()
+    rboundary__load_config_define()
+    
+    feature__main_cfg__add_variable('balance_save_asset', None, feature__main_cfg__validate_str, None, """size of balance to save is set in specific asset instead of maker (default=--maker)""", None)
+    feature__main_cfg__add_variable('balance_save_asset_track', False, feature__main_cfg__validate_bool, None, """Track balance save asset price updates. This means, ie if trading BLOCK/BTC on USD also track USD/BLOCK price and update balance to save by it (default=False disabled)""")
+    feature__main_cfg__add_variable('balance_save_number', 0, feature__main_cfg__validate_str, None, """min taker balance you want to save and do not use for making orders specified by number (default=0)""", None)
+    feature__main_cfg__add_variable('balance_save_percent', 0.05, feature__main_cfg__validate_float, None, """min taker balance you want to save and do not use for making orders specified by percent of maker+taker balance (default=0.05 means 5%%)""", None)
+    
+    feature__maker_price__load_config_define()
+    
+    # arguments: dynamic values, special pump/dump order
+    
+    feature__slide_dyn__load_config_define()
+    
+    feature__main_cfg__add_variable('pump_slide', 0, feature__main_cfg__validate_float, """if slide pump is non zero a special order out of slidemax is set, this order will be filled when pump happen(default=0 disabled, 0.5 means order will be placed +50%% out of maximum slide)""", None)
+    feature__main_cfg__add_variable('pump_amount_max', 0, feature__main_cfg__validate_float, None, """pump order size, 0 means maximum, otherwise sell_end_max is used(default=--sell_end_max)""")
+    feature__main_cfg__add_variable('pump_amount_min', 0, feature__main_cfg__validate_float, NOne, """minimum acceptable pump order size, otherwise sell_end_min is used(default=--sell_end_min)""")
+
+    # arguments: reset orders by events
+    feature__main_cfg__add_variable('reset_on_price_change_positive', 0, feature__main_cfg__validate_float, None, """price positive change which inits reset of all orders. I.e. 0.05 means reset at +5%% change. (default=0 disabled)""", None)
+    feature__main_cfg__add_variable('reset_on_price_change_negative', 0, feature__main_cfg__validate_float, None, """price negative change which inits reset of all orders. I.e. 0.01 means reset at -1%% change. (default=0 disabled)""", None)
+    feature__main_cfg__add_variable('reset_after_delay', 0, feature__main_cfg__validate_int, None, """keep resetting orders in specific number of seconds (default=0 disabled)""")
+    
+    reset_afot__load_config_define()
+
+    # arguments: internal values changes
+    feature__main_cfg__add_variable('delay_internal_op', 2.3, feature__main_cfg__validate_float, None, """sleep delay, in seconds, between place/cancel orders or other internal operations(can be used ie. case of bad internet connection...) (default=2.3)""", None)
+    feature__main_cfg__add_variable('delay_internal_error', 10, feature__main_cfg__validate_float, None, """sleep delay, in seconds, when error happen to try again. (default=10)""")
+    feature__main_cfg__add_variable('delay_internal_loop', 8, feature__main_cfg__validate_float, None, """sleep delay, in seconds, between main loops to process all things to handle. (default=8)""", None)
+    feature__main_cfg__add_variable('delay_check_price', 180, feature__main_cfg__validate_float, None, """sleep delay, in seconds to check again pricing (default=180)""", None)
+    
+    # arguments: special arguments
+    feature__main_cfg__add_variable('im_really_sure_what_im_doing', 0, feature__main_cfg__validate_int, none, """This argument allows user to specify number of non-standard configuration values for special cases like user want to activate bot trading later relatively higher price than actual is""")
+    
+    feature__tmp_cfg__load_config_define()
+
+def load_config_main_cfg_postparse():
+    global c, s, d
+    
+    c.BOTrpc_user = c.BOTcfg.rpc_user
+    c.BOTrpc_password = c.BOTcfg.rpc_password
+    c.BOTrpc_hostname = c.BOTcfg.rpc_hostname
+    c.BOTrpc_port = c.BOTcfg.rpc_port
+    
+    # arguments: main maker/taker
+    c.BOTsellmarket = c.BOTcfg.maker_ticker.upper()
+    c.BOTbuymarket = c.BOTcfg.taker_ticker.upper()
+    
+    # try to autoselect maker/taker address from config file
+    if c.BOTsellmarket in dxsettings.tradingaddress:
+        c.BOTmaker_address = dxsettings.tradingaddress[c.BOTsellmarket]
+    
+    if c.BOTbuymarket in dxsettings.tradingaddress:
+        c.BOTtaker_address = dxsettings.tradingaddress[c.BOTbuymarket]
+    
+    # try to autoselect maker/taker address from program arguments
+    if c.BOTcfg.maker_address is not None:
+        c.BOTmaker_address = c.BOTcfg.maker_address
+        
+    if c.BOTcfg.taker_address is not None:
+        c.BOTtaker_address = c.BOTcfg.taker_address
+    
+    c.BOTaddress_funds_only = bool(c.BOTcfg.address_funds_only)
+    
+    c.BOTpartial_orders = bool(c.BOTcfg.partial_orders)
+    
+    c.BOThidden_orders = bool(c.BOTcfg.hidden_orders)
+    
+    feature__maker_price__load_config_postparse(c.BOTcfg)
+    
+    feature__flush_co__load_config_postparse(c.BOTcfg)
+    
+    pricing_proxy_client__load_config_postparse(c.BOTcfg)
+    
+    pricing_storage__load_config_postparse(c.BOTcfg)
+    
+    sboundary__load_config_postparse(c.BOTcfg)
+    rboundary__load_config_postparse(c.BOTcfg)
+    
+    # arguments: basic values
+    c.BOTsell_random = c.BOTcfg.sell_random
+    
+    c.BOTsell_size_asset = getattr(c.BOTcfg, 'sell_size_asset', None)
+    if c.BOTcfg.sell_size_asset is None:
         c.BOTsell_size_asset = c.BOTsellmarket
-    else:
-        c.BOTsell_size_asset = str(args.sell_size_asset)
     
-    c.BOTsell_type = float(args.sell_type)
+    c.BOTsell_type = float(c.BOTcfg.sell_type)
     
-    c.BOTsellstart = float(args.sellstart)
-    c.BOTsellend = float(args.sellend)
-    c.BOTsellstartmin = float(args.sellstartmin)
-    c.BOTsellendmin = float(args.sellendmin)
-    c.BOTslidestart = float(args.slidestart)
-    c.BOTslideend = float(args.slideend)
-    c.BOTslidemin = min(c.BOTslidestart, c.BOTslideend)
-    c.BOTslidemax = max(c.BOTslidestart, c.BOTslideend)
-    c.BOTmaxopenorders = int(args.maxopen)
-    c.BOTmake_next_on_hit = bool(args.make_next_on_hit)
-    c.BOTreopenfinisheddelay = int(args.reopenfinisheddelay)
-    c.BOTreopenfinishednum = int(args.reopenfinishednum)
-    if c.BOTreopenfinishednum > 0 or c.BOTreopenfinisheddelay > 0:
+    c.BOTsell_start_max = float(c.BOTcfg.sell_start_max)
+    c.BOTsell_end_max = float(c.BOTcfg.sell_end_max)
+    c.BOTsell_start_min = float(c.BOTcfg.sell_start_min)
+    c.BOTsell_end_min = float(c.BOTcfg.sell_end_min)
+    c.BOTsell_start_slide = float(c.BOTcfg.sell_start_slide)
+    c.BOTsell_end_slide = float(c.BOTcfg.sell_end_slide)
+    c.BOTslidemin = min(c.BOTsell_start_slide, c.BOTsell_end_slide)
+    c.BOTslidemax = max(c.BOTsell_start_slide, c.BOTsell_end_slide)
+    c.BOTmax_open_orders = int(c.BOTcfg.max_open_orders)
+    c.BOTmake_next_on_hit = bool(c.BOTcfg.make_next_on_hit)
+    c.BOTreopen_finished_delay = int(c.BOTcfg.reopen_finished_delay)
+    c.BOTreopen_finished_num = int(c.BOTcfg.reopen_finished_num)
+    if c.BOTreopen_finished_num > 0 or c.BOTreopen_finished_delay > 0:
         c.BOTreopenfinished = 1
     else:
         c.BOTreopenfinished = 0
     
-    # ~ c.BOTmarking = float(args.marking)
+    # ~ c.BOTmarking = float(c.BOTcfg.marking)
     
-    if args.balance_save_asset is None:
+    if c.BOTcfg.balance_save_asset is None:
         c.BOTbalance_save_asset = c.BOTsellmarket
     else:
-        c.BOTbalance_save_asset = str(args.balance_save_asset)
-    c.BOTbalance_save_asset_track = bool(args.balance_save_asset_track)
-    c.BOTbalance_save_number = float(args.balance_save_number)
-    c.BOTbalance_save_percent = float(args.balance_save_percent)
+        c.BOTbalance_save_asset = str(c.BOTcfg.balance_save_asset)
+    c.BOTbalance_save_asset_track = bool(c.BOTcfg.balance_save_asset_track)
+    c.BOTbalance_save_number = float(c.BOTcfg.balance_save_number)
+    c.BOTbalance_save_percent = float(c.BOTcfg.balance_save_percent)
     
-    c.BOTtakerbot = int(args.takerbot)
+    c.BOTtakerbot = int(c.BOTcfg.takerbot)
     
     # arguments: dynamic values, special pump/dump order
     
-    feature__slide_dyn__load_config_postparse(args)
+    feature__slide_dyn__load_config_postparse(c.BOTcfg)
         
-    c.BOTslidepump = float(args.slidepump)
-    c.BOTslidepumpenabled = (True if c.BOTslidepump > 0 else False)
-    c.BOTpumpamount = (float(args.pumpamount) if float(args.pumpamount) >= 0 else c.BOTsellend)
+    c.BOTpump_slide = float(c.BOTcfg.pump_slide)
+    c.BOTpump_enabled = (True if c.BOTpump_slide > 0 else False)
+    c.BOTpump_amount_max = (float(c.BOTcfg.pump_amount_max) if float(c.BOTcfg.pump_amount_max) >= 0 else c.BOTsell_end_max)
+    c.BOTpump_amount_min = (float(c.BOTcfg.pump_amount_min) if float(c.BOTcfg.pump_amount_min) >= 0 else c.BOTsell_end_min)
     
     # arguments: reset orders by events
-    c.BOTresetonpricechangepositive = float(args.resetonpricechangepositive)
-    c.BOTresetonpricechangenegative = float(args.resetonpricechangenegative)
-    c.BOTresetafterdelay = int(args.resetafterdelay)
+    c.BOTreset_on_price_change_positive = float(c.BOTcfg.reset_on_price_change_positive)
+    c.BOTreset_on_price_change_negative = float(c.BOTcfg.reset_on_price_change_negative)
+    c.BOTreset_after_delay = int(c.BOTcfg.reset_after_delay)
     
-    reset_afot__load_config_postparse(args)
+    reset_afot__load_config_postparse(c.BOTcfg)
     
     # arguments: internal values changes
-    c.BOTdelayinternal = float(args.delayinternal)
-    c.BOTdelayinternalerror = float(args.delayinternalerror)
-    c.BOTdelayinternalcycle = float(args.delayinternalcycle)
-    c.BOTdelaycheckprice = int(args.delaycheckprice)
-    
-    # arguments: utility arguments
-    c.cancelall = args.cancelall
-    c.cancelmarket = args.cancelmarket
-    c.canceladdress = args.canceladdress
+    c.BOTdelay_internal_op = float(c.BOTcfg.delay_internal_op)
+    c.BOTdelay_internal_error = float(c.BOTcfg.delay_internal_error)
+    c.BOTdelay_internal_loop = float(c.BOTcfg.delay_internal_loop)
+    c.BOTdelay_check_price = int(c.BOTcfg.delay_check_price)
     
     # arguments: special arguments
-    c.BOTimreallysurewhatimdoing = int(args.imreallysurewhatimdoing)
+    c.BOTim_really_sure_what_im_doing = int(c.BOTcfg.im_really_sure_what_im_doing)
     
-    load_config_verify_or_exit()
+
+def load_config():
+    global c, s, d
+    
+    print('>>>> Loading program configuration')
+    error_num = 0
+    crazy_num = 0
+    
+    
+    # initialize argument parser
+    parser = argparse.ArgumentParser()
+    # argument parser argument definition
+    load_config_argument_parser_define(parser)
+    # parse arguments
+    args = parser.parse_args()
+    # post argument parse process
+    load_config_argument_parser_postparse(args)
+    
+    
+    # define main file configuration variables/rules
+    load_config_main_cfg_define()
+    # load configuration from configuration file
+    error_num += feature__main_cfg__load_cfg(c.BOTconfig)
+    # parse loaded configuration and build obj file
+    feature__main_cfg__parse_cfg()
+    # return whole cfg as obj
+    c.BOTcfg = feature__main_cfg__get_cfg_obj()
+    # post main cfg parse process
+    load_config_main_cfg_postparse()
+    
+    
+    load_config_verify_or_exit(error_num, crazy_num)
     
 # global variables which have dependency on configuration be done
 def global_vars_init_postconfig():
@@ -709,7 +759,7 @@ def global_vars_init_postconfig():
     else:
         s.reopenstatuses = s.status_list__ready_to_reopen_wfinished
     
-    s.ordersvirtualmax = c.BOTmaxopenorders + int(c.BOTslidepumpenabled) # pump and dump order is extra if exist
+    s.ordersvirtualmax = c.BOTmax_open_orders + int(c.BOTpump_enabled) # pump and dump order is extra if exist
     d.ordersvirtual = [0]*s.ordersvirtualmax
     for i in range(s.ordersvirtualmax):
         d.ordersvirtual[i] = {}
@@ -735,22 +785,25 @@ def do_utils_cancel_orders_market():
 # cancel all orders that belongs to running bot instance
 def do_utils_cancel_orders_address():
     global c, s, d
-    print('>>>> Using utility to cancel specifix market pair and address {0}-{1} {2}-{3}'.format(c.BOTsellmarket, c.BOTbuymarket, c.BOTmakeraddress, c.BOTtakeraddress))
-    retcode, retdata = dxbottools.cancelallordersbyaddress(c.BOTsellmarket, c.BOTbuymarket, c.BOTmakeraddress, c.BOTtakeraddress)
+    print('>>>> Using utility to cancel specifix market pair and address {0}-{1} {2}-{3}'.format(c.BOTsellmarket, c.BOTbuymarket, c.BOTmaker_address, c.BOTtaker_address))
+    retcode, retdata = dxbottools.cancelallordersbyaddress(c.BOTsellmarket, c.BOTbuymarket, c.BOTmaker_address, c.BOTtaker_address)
     print('>>>> Cancel orders result: {0} >> {1}'.format(retcode, retdata))
     return retcode
 
 # do utils and exit
 def do_utils_and_exit():
     global c, s, d
-    if c.cancelall:
+    if c.BOTcancelall is True:
         retcode = do_utils_cancel_orders_all()
         sys.exit(retcode)
-    elif c.cancelmarket:
+    elif c.BOTcancelmarket is True:
         retcode = do_utils_cancel_orders_market()
         sys.exit(retcode)
-    elif c.canceladdress:
+    elif c.BOTcanceladdress is True:
         retcode = do_utils_cancel_orders_address()
+        sys.exit(retcode)
+    elif c.BOTconfigaction is not None:
+        retcode = feature__main_cfg__generate_cfg(c.BOTconfig, c.BOTconfigaction)
         sys.exit(retcode)
 
 # try to update remote maker pricing value
@@ -931,8 +984,8 @@ def update_balances():
     
     # if bot using funds from specific address only
     if c.BOTaddress_funds_only is True:
-        tmp_maker_address = c.BOTmakeraddress
-        tmp_taker_address = c.BOTtakeraddress
+        tmp_maker_address = c.BOTmaker_address
+        tmp_taker_address = c.BOTtaker_address
     
     tmp_maker = balance_get(c.BOTsellmarket, tmp_maker_address)
     tmp_taker = balance_get(c.BOTbuymarket, tmp_taker_address)
@@ -997,7 +1050,7 @@ def virtual_orders__cancel_all():
                     break
         if clearing > 0:
             print('>>>> Sleeping waiting for old orders to be cleared')
-            time.sleep(c.BOTdelayinternal)
+            time.sleep(c.BOTdelay_internal_op)
         else:
             break
         
@@ -1029,7 +1082,7 @@ def virtual_orders__check_status_update_status():
             
             #debug log
             print('>>>> Order <{}> sell maker <{}> amount <{}> to buy taker <{}> amount <{}> status original <{}> to actual <{}> id <{}> market price <{}> order price <{}> description <{}>'
-            .format(d.ordersvirtual[i]['vid'], d.ordersvirtual[i]['maker'], d.ordersvirtual[i]['maker_size'], d.ordersvirtual[i]['taker'], d.ordersvirtual[i]['taker_size'], 
+            .format(d.ordersvirtual[i]['vid'], d.ordersvirtual[i]['maker_ticker'], d.ordersvirtual[i]['maker_size'], d.ordersvirtual[i]['taker_ticker'], d.ordersvirtual[i]['taker_size'], 
             d.ordersvirtual[i]['status'], (order['status'] if (order is not None) else 'no status'), d.ordersvirtual[i]['id'], d.ordersvirtual[i]['market_price'], d.ordersvirtual[i]['order_price'], d.ordersvirtual[i]['name'] ))
             
             # if virtual order is clear BUT order is still in progress, skip this order, because is not finished yet
@@ -1068,7 +1121,7 @@ def events_wait_reopenfinished_update(virtual_order, actual_order, finished_by_t
     # if previous status was not open and now open is, count this order in opened number
     if virtual_order['status'] not in s.orders_pending_to_reopen_opened_statuses and (actual_order is not None) and actual_order['status'] in s.orders_pending_to_reopen_opened_statuses:
         d.orders_pending_to_reopen_opened += 1
-        if d.orders_pending_to_reopen_opened > c.BOTmaxopenorders:
+        if d.orders_pending_to_reopen_opened > c.BOTmax_open_orders:
             print('!!!! internal BUG Detected. DEBUG orders opened {0} orders finished {1} last time order finished {2}'.format(d.orders_pending_to_reopen_opened, d.orders_pending_to_reopen_finished, d.orders_pending_to_reopen_finished_time))
             sys.exit(1)
         
@@ -1105,7 +1158,7 @@ def virtual_orders__create_one(order_id, order_name, price, slide_dyn, price_sli
     if c.BOTpartial_orders is False:
         try:
             results = {}
-            results = dxbottools.makeorder(c.BOTsellmarket, str(sell_amount), c.BOTmakeraddress, c.BOTbuymarket, str(buyamount), c.BOTtakeraddress, use_all_funds = not c.BOTaddress_funds_only)
+            results = dxbottools.makeorder(c.BOTsellmarket, str(sell_amount), c.BOTmaker_address, c.BOTbuymarket, str(buyamount), c.BOTtaker_address, use_all_funds = not c.BOTaddress_funds_only)
             print('>>>> Exact Order placed - id: <{}>, maker_size: <{}>, taker_size: <{}>'.format(results['id'], results['maker_size'], results['taker_size']))
             # ~ logging.info('Order placed - id: {0}, maker_size: {1}, taker_size: {2}'.format(results['id'], results['maker_size'], results['taker_size']))
         except Exception as err:
@@ -1113,7 +1166,7 @@ def virtual_orders__create_one(order_id, order_name, price, slide_dyn, price_sli
     else:
         try:
             results = {}
-            results = dxbottools.make_partial_order(c.BOTsellmarket, str(sell_amount), c.BOTmakeraddress, c.BOTbuymarket, str(buyamount), c.BOTtakeraddress, sell_amount_min, repost = False, use_all_funds = not c.BOTaddress_funds_only, auto_split = False)
+            results = dxbottools.make_partial_order(c.BOTsellmarket, str(sell_amount), c.BOTmaker_address, c.BOTbuymarket, str(buyamount), c.BOTtaker_address, sell_amount_min, repost = False, use_all_funds = not c.BOTaddress_funds_only, auto_split = False)
             print('>>>> Partial Order placed - id: <{}>, maker_size: <{}>, taker_size: <{}>'.format(results['id'], results['maker_size'], results['taker_size']))
             # ~ logging.info('Order placed - id: {0}, maker_size: {1}, taker_size: {2}'.format(results['id'], results['maker_size'], results['taker_size']))
         except Exception as err:
@@ -1195,7 +1248,7 @@ def virtual_orders__prepare_once():
     
     while feature__maker_price__pricing_update() == 0:
         print('#### Pricing not available... waiting to restore...')
-        time.sleep(c.BOTdelayinternalerror)
+        time.sleep(c.BOTdelay_internal_error)
     
     d.reset_on_price_change_start = d.feature__maker_price__value_current_used
     
@@ -1222,38 +1275,38 @@ def virtual_orders__prepare_recheck():
         if feature__maker_price__pricing_update() != 0:
             break
         print('#### Pricing main not available... waiting to restore...')
-        time.sleep(c.BOTdelayinternalerror)
+        time.sleep(c.BOTdelay_internal_error)
     
     while True:
         if feature__slide_dyn__update_dyn_slide() == True:
             break
         print('#### Pricing dynamic slide not available... waiting to restore...')
-        time.sleep(c.BOTdelayinternalerror)
+        time.sleep(c.BOTdelay_internal_error)
     
     if c.BOTbalance_save_asset_track is True:
         while True:
             if feature__balance_save_asset__pricing_update() != 0:
                 break
             print('#### Pricing of balance save asset not available... waiting to restore...')
-            time.sleep(c.BOTdelayinternalerror)
+            time.sleep(c.BOTdelay_internal_error)
     
     while True:
         if feature__sell_size_asset__pricing_update() != 0:
             break
         print('#### Pricing of sell size asset not available... waiting to restore...')
-        time.sleep(c.BOTdelayinternalerror)
+        time.sleep(c.BOTdelay_internal_error)
     
     while True:
         if sboundary__pricing_update() != 0:
             break
         print('#### Pricing boundaries not available... waiting to restore...')
-        time.sleep(c.BOTdelayinternalerror)
+        time.sleep(c.BOTdelay_internal_error)
     
     while True:
         if rboundary__pricing_update() != 0:
             break
         print('#### Pricing boundaries not available... waiting to restore...')
-        time.sleep(c.BOTdelayinternalerror)
+        time.sleep(c.BOTdelay_internal_error)
     
     events_wait_reopenfinished_reset_detect()
     
@@ -1304,18 +1357,18 @@ def events_reset_orders():
     print('checking for reset order events')
     
     # if reset on price change positive is set and price has been changed, break and reset orders
-    if c.BOTresetonpricechangepositive != 0 and d.feature__maker_price__value_current_used >= (d.reset_on_price_change_start * (1 + c.BOTresetonpricechangepositive)):
-        print('>>>> Reset on positive price change {0}% has been reached: price stored / actual {1} / {2}, going to order reset now...'.format(c.BOTresetonpricechangepositive, d.reset_on_price_change_start, d.feature__maker_price__value_current_used))
+    if c.BOTreset_on_price_change_positive != 0 and d.feature__maker_price__value_current_used >= (d.reset_on_price_change_start * (1 + c.BOTreset_on_price_change_positive)):
+        print('>>>> Reset on positive price change {0}% has been reached: price stored / actual {1} / {2}, going to order reset now...'.format(c.BOTreset_on_price_change_positive, d.reset_on_price_change_start, d.feature__maker_price__value_current_used))
         return True
         
     # if reset on price change negative is set and price has been changed, break and reset orders
-    if c.BOTresetonpricechangenegative != 0 and d.feature__maker_price__value_current_used <= (d.reset_on_price_change_start * (1 - c.BOTresetonpricechangenegative)):
-        print('>>>> Reset on negative price change {0}% has been reached: price stored / actual {1} / {2}, going to order reset now...'.format(c.BOTresetonpricechangenegative, d.reset_on_price_change_start, d.feature__maker_price__value_current_used))
+    if c.BOTreset_on_price_change_negative != 0 and d.feature__maker_price__value_current_used <= (d.reset_on_price_change_start * (1 - c.BOTreset_on_price_change_negative)):
+        print('>>>> Reset on negative price change {0}% has been reached: price stored / actual {1} / {2}, going to order reset now...'.format(c.BOTreset_on_price_change_negative, d.reset_on_price_change_start, d.feature__maker_price__value_current_used))
         return True
     
     # if reset after delay is set and reached break and reset orders
-    if c.BOTresetafterdelay != 0 and (time.time() - d.time_start_reset_orders) > c.BOTresetafterdelay:
-        print('>>>> Maximum orders lifetime {0} / {1} has been reached, going to order reset now...'.format((time.time() - d.time_start_reset_orders), c.BOTresetafterdelay))
+    if c.BOTreset_after_delay != 0 and (time.time() - d.time_start_reset_orders) > c.BOTreset_after_delay:
+        print('>>>> Maximum orders lifetime {0} / {1} has been reached, going to order reset now...'.format((time.time() - d.time_start_reset_orders), c.BOTreset_after_delay))
         return True
     
     if reset_afot__check() == True:
@@ -1337,15 +1390,15 @@ def events_wait_reopenfinished_check_num_silent():
     global c, s, d
     
     # check if finished num is configured
-    if c.BOTreopenfinishednum == 0:
+    if c.BOTreopen_finished_num == 0:
         return "disabled"
     
     # this feature is activated only if at least one order has finished
     if d.orders_pending_to_reopen_finished > 0:
         # this feature is activated only if there is enough finished+open orders
-        if (d.orders_pending_to_reopen_finished + d.orders_pending_to_reopen_opened) >= c.BOTreopenfinishednum:
+        if (d.orders_pending_to_reopen_finished + d.orders_pending_to_reopen_opened) >= c.BOTreopen_finished_num:
             # wait if finished number has not been reached
-            if d.orders_pending_to_reopen_finished < c.BOTreopenfinishednum:
+            if d.orders_pending_to_reopen_finished < c.BOTreopen_finished_num:
                 return "wait"
             else:
                 return "reached"
@@ -1357,7 +1410,7 @@ def events_wait_reopenfinished_check_num():
     global c, s, d
     ret = events_wait_reopenfinished_check_num_silent()
     if ret == "wait":
-        print('%%%% DEBUG Reopen finished order num {0} / {1} not reached, waiting...'.format(d.orders_pending_to_reopen_finished, c.BOTreopenfinishednum))
+        print('%%%% DEBUG Reopen finished order num {0} / {1} not reached, waiting...'.format(d.orders_pending_to_reopen_finished, c.BOTreopen_finished_num))
     
     return ret
     
@@ -1366,13 +1419,13 @@ def events_wait_reopenfinished_check_delay_silent():
     global c, s, d
     
     # check if finished delay is configured
-    if c.BOTreopenfinisheddelay == 0:
+    if c.BOTreopen_finished_delay == 0:
         return "disabled"
     
     # this feature is activated only if at least one order has finished
     if d.orders_pending_to_reopen_finished_time != 0:
         # wait if we already have some finished order time and delay not reached
-        if (time.time() - d.orders_pending_to_reopen_finished_time) < c.BOTreopenfinisheddelay:
+        if (time.time() - d.orders_pending_to_reopen_finished_time) < c.BOTreopen_finished_delay:
             return "wait"
         else:
             return "reached"
@@ -1384,7 +1437,7 @@ def events_wait_reopenfinished_check_delay():
     global c, s, d
     ret = events_wait_reopenfinished_check_delay_silent()
     if ret == "wait":
-        print('%%%% DEBUG Reopen finished orders delay {0} / {1} not reached, waiting...'.format((time.time() - d.orders_pending_to_reopen_finished_time), c.BOTreopenfinisheddelay))
+        print('%%%% DEBUG Reopen finished orders delay {0} / {1} not reached, waiting...'.format((time.time() - d.orders_pending_to_reopen_finished_time), c.BOTreopen_finished_delay))
         
     return ret
 
@@ -1454,7 +1507,7 @@ def sell_amount_recompute(sell_start, sell_end, order_num_all, order_num_actual,
     sell_amount = float(0)
     
     # sell amount old style random
-    if c.BOTsellrandom:
+    if c.BOTsell_random is True:
         sell_min = min(sell_start, sell_end)
         sell_max = max(sell_start, sell_end)
         sell_amount = random.uniform(sell_min, sell_max)
@@ -1494,11 +1547,11 @@ def virtual_orders__handle():
     # loop all virtual orders and try to create em
     
     # staggered orders handling
-    for i in range(s.ordersvirtualmax - int(c.BOTslidepumpenabled)):
+    for i in range(s.ordersvirtualmax - int(c.BOTpump_enabled)):
         if d.ordersvirtual[i]['status'] in s.reopenstatuses:
             
             # as we found not virtual order to reopen, first it is cancel pump dump order needed
-            if c.BOTslidepumpenabled is True and pumpdump_order_cleared is False and d.ordersvirtual[s.ordersvirtualmax-1]['status'] in s.status_list__with_reserved_balance:
+            if c.BOTpump_enabled is True and pumpdump_order_cleared is False and d.ordersvirtual[s.ordersvirtualmax-1]['status'] in s.status_list__with_reserved_balance:
                 pumpdump_order_cleared = True
                 
             # update total available and reserve balances
@@ -1506,8 +1559,8 @@ def virtual_orders__handle():
             
             # sse - sell size asset
             # compute dynamic order size range, apply <sell_type> linear/log/exp on maximum amount by order number distribution
-            sell_amount_max_sse = sell_amount_recompute(c.BOTsellstart, c.BOTsellend, s.ordersvirtualmax - int(c.BOTslidepumpenabled), i, c.BOTsell_type)
-            sell_amount_min_sse = sell_amount_recompute(c.BOTsellstartmin, c.BOTsellendmin, s.ordersvirtualmax - int(c.BOTslidepumpenabled), i, c.BOTsell_type)
+            sell_amount_max_sse = sell_amount_recompute(c.BOTsell_start_max, c.BOTsell_end_max, s.ordersvirtualmax - int(c.BOTpump_enabled), i, c.BOTsell_type)
+            sell_amount_min_sse = sell_amount_recompute(c.BOTsell_start_min, c.BOTsell_end_min, s.ordersvirtualmax - int(c.BOTpump_enabled), i, c.BOTsell_type)
             
             # convert sell size in sell size asset to maker asset
             sell_amount_max = sell_amount_max_sse * d.feature__sell_size_asset__price
@@ -1534,38 +1587,39 @@ def virtual_orders__handle():
                 
             # first order is min slide
             if i == 0:
-                if c.BOTslidestart >= c.BOTslideend:
+                if c.BOTsell_start_slide >= c.BOTsell_end_slide:
                     order_name = 'first staggered order with max-slide'
                 else:
                     order_name = 'first staggered order with min-slide'
             # last order is max slide
-            elif i == (s.ordersvirtualmax - int(c.BOTslidepumpenabled) -1):
+            elif i == (s.ordersvirtualmax - int(c.BOTpump_enabled) -1):
                 order_name = 'last staggered order'
             # any other orders between min and max slide
             else:
-                if c.BOTslidestart >= c.BOTslideend:
+                if c.BOTsell_start_slide >= c.BOTsell_end_slide:
                     order_name = 'last staggered order with min-slide'
                 else:
                     order_name = 'first staggered order with max-slide'
             
             # compute staggered orders slides
-            staggeredslide = ((c.BOTslideend - c.BOTslidestart) / max((s.ordersvirtualmax -1 -int(c.BOTslidepumpenabled)),1 ))*i
+            staggeredslide = ((c.BOTsell_end_slide - c.BOTsell_start_slide) / max((s.ordersvirtualmax -1 -int(c.BOTpump_enabled)),1 ))*i
             
-            virtual_orders__create_one(i, order_name, d.feature__maker_price__value_current_used, d.feature__slide_dyn__value, price_maker_with_boundaries, c.BOTslidestart, staggeredslide, sell_amount, sell_amount_min)
-            time.sleep(c.BOTdelayinternal)
+            virtual_orders__create_one(i, order_name, d.feature__maker_price__value_current_used, d.feature__slide_dyn__value, price_maker_with_boundaries, c.BOTsell_start_slide, staggeredslide, sell_amount, sell_amount_min)
+            time.sleep(c.BOTdelay_internal_op)
     
     # special pump/dump order handling
-    if c.BOTslidepumpenabled is True and d.ordersvirtual[s.ordersvirtualmax-1]['status'] in s.reopenstatuses:
+    if c.BOTpump_enabled is True and d.ordersvirtual[s.ordersvirtualmax-1]['status'] in s.reopenstatuses:
         update_balances()
         
         # convert sell size in sell size asset to maker asset
-        sell_amount_pumpdump = c.BOTpumpamount * d.feature__sell_size_asset__price
+        sell_amount_pumpdump_max = c.BOTpump_amount_max * d.feature__sell_size_asset__price
+        sell_amount_pumpdump_min = c.BOTpump_amount_min * d.feature__sell_size_asset__price
         
         # recompute sell amount by available balance, other limit conditions
-        sell_amount = balance_available_to_sell_recompute(sell_amount_pumpdump, sell_amount_min)
+        sell_amount_final = balance_available_to_sell_recompute(sell_amount_pumpdump_max, sell_amount_pumpdump_min)
         
-        if sell_amount > 0:
-            virtual_orders__create_one(s.ordersvirtualmax-1, 'pump/dump', d.feature__maker_price__value_current_used, d.feature__slide_dyn__value, price_maker_with_boundaries, c.BOTslidemax, c.BOTslidepump, sell_amount, sell_amount_min)
+        if sell_amount_final > 0:
+            virtual_orders__create_one(s.ordersvirtualmax-1, 'pump/dump', d.feature__maker_price__value_current_used, d.feature__slide_dyn__value, price_maker_with_boundaries, c.BOTslidemax, c.BOTpump_slide, sell_amount_final, sell_amount_pumpdump_min)
             
 # check if virtual order was taken by takerbot
 def feature__takerbot__virtual_order_was_taken_get(virtual_order):
@@ -1682,7 +1736,7 @@ def feature__takerbot__run():
                                             return ret
                                     
                                     #try to accept order
-                                    ret_takeorder = dxbottools.takeorder(orders_market_sorted[i]['order_id'], c.BOTtakeraddress, c.BOTmakeraddress)
+                                    ret_takeorder = dxbottools.takeorder(orders_market_sorted[i]['order_id'], c.BOTtaker_address, c.BOTmaker_address)
                                     err = ret_takeorder.get('error', None)
                                     # in case of take order process error we must exit whole takerbot process and let bot recreate orders
                                     if err is not None:
@@ -1790,6 +1844,6 @@ if __name__ == '__main__':
             else:
                 virtual_orders__handle()
             
-            time.sleep(c.BOTdelayinternalcycle)
+            time.sleep(c.BOTdelay_internal_loop)
             
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
