@@ -186,7 +186,7 @@ def feature__main_cfg__generate_cfg(filename, action):
       
       # write down description
       description = glob.d.main_cfg.cfg[cfg_name]["description"]
-      f.write('"""{}"""\n'.format(cfg_name, description))
+      f.write('"""{}"""\n'.format(description))
       
       # write down default values
       if action == "defaults":
@@ -197,7 +197,7 @@ def feature__main_cfg__generate_cfg(filename, action):
             f.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, defaultvalue))
       # write down as template
       else:
-         f.write('cfg[\'{}\'] = "\{cc_{}\}"\n'.format(cfg_name, cfg_name))
+         f.write('cfg[\'{}\'] = "{}cc_{}{}"\n'.format(cfg_name, '{', cfg_name, '}'))
       
    # close file
    file.close()
