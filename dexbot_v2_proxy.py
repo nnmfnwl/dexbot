@@ -14,6 +14,7 @@ import features.glob as glob
 
 from features.pricing_storage import *
 from features.pricing_proxy_server import *
+from features.main_cfg import *
 
 # welcome message
 def start_welcome_message():
@@ -47,18 +48,22 @@ def load_config():
     
     proxy_server__load_config_define(parser, argparse)
     
-    pricing_storage__load_config_define(parser, argparse)
+    pricing_storage__load_config_define()
     
     # parse arguments and postparse arguments
     args = parser.parse_args()
     
     proxy_server__load_config_postparse(args)
     
-    pricing_storage__load_config_postparse(args)
-    
     glob.c.BOTrestore = bool(args.restore)
 
     glob.c.BOTimreallysurewhatimdoing = int(args.imreallysurewhatimdoing)
+    
+    feature__main_cfg__parse_cfg()
+    
+    main_cfg_obj = feature__main_cfg__get_cfg_obj()
+    
+    pricing_storage__load_config_postparse(main_cfg_obj)
     
     # verify arguments
     load_config_verify_or_exit()
