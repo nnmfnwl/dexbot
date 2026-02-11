@@ -67,7 +67,7 @@ def feature__main_cfg__add_value(var_name, value):
          ret, value2 = fn(var_name, value, arg)
          if ret is True:
             cfg['value'] = value2
-         else
+         else:
             print('*** ERROR >> main_cfg >> variable >> {} >> value >> {} >> is invalid'.format(var_name, value))
             return False
             
@@ -264,7 +264,7 @@ def feature__main_cfg__validate_str(var_name, val, arg):
    if isinstance(val, str):
       return True, val
    
-   return True str(val)
+   return True, str(val)
 
 def feature__main_cfg__validate_password(var_name, val, arg):
    
@@ -275,7 +275,7 @@ def feature__main_cfg__validate_password(var_name, val, arg):
    if isinstance(val, str):
       return True, val
    
-   return False None
+   return False, None
 
 # validate select
 def feature__main_cfg__validate_select(var_name, val, arg):
@@ -296,7 +296,7 @@ def feature__main_cfg__validate_dict(var_name, val, arg):
    if isinstance(val, dict):
       return True, val
    
-   return True dict(val)
+   return True, dict(val)
    
 # validate list
 def feature__main_cfg__validate_list(var_name, val, arg):
@@ -308,4 +308,4 @@ def feature__main_cfg__validate_list(var_name, val, arg):
    if isinstance(val, list):
       return True, val
    
-   return True list(val)
+   return True, list(val)
