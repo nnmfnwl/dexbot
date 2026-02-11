@@ -17,6 +17,7 @@ from features.flush_co import *
 from features.pricing_storage import *
 from features.pricing_proxy_client import *
 from features.tmp_cfg import *
+from features.main_cfg import *
 
 # ~ logging.basicConfig(filename='botdebug.log',
                     # ~ level=logging.INFO,
