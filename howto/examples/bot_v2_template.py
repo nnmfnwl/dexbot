@@ -313,4 +313,4 @@ cfg['price_acceptable_outage'] = "{cc_price_acceptable_outage}"
 cfg['price_outage_extra_slide'] = "{cc_price_outage_extra_slide}"
     
     # enable exceptions in configuration values
-cfg['im_really_sure_what_im_doing'] = "{cc_im_really_sure_what_im_doing_argval}"
+cfg['im_really_sure_what_im_doing'] = "{cc_im_really_sure_what_im_doing}"
