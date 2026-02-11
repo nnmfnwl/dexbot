@@ -6,6 +6,7 @@ import time
 import pickle
 
 import features.glob as glob
+from features.main_cfg import *
 
 def pricing_storage__try_get_price_empty_fn(maker, taker, price_provider):
     print('**** WARNING >> Using predefined empty pricing storage get price function')
@@ -33,7 +34,7 @@ def pricing_storage__init_preconfig__():
 pricing_storage__init_preconfig__()
 
 # define argument parameter
-def pricing_storage__load_config_define(parser, argparse):
+def pricing_storage__load_config_define():
     
     feature__main_cfg__add_variable('price_provider', "cg", feature__main_cfg__validate_str, None, """price provider (default="cg" coingecko)""", None)
     feature__main_cfg__add_variable('price_acceptable_outage', 0, feature__main_cfg__validate_int, None, """Acceptable external pricing outage in seconds, previous price is used for time of outage. (default=0)""", None)
