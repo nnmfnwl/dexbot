@@ -26,6 +26,7 @@ s = glob.s
 d = glob.d
 
 from features.tmp_cfg import *
+from features.main_cfg import *
 
 # preconfiguration  initialization
 def rboundary__init_preconfig__():
