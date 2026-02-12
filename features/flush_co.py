@@ -5,6 +5,7 @@
 import time
 
 import features.glob as glob
+from features.main_cfg import *
 
 # preconfiguration  initialization
 def feature__flush_co__init_preconfig():
