@@ -10,6 +10,7 @@ s = glob.s
 d = glob.d
 
 from features.tmp_cfg import *
+from features.main_cfg import *
 
 # preconfiguration  initialization
 def feature__slide_dyn__init_preconfig__():
