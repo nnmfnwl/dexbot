@@ -591,7 +591,7 @@ In theory we need bot to try to create orders in dynamic size if there is not en
     
     feature__main_cfg__add_variable('pump_slide', 0, feature__main_cfg__validate_float, """if slide pump is non zero a special order out of slidemax is set, this order will be filled when pump happen(default=0 disabled, 0.5 means order will be placed +50%% out of maximum slide)""", None)
     feature__main_cfg__add_variable('pump_amount_max', 0, feature__main_cfg__validate_float, None, """pump order size, 0 means maximum, otherwise sell_end_max is used(default=--sell_end_max)""")
-    feature__main_cfg__add_variable('pump_amount_min', 0, feature__main_cfg__validate_float, NOne, """minimum acceptable pump order size, otherwise sell_end_min is used(default=--sell_end_min)""")
+    feature__main_cfg__add_variable('pump_amount_min', 0, feature__main_cfg__validate_float, None, """minimum acceptable pump order size, otherwise sell_end_min is used(default=--sell_end_min)""")
 
     # arguments: reset orders by events
     feature__main_cfg__add_variable('reset_on_price_change_positive', 0, feature__main_cfg__validate_float, None, """price positive change which inits reset of all orders. I.e. 0.05 means reset at +5%% change. (default=0 disabled)""", None)
