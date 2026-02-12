@@ -18,7 +18,7 @@ def feature__tmp_cfg__init_preconfig__():
 feature__tmp_cfg__init_preconfig__()
 
 # define argument parameter
-def feature__tmp_cfg__load_config_define(parser, argparse):
+def feature__tmp_cfg__load_config_define():
     return
 
 # parse configuration value
