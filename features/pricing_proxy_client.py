@@ -3,6 +3,7 @@
 # pricing proxy client for pricing storage
 
 import features.glob as glob
+from features.main_cfg import *
 
 import jsonrpclib
 
