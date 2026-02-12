@@ -470,7 +470,7 @@ def load_config_argument_parser_postparse(args):
     c.BOTconfigaction = args.configaction
     
     # temporary configuration
-    feature__tmp_cfg__load_config_postparse(c.BOTconfig)
+    feature__tmp_cfg__load_config_postparse(args)
 
 def load_config_main_cfg_define():
     
