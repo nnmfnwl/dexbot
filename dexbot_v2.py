@@ -482,10 +482,10 @@ def load_config_main_cfg_define():
     
     # arguments: main maker/taker
     feature__main_cfg__add_variable('maker_ticker', 'BLOCK', feature__main_cfg__validate_str, None, """asset being sold (default=BLOCK). For example BLOCK LTC BTC PIVX XVG DASH DOGE""")
-    feature__main_cfg__add_variable('taker_ticker', 'LTC', feature__main_cfg__validate_str, """asset being bought (default=LTC). For example BLOCK LTC BTC PIVX XVG DASH DOGE""")
-    feature__main_cfg__add_variable('maker_address', None, feature__main_cfg__validate_str, """trading address of asset being sold (default=None)""")
-    feature__main_cfg__add_variable('taker_address', None, feature__main_cfg__validate_str, """trading address of asset being bought (default=None)""")
-    feature__main_cfg__add_variable('address_funds_only', None, feature__main_cfg__validate_bool, """limit bot to use and compute funds only from maker and taker address(default=False disabled)""")
+    feature__main_cfg__add_variable('taker_ticker', 'LTC', feature__main_cfg__validate_str, None, """asset being bought (default=LTC). For example BLOCK LTC BTC PIVX XVG DASH DOGE""")
+    feature__main_cfg__add_variable('maker_address', None, feature__main_cfg__validate_str, None,"""trading address of asset being sold (default=None)""")
+    feature__main_cfg__add_variable('taker_address', None, feature__main_cfg__validate_str, None,"""trading address of asset being bought (default=None)""")
+    feature__main_cfg__add_variable('address_funds_only', None, feature__main_cfg__validate_bool, None,"""limit bot to use and compute funds only from maker and taker address(default=False disabled)""")
     
     feature__main_cfg__add_variable('price_redirections', dict({}), feature__main_cfg__validate_dict, None, """Price redirections is feature used to optionally set custom ASSET 1 price in thirty ASSET 2.
 For example trading BLOCK with LTC, you would rather set BLOCK price manually in USDT and BOT automatically converts value into LTC.""",
@@ -589,7 +589,7 @@ In theory we need bot to try to create orders in dynamic size if there is not en
     
     feature__slide_dyn__load_config_define()
     
-    feature__main_cfg__add_variable('pump_slide', 0, feature__main_cfg__validate_float, """if slide pump is non zero a special order out of slidemax is set, this order will be filled when pump happen(default=0 disabled, 0.5 means order will be placed +50%% out of maximum slide)""", None)
+    feature__main_cfg__add_variable('pump_slide', 0, feature__main_cfg__validate_float, None, """if slide pump is non zero a special order out of slidemax is set, this order will be filled when pump happen(default=0 disabled, 0.5 means order will be placed +50%% out of maximum slide)""", None)
     feature__main_cfg__add_variable('pump_amount_max', 0, feature__main_cfg__validate_float, None, """pump order size, 0 means maximum, otherwise sell_end_max is used(default=--sell_end_max)""")
     feature__main_cfg__add_variable('pump_amount_min', 0, feature__main_cfg__validate_float, None, """minimum acceptable pump order size, otherwise sell_end_min is used(default=--sell_end_min)""")
 
@@ -607,7 +607,7 @@ In theory we need bot to try to create orders in dynamic size if there is not en
     feature__main_cfg__add_variable('delay_check_price', 180, feature__main_cfg__validate_float, None, """sleep delay, in seconds to check again pricing (default=180)""", None)
     
     # arguments: special arguments
-    feature__main_cfg__add_variable('im_really_sure_what_im_doing', 0, feature__main_cfg__validate_int, none, """This argument allows user to specify number of non-standard configuration values for special cases like user want to activate bot trading later relatively higher price than actual is""")
+    feature__main_cfg__add_variable('im_really_sure_what_im_doing', 0, feature__main_cfg__validate_int, None, """This argument allows user to specify number of non-standard configuration values for special cases like user want to activate bot trading later relatively higher price than actual is""")
     
     feature__tmp_cfg__load_config_define()
 
@@ -1083,7 +1083,7 @@ def virtual_orders__check_status_update_status():
             
             #debug log
             print('>>>> Order <{}> sell maker <{}> amount <{}> to buy taker <{}> amount <{}> status original <{}> to actual <{}> id <{}> market price <{}> order price <{}> description <{}>'
-            .format(d.ordersvirtual[i]['vid'], d.ordersvirtual[i]['maker_ticker'], d.ordersvirtual[i]['maker_size'], d.ordersvirtual[i]['taker_ticker'], d.ordersvirtual[i]['taker_size'], 
+            .format(d.ordersvirtual[i]['vid'], d.ordersvirtual[i]['maker'], d.ordersvirtual[i]['maker_size'], d.ordersvirtual[i]['taker'], d.ordersvirtual[i]['taker_size'], 
             d.ordersvirtual[i]['status'], (order['status'] if (order is not None) else 'no status'), d.ordersvirtual[i]['id'], d.ordersvirtual[i]['market_price'], d.ordersvirtual[i]['order_price'], d.ordersvirtual[i]['name'] ))
             
             # if virtual order is clear BUT order is still in progress, skip this order, because is not finished yet
