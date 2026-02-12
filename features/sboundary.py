@@ -160,7 +160,7 @@ def sboundary__pricing_init(maker, taker, action, get_price_fn = sboundary__get_
     d.sboundary__id_price_initial = 'feature__sboundary__price_initial' + c.sboundary__asset
     d.sboundary__id_price_current = 'feature__sboundary__price_current' + c.sboundary__asset
     
-    print('>> INFO >> sboundary >> pricing init >> started')
+    print('>> INFO >> sboundary >> pricing init >> started >> {}/{}'.format(d.sboundary__maker, d.sboundary__taker))
     
     # try to restore pricing from tmp cfg if requested
     if action == 'restore':
