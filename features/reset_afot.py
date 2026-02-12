@@ -5,6 +5,7 @@
 import time
 
 import features.glob as glob
+from features.main_cfg import *
 
 # preconfiguration  initialization
 def reset_afot__init_preconfig__():
