@@ -81,7 +81,7 @@ def rboundary__load_config_define():
     # set relative boundary initial price values in specific asset"""
     , None)
     
-    feature__main_cfg__add_variable('rboundary_price_initial', 0, feature__main_cfg__validate_float, """manually set initial center price. If asset is not specified, the price is set as taker (default=0 automatic)""", None)
+    feature__main_cfg__add_variable('rboundary_price_initial', 0, feature__main_cfg__validate_float, None, """manually set initial center price. If asset is not specified, the price is set as taker (default=0 automatic)""", None)
     
     feature__main_cfg__add_variable('rboundary_max', 0, feature__main_cfg__validate_float, None, """maximum acceptable price set as relative value to center price.
 To set maximum to 150% value is 1.5. (default=0 disabled)""", None)
