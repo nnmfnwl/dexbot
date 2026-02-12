@@ -208,20 +208,20 @@ cfg['reopen_finished_delay'] = "{cc_reopen_finished_delay}"
 cfg['reset_on_price_change_positive'] = "{cc_reset_on_price_change_positive}"
 cfg['reset_on_price_change_negative'] = "{cc_reset_on_price_change_negative}"
 
-    """keep resetting orders in specific number of seconds (default=0 disabled)"""
+"""keep resetting orders in specific number of seconds (default=0 disabled)"""
 cfg['reset_after_delay'] = "{cc_reset_after_delay}"
-    """number of orders to be finished before resetting orders (default=0 disabled)"""
+"""number of orders to be finished before resetting orders (default=0 disabled)"""
 cfg['reset_after_order_finish_number'] = "{cc_reset_after_order_finish_number}"
-    """delay after finishing last order before resetting orders in seconds (default=0 disabled)"""
+"""delay after finishing last order before resetting orders in seconds (default=0 disabled)"""
 cfg['reset_after_order_finish_delay'] = "{cc_reset_after_order_finish_delay}"
 
 # static boundaries configuration:
 
     # set boundaries in specific asset rather than taker
 cfg['sboundary_asset'] = "{cc_sboundary_asset}"
-    """maximum acceptable price of maker(sold one) where bot will stop selling(default=0 disabled)"""
+"""maximum acceptable price of maker(sold one) where bot will stop selling(default=0 disabled)"""
 cfg['sboundary_max'] = "{cc_sboundary_max}"
-    """minimum acceptable price of maker(sold one) where bot will stop selling(default=0 disabled)"""
+"""minimum acceptable price of maker(sold one) where bot will stop selling(default=0 disabled)"""
 cfg['sboundary_min'] = "{cc_sboundary_min}"
     
     # enabled disable boundary asset price updates. This means, ie if trading BLOCK/BTC but boundary is set in USD, it also do USD/BTC price updates and dynamically update boundary according to.
