@@ -34,6 +34,7 @@ s = glob.s
 d = glob.d
 
 from features.tmp_cfg import *
+from features.main_cfg import *
 
 # pre-configuration  initialization
 def sboundary__init_preconfig__():
