@@ -17,7 +17,6 @@ from features.flush_co import *
 from features.pricing_storage import *
 from features.pricing_proxy_client import *
 from features.tmp_cfg import *
-from features.main_cfg import *
 
 # ~ logging.basicConfig(filename='botdebug.log',
                     # ~ level=logging.INFO,
@@ -86,7 +85,7 @@ def init_postconfig():
     pricing_proxy_client__init_postconfig()
     
     # initialize pricing storage and set proxy client
-    pricing_storage__init_postconfig(c.BOTconfig + ".tmp.pricing", c.BOTdelay_check_price, 2, 8, pricing_proxy_client__pricing_storage__try_get_price_fn, c.BOTcfg.price_redirections)
+    pricing_storage__init_postconfig(c.BOTconfigname + ".tmp.pricing", c.BOTdelay_check_price, 2, 8, pricing_proxy_client__pricing_storage__try_get_price_fn, c.BOTcfg.price_redirections)
     
     feature__slide_dyn__init_postconfig(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
     
@@ -460,14 +459,13 @@ def load_config_argument_parser_postparse(args):
     c.BOTcancelall = args.cancelall
     c.BOTcancelmarket = args.cancelmarket
     c.BOTcanceladdress = args.canceladdress
+    c.BOTconfigaction = args.configaction
     
     # check if configuration argument is set as --config and try to import configuration file
-    c.BOTconfig = args.config
-    if c.BOTconfig is None:
+    c.BOTconfigname = args.config
+    if c.BOTconfigname is None:
         print("**** ERROR, --config file is invalid")
         sys.exit(1)
-    
-    c.BOTconfigaction = args.configaction
     
     # temporary configuration
     feature__tmp_cfg__load_config_postparse(args)
@@ -483,9 +481,9 @@ def load_config_main_cfg_define():
     # arguments: main maker/taker
     feature__main_cfg__add_variable('maker_ticker', 'BLOCK', feature__main_cfg__validate_str, None, """asset being sold (default=BLOCK). For example BLOCK LTC BTC PIVX XVG DASH DOGE""")
     feature__main_cfg__add_variable('taker_ticker', 'LTC', feature__main_cfg__validate_str, None, """asset being bought (default=LTC). For example BLOCK LTC BTC PIVX XVG DASH DOGE""")
-    feature__main_cfg__add_variable('maker_address', None, feature__main_cfg__validate_str, None,"""trading address of asset being sold (default=None)""")
-    feature__main_cfg__add_variable('taker_address', None, feature__main_cfg__validate_str, None,"""trading address of asset being bought (default=None)""")
-    feature__main_cfg__add_variable('address_funds_only', None, feature__main_cfg__validate_bool, None,"""limit bot to use and compute funds only from maker and taker address(default=False disabled)""")
+    feature__main_cfg__add_variable('maker_address', None, feature__main_cfg__validate_str, None, """trading address of asset being sold (default=None)""")
+    feature__main_cfg__add_variable('taker_address', None, feature__main_cfg__validate_str, None, """trading address of asset being bought (default=None)""")
+    feature__main_cfg__add_variable('address_funds_only', None, feature__main_cfg__validate_bool, None, """limit bot to use and compute funds only from maker and taker address(default=False disabled)""")
     
     feature__main_cfg__add_variable('price_redirections', dict({}), feature__main_cfg__validate_dict, None, """Price redirections is feature used to optionally set custom ASSET 1 price in thirty ASSET 2.
 For example trading BLOCK with LTC, you would rather set BLOCK price manually in USDT and BOT automatically converts value into LTC.""",
@@ -738,15 +736,20 @@ def load_config():
     
     # define main file configuration variables/rules
     load_config_main_cfg_define()
+    
+    # do requested configuration action
+    if c.BOTconfigaction is not None:
+        retcode = feature__main_cfg__generate_cfg(c.BOTconfigname + '.py', c.BOTconfigaction)
+        sys.exit(retcode)
+        
     # load configuration from configuration file
-    error_num += feature__main_cfg__load_cfg(c.BOTconfig)
+    error_num += feature__main_cfg__load_cfg(c.BOTconfigname)
     # parse loaded configuration and build obj file
     feature__main_cfg__parse_cfg()
     # return whole cfg as obj
     c.BOTcfg = feature__main_cfg__get_cfg_obj()
     # post main cfg parse process
     load_config_main_cfg_postparse()
-    
     
     load_config_verify_or_exit(error_num, crazy_num)
     
@@ -802,9 +805,6 @@ def do_utils_and_exit():
         sys.exit(retcode)
     elif c.BOTcanceladdress is True:
         retcode = do_utils_cancel_orders_address()
-        sys.exit(retcode)
-    elif c.BOTconfigaction is not None:
-        retcode = feature__main_cfg__generate_cfg(c.BOTconfig, c.BOTconfigaction)
         sys.exit(retcode)
 
 # try to update remote maker pricing value
