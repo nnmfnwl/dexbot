@@ -79,8 +79,6 @@ sboundary__init_preconfig__()
 # define argument parameter
 def sboundary__load_config_define():
     
-    feature__main_cfg__add_variable('hidden_orders', False, feature__main_cfg__validate_bool, None, """Orders will be created only virtually, hidden from dx and acting like takerbot only.  (default=False disabled)""", None)
-    
     feature__main_cfg__add_variable('sboundary_asset', "", feature__main_cfg__validate_str, None, """static boundaries configuration:
     set boundaries in specific asset rather than taker
     set static boundary values in specific asset'
