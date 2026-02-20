@@ -71,14 +71,6 @@ if __name__ == '__main__':
     
     print("[I] --config file <{}>".format(config))
     
-    # try to import configuration file
-    cfg = __import__(config)
-    
-    # check configuration file
-    if not cfg.cfg or not isinstance(cfg.cfg, dict):
-        print("[E] --config file is invalid")
-        sys.exit(1)
-    
     # check configaction
     if configaction is None:
         configaction = ""
@@ -108,7 +100,7 @@ if __name__ == '__main__':
         print("[I] starting dexbot")
         result = subprocess.run("python3 dexbot_v2.py --config " + config + " --action " + action + " " + configaction + " " + cancel_orders_arg, shell=True)
         # if dexbot process exit success exit program
-        if result.returncode == 0:
+        if result.returncode == 0 or configaction != "" or cancel_orders_arg != "":
             break
         
         action = "restore"
