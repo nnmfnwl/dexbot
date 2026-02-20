@@ -146,7 +146,7 @@ def feature__main_cfg__generate_cfg(filename, action):
       return False
    
    # check if file not exist
-   if os.path.exists(filename) is True:
+   if os.path.exists(filename) is True and os.path.getsize(filename) > 0 :
       print('>> ERROR >> generate_cfg >> generating configuration file >> {} >> file already exist >> {} >> please remove configuration file first'.format(filename, action))
       return False
    
@@ -154,7 +154,7 @@ def feature__main_cfg__generate_cfg(filename, action):
    file = open(filename,'w', encoding="utf-8")
    
    # write down copyright
-   f.write("""#!/usr/bin/env python3
+   file.write("""#!/usr/bin/env python3
 
 # ~ MIT License
 
@@ -179,25 +179,25 @@ def feature__main_cfg__generate_cfg(filename, action):
 # ~ SOFTWARE.\n""")
    
    # write down main cfg dict variable
-   f.write('cfg = {}')
+   file.write('cfg = {}\n')
 
    # iterate all configuration and write em all into file
    for cfg_name in glob.d.main_cfg.cfg.keys():
       
       # write down description
       description = glob.d.main_cfg.cfg[cfg_name]["description"]
-      f.write('"""{}"""\n'.format(description))
+      file.write('"""{}"""\n'.format(description))
       
       # write down default values
       if action == "defaults":
          defaultvalue = glob.d.main_cfg.cfg[cfg_name]["defaultvalue"]
          if defaultvalue is None:
-            f.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, ""))
+            file.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, ""))
          else:
-            f.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, defaultvalue))
+            file.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, defaultvalue))
       # write down as template
       else:
-         f.write('cfg[\'{}\'] = "{}cc_{}{}"\n'.format(cfg_name, '{', cfg_name, '}'))
+         file.write('cfg[\'{}\'] = "{}cc_{}{}"\n'.format(cfg_name, '{', cfg_name, '}'))
       
    # close file
    file.close()
