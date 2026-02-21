@@ -130,6 +130,11 @@ cfg['make_next_on_hit'] = "{cc_make_next_on_hit}"
 # enable or disable partial orders. Partial orders minimum is set by <sell_start_min> <sell_end_min> along with dynamic size of orders(default=False disabled)
 cfg['partial_orders'] = "{cc_partial_orders}"
 
+"""Fixed fee set in specific asset (default=--maker)"""
+cfg['fixed_fee_asset'] = "{cc_fixed_fee_asset}"
+"""Fixed fee value, it is added price slide, for example when buying BTC the added +5 USDT is crucial because of expensive tx fees. (Default 0)"""
+cfg['fixed_fee_value'] = "{cc_fixed_fee_value}"
+
 # --sell_start_slide | price of first order will be equal to sell_start_slide * price source quote(default=1.01 means +1%)
 # --sell_end_slide   | price of last order will be equal to sell_end_slide * price source quote(default=1.021 means +2.1%)
 # first order at price slide to 110%(if price is 1 USD final is 1.10 USD), second order with price slide 106.5% and last order with price slide to 103%
