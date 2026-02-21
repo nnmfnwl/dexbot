@@ -23,7 +23,7 @@ fixed_fee__init_preconfig__()
 def fixed_fee__load_config_define():
     
     feature__main_cfg__add_variable('fixed_fee_asset', None, feature__main_cfg__validate_str, None, """Fixed fee set in specific asset (default=--maker)""",None)
-    feature__main_cfg__add_variable('fixed_fee_value', 0, feature__main_cfg__validate_float, None, """Fixed fee value, it is added price slide, for example when buying BTC the added +5 USDT is crucial because of expesive tx fees. (Default 0)""", None)
+    feature__main_cfg__add_variable('fixed_fee_value', 0, feature__main_cfg__validate_float, None, """Fixed fee value, it is added price slide, for example when buying BTC the added +5 USDT is crucial because of expensive tx fees. (Default 0)""", None)
     
 # parse configuration value
 def fixed_fee__load_config_postparse(args):
