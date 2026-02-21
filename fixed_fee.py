@@ -64,5 +64,8 @@ def fixed_fee__asset_pricing_update():
     
 # add fixed fee amount into sell amount
 def fixed_fee__add_fee_int_amount(buy_amount):
-    return buy_amount + (c.fixed_fee__value * d.fixed_fee__price)
-
+    add_amount = c.fixed_fee__value * d.fixed_fee__price
+    final_amount = buy_amount + add_amount
+    print('>>>> INFO >> fixed_fee >> adding <{} {} = {} {}> into <{} {}> buy amount, resulted as <{} {}>'.format(c.fixed_fee__value, c.fixed_fee__asset, add_amount, c.BOTbuymarket, buy_amount, c.BOTbuymarket, final_amount, c.BOTbuymarket))
+    
+    return final_amount 
