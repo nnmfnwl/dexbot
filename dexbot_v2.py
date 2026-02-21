@@ -48,6 +48,10 @@ def init_preconfig():
     
     feature__tmp_cfg__init_preconfig__()
     
+    pricing_storage__init_preconfig__()
+    
+    fixed_fee__init_preconfig__()
+    
     reset_afot__init_preconfig__()
     
     feature__maker_price__init_preconfig()
@@ -88,6 +92,8 @@ def init_postconfig():
     pricing_storage__init_postconfig(c.BOTconfigname + ".tmp.pricing", c.BOTdelay_check_price, 2, 8, pricing_proxy_client__pricing_storage__try_get_price_fn, c.BOTcfg.price_redirections)
     
     feature__slide_dyn__init_postconfig(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
+    
+    fixed_fee__init_postconfig()
     
 #global variables initialization
 def global_vars_init_preconfig():
@@ -268,7 +274,11 @@ def load_config_verify_or_exit(error_num, crazy_num):
             # ~ print('**** WARNING, <marking> value <{}> seems invalid. Values more than 0.001 can possibly have very impact on order value'.format(c.BOTmarking))
             # ~ print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --im_really_sure_what_im_doing argument')
             # ~ crazy_num += 1
-                
+    
+    error_num_tmp, crazy_num_tmp = fixed_fee__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
+    
     if c.BOTsell_start_slide <= 1:
         print('**** WARNING, <sell_start_slide> value <{0}> seems invalid. Values less than 1 means selling something under price.'.format(c.BOTsell_start_slide))
         print('++++ HINT, If you are really sure about what you are doing, you can ignore this warning by using --im_really_sure_what_im_doing argument')
@@ -550,6 +560,8 @@ In theory we need bot to try to create orders in dynamic size if there is not en
     
     feature__main_cfg__add_variable('sell_random', False, feature__main_cfg__validate_bool, None, """orders size will be random number between sell_start_max and sell_end_max, otherwise sequence of orders starting by sell_start_max amount and ending with sell_end_max amount(default=disabled)""", None)
     
+    fixed_fee__load_config_define()
+    
     feature__main_cfg__add_variable('sell_start_slide', 1.01, feature__main_cfg__validate_float, None, """price of first order will be equal to (sell_start_slide * actual_price) (default=1.01 means +1%%)""", None)
     feature__main_cfg__add_variable('sell_end_slide', 1.021, feature__main_cfg__validate_float, None, """price of last order will be equal to (sell_end_slide * actual price) (default=1.021 means +2.1%%)""", None)
     
@@ -665,6 +677,9 @@ def load_config_main_cfg_postparse():
     c.BOTsell_end_max = float(c.BOTcfg.sell_end_max)
     c.BOTsell_start_min = float(c.BOTcfg.sell_start_min)
     c.BOTsell_end_min = float(c.BOTcfg.sell_end_min)
+    
+    fixed_fee__load_config_postparse(c.BOTcfg)
+    
     c.BOTsell_start_slide = float(c.BOTcfg.sell_start_slide)
     c.BOTsell_end_slide = float(c.BOTcfg.sell_end_slide)
     c.BOTslidemin = min(c.BOTsell_start_slide, c.BOTsell_end_slide)
@@ -945,7 +960,7 @@ def feature__sell_size_asset__pricing_update():
         d.feature__sell_size_asset__price = temp_price
     
     return temp_price
-        
+
 # update balances for specific assset
 def balance_get(token, address_funds_only = None):
     global c, s, d
@@ -1148,7 +1163,9 @@ def virtual_orders__create_one(order_id, order_name, price, slide_dyn, price_sli
     # limit precision to 6 digits
     sell_amount = '%.6f' % sell_amount
     
-    buyamount = (float(sell_amount) * float(makermarketpriceslide)) 
+    buyamount = (float(sell_amount) * float(makermarketpriceslide))
+    
+    buyamount = float(fixed_fee__add_fee_int_amount(buyamount))
     
     # limit precision to 6 digits
     buyamount = '%.6f' % buyamount
@@ -1295,6 +1312,12 @@ def virtual_orders__prepare_recheck():
         if feature__sell_size_asset__pricing_update() != 0:
             break
         print('#### Pricing of sell size asset not available... waiting to restore...')
+        time.sleep(c.BOTdelay_internal_error)
+        
+    while True:
+        if fixed_fee__asset_pricing_update() != 0:
+            break
+        print('#### Pricing of fixed fee asset not available... waiting to restore...')
         time.sleep(c.BOTdelay_internal_error)
     
     while True:
