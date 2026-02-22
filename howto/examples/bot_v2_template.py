@@ -145,7 +145,7 @@ cfg['sell_end_slide'] = "{cc_sell_end_slide}"
 # no pump order. pump and dump orders are very useful, in case of pump you can buy back more and cheap.
 cfg['pump_slide'] = "{cc_pump_slide}"
 cfg['pump_amount_max'] = "{cc_pump_amount_max}"
-cfg['pump_amount_min'] = "{cc_pump_amount_min]"
+cfg['pump_amount_min'] = "{cc_pump_amount_min}"
 
 
 # Enabled dynamic slide based on maker amount and selling or buying maker.
