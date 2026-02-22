@@ -16,6 +16,7 @@ def fixed_fee__init_preconfig__():
     c.fixed_fee__asset = None
     c.fixed_fee__value = 0
     d.fixed_fee__price = 0
+    d.fixed_fee__get_price_fn = None
 
 fixed_fee__init_preconfig__()
 
@@ -30,9 +31,7 @@ def fixed_fee__load_config_postparse(args):
     
     c.fixed_fee__value = float(args.fixed_fee_value)
     c.fixed_fee__asset = str(args.fixed_fee_asset)
-    if args.fixed_fee_asset is None:
-        c.fixed_fee__asset = c.BOTsellmarket
-        
+    
 # verify argument value after load
 def fixed_fee__load_config_verify():
     
@@ -43,20 +42,29 @@ def fixed_fee__load_config_verify():
         print('**** ERROR, <fixed_fee_value> value <{0}> is invalid'.format(c.fixed_fee__value))
         error_num += 1
         
-    if c.fixed_fee__asset == "":
-        print('**** ERROR, <fixed_fee_asset> value <{0}> is invalid'.format(c.fixed_fee__asset))
-        error_num += 1
+    # ~ if c.fixed_fee__asset == "":
+        # ~ print('**** ERROR, <fixed_fee_asset> value <{0}> is invalid'.format(c.fixed_fee__asset))
+        # ~ error_num += 1
         
     return error_num, crazy_num
 
+def fixed_fee__get_price_cb__(maker, taker):
+    print('** ERROR >> dynamic slide >> dexbot.features.slide_dyn.feature__slide_dyn__get_price_cb__() function is just empty default callback, please replace with pricing_storage__try_get_price')
+    return 0
+
 # set update interval in seconds
-def fixed_fee__init_postconfig():
-    return
+def fixed_fee__init_postconfig(taker, get_price_fn = fixed_fee__get_price_cb__):
+    
+    if c.fixed_fee__asset is None or c.fixed_fee__asset == "":
+        c.fixed_fee__asset = taker
+        
+    d.fixed_fee__taker = taker
+    d.fixed_fee__get_price_fn = get_price_fn
 
 # get price of fixed fee asset vs taker
 def fixed_fee__asset_pricing_update():
     
-    temp_price = pricing_storage__try_get_price(c.fixed_fee__asset, c.BOTbuymarket)
+    temp_price = d.fixed_fee__get_price_fn(c.fixed_fee__asset, d.fixed_fee__taker)
     if temp_price != 0:
         d.fixed_fee__price = temp_price
     
@@ -66,6 +74,6 @@ def fixed_fee__asset_pricing_update():
 def fixed_fee__add_fee_int_amount(buy_amount):
     add_amount = c.fixed_fee__value * d.fixed_fee__price
     final_amount = buy_amount + add_amount
-    print('>>>> INFO >> fixed_fee >> adding <{} {} = {} {}> into <{} {}> buy amount, resulted as <{} {}>'.format(c.fixed_fee__value, c.fixed_fee__asset, add_amount, c.BOTbuymarket, buy_amount, c.BOTbuymarket, final_amount, c.BOTbuymarket))
+    print('>>>> INFO >> fixed_fee >> adding <{} {} = {} {}> into <{} {}> buy amount, resulted as <{} {}>'.format(c.fixed_fee__value, c.fixed_fee__asset, add_amount, d.fixed_fee__taker, buy_amount, d.fixed_fee__taker, final_amount, d.fixed_fee__taker))
     
     return final_amount 
