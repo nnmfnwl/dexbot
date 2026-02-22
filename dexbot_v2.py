@@ -94,7 +94,7 @@ def init_postconfig():
     
     feature__slide_dyn__init_postconfig(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
     
-    fixed_fee__init_postconfig()
+    fixed_fee__init_postconfig(c.BOTbuymarket, pricing_storage__try_get_price)
     
 #global variables initialization
 def global_vars_init_preconfig():
