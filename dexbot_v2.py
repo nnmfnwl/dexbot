@@ -90,7 +90,7 @@ def init_postconfig():
     pricing_proxy_client__init_postconfig()
     
     # initialize pricing storage and set proxy client
-    pricing_storage__init_postconfig(c.BOTconfigname + ".tmp.pricing", c.BOTdelay_check_price, 2, 8, pricing_proxy_client__pricing_storage__try_get_price_fn, c.BOTcfg.price_redirections)
+    pricing_storage__init_postconfig(c.BOTconfigname + ".tmp.pricing", c.BOTdelay_check_price, 1, 8, pricing_proxy_client__pricing_storage__try_get_price_fn, c.BOTcfg.price_redirections)
     
     feature__slide_dyn__init_postconfig(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
     
