@@ -26,7 +26,7 @@ def pricing_storage__init_preconfig__():
     glob.d.pricing_storage.auto_save_threshold = 3
     glob.d.pricing_storage.auto_save_threshold_status = 3
     glob.d.pricing_storage.auto_save_file_name = ""
-    glob.d.pricing_storage__try_num = 2
+    glob.d.pricing_storage__try_num = 1
     glob.d.pricing_storage__try_sleep = 6
     glob.d.pricing_storage.price_acceptable_outage = 0
     glob.d.pricing_storage.price_outage_extra_slide = 1
@@ -72,7 +72,7 @@ def pricing_storage__load_config_verify():
     return error_num, crazy_num
 
 # set update interval in seconds
-def pricing_storage__init_postconfig(auto_save_file_name, update_interval, try_num = 2, try_sleep = 6, try_get_price_fn = pricing_storage__try_get_price_empty_fn, data_redirect = {}, price_acceptable_outage = 0):
+def pricing_storage__init_postconfig(auto_save_file_name, update_interval, try_num = 1, try_sleep = 6, try_get_price_fn = pricing_storage__try_get_price_empty_fn, data_redirect = {}, price_acceptable_outage = 0):
     
     glob.d.pricing_storage.auto_save_file_name = auto_save_file_name
     glob.d.pricing_storage.update_interval = update_interval
@@ -115,9 +115,9 @@ def pricing_storage__try_update_price__(maker, taker, price_provider, try_num, t
             break;
         # on failed try again
         try_num_actual += 1
+        print("#### WARNING pricing storage update failed, price trying again... {}/{}".format(try_num_actual, try_num))
         if try_num_actual >= try_num:
             break
-        print("#### WARNING pricing storage update failed, price trying again...")
         # on failed wait a while
         time.sleep(try_sleep)
     
