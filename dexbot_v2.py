@@ -361,20 +361,12 @@ def load_config_verify_or_exit(error_num, crazy_num):
     error_num += error_num_tmp
     crazy_num += crazy_num_tmp
     
-    # arguments: dynamic values, special pump/dump order
+    # arguments: dynamic values
     
     error_num_tmp, crazy_num_tmp = feature__slide_dyn__load_config_verify()
     error_num += error_num_tmp
     crazy_num += crazy_num_tmp
     
-    if c.BOTpump_slide < 0:
-        print('**** ERROR, <pump_slide> value <{0}> is invalid'.format(c.BOTpump_slide))
-        error_num += 1
-    
-    if c.BOTpump_amount_max < 0 and c.BOTpump_slide > 0:
-        print('**** ERROR, <pump_amount_max> value <{0}> is invalid'.format(c.BOTpump_amount_max))
-        error_num += 1
-        
     # arguments: reset orders by events
     if c.BOTreset_on_price_change_positive < 0:
         print('**** ERROR, <reset_on_price_change_positive> value <{0}> is invalid'.format(c.BOTreset_on_price_change_positive))
@@ -566,7 +558,7 @@ In theory we need bot to try to create orders in dynamic size if there is not en
     feature__main_cfg__add_variable('sell_start_slide', 1.01, feature__main_cfg__validate_float, None, """price of first order will be equal to (sell_start_slide * actual_price) (default=1.01 means +1%%)""", None)
     feature__main_cfg__add_variable('sell_end_slide', 1.021, feature__main_cfg__validate_float, None, """price of last order will be equal to (sell_end_slide * actual price) (default=1.021 means +2.1%%)""", None)
     
-    feature__main_cfg__add_variable('max_open_orders', 5, feature__main_cfg__validate_int, None, """Max amount of orders to have open at any given time. Placing orders sequence: first placed order is at sell_start_slide(price slide),sell_start_max(amount) up to sell_end_slide(price slide),sell_end_max(amount), last order placed is pump_slide if configured, is not counted into this number (default=5)""", None)
+    feature__main_cfg__add_variable('max_open_orders', 5, feature__main_cfg__validate_int, None, """Max amount of orders to have open at any given time. Placing orders sequence: first placed order is at sell_start_slide(price slide),sell_start_max(amount) up to sell_end_slide(price slide),sell_end_max(amount) (default=5)""", None)
     
     feature__main_cfg__add_variable('make_next_on_hit', False, feature__main_cfg__validate_bool, None, """create next order on 0 amount hit, so if first order is not created, rather skipped, next is created(default=False disabled)""", None)
     
@@ -596,13 +588,9 @@ In theory we need bot to try to create orders in dynamic size if there is not en
     
     feature__maker_price__load_config_define()
     
-    # arguments: dynamic values, special pump/dump order
+    # arguments: dynamic values
     
     feature__slide_dyn__load_config_define()
-    
-    feature__main_cfg__add_variable('pump_slide', 0, feature__main_cfg__validate_float, None, """if slide pump is non zero a special order out of slidemax is set, this order will be filled when pump happen(default=0 disabled, 0.5 means order will be placed +50%% out of maximum slide)""", None)
-    feature__main_cfg__add_variable('pump_amount_max', 0, feature__main_cfg__validate_float, None, """pump order size, 0 means maximum, otherwise sell_end_max is used(default=--sell_end_max)""")
-    feature__main_cfg__add_variable('pump_amount_min', 0, feature__main_cfg__validate_float, None, """minimum acceptable pump order size, otherwise sell_end_min is used(default=--sell_end_min)""")
 
     # arguments: reset orders by events
     feature__main_cfg__add_variable('reset_on_price_change_positive', 0, feature__main_cfg__validate_float, None, """price positive change which inits reset of all orders. I.e. 0.05 means reset at +5%% change. (default=0 disabled)""", None)
@@ -706,15 +694,10 @@ def load_config_main_cfg_postparse():
     
     c.BOTtakerbot = int(c.BOTcfg.takerbot)
     
-    # arguments: dynamic values, special pump/dump order
+    # arguments: dynamic values,
     
     feature__slide_dyn__load_config_postparse(c.BOTcfg)
         
-    c.BOTpump_slide = float(c.BOTcfg.pump_slide)
-    c.BOTpump_enabled = (True if c.BOTpump_slide > 0 else False)
-    c.BOTpump_amount_max = (float(c.BOTcfg.pump_amount_max) if float(c.BOTcfg.pump_amount_max) >= 0 else c.BOTsell_end_max)
-    c.BOTpump_amount_min = (float(c.BOTcfg.pump_amount_min) if float(c.BOTcfg.pump_amount_min) >= 0 else c.BOTsell_end_min)
-    
     # arguments: reset orders by events
     c.BOTreset_on_price_change_positive = float(c.BOTcfg.reset_on_price_change_positive)
     c.BOTreset_on_price_change_negative = float(c.BOTcfg.reset_on_price_change_negative)
@@ -779,7 +762,7 @@ def global_vars_init_postconfig():
     else:
         s.reopenstatuses = s.status_list__ready_to_reopen_wfinished
     
-    s.ordersvirtualmax = c.BOTmax_open_orders + int(c.BOTpump_enabled) # pump and dump order is extra if exist
+    s.ordersvirtualmax = c.BOTmax_open_orders
     d.ordersvirtual = [0]*s.ordersvirtualmax
     for i in range(s.ordersvirtualmax):
         d.ordersvirtual[i] = {}
@@ -1222,14 +1205,14 @@ def balance_available_to_sell_recompute(sell_amount_max=0, sell_amount_min=0):
     if c.BOTbalance_save_number != 0:
         balance_save_size = feature__balance_save_asset__convert_to_maker(c.BOTbalance_save_number)
         sell_amount_tmp = sell_amount
-        sell_amount = min(sell_amount, d.balance_maker_available - sell_amount_txfee - balance_save_size)
+        sell_amount = min(sell_amount, sell_amount - balance_save_size)
         sell_amount = max(sell_amount, 0)
         print('>>>> balance_save_number {} apply, sell amount original {} new {}'.format(balance_save_size, sell_amount_tmp, sell_amount))
         
     #apply BOTbalance_save_percent if enabled
     if c.BOTbalance_save_percent != 0:
         sell_amount_tmp = sell_amount
-        sell_amount = min(sell_amount, d.balance_maker_available - sell_amount_txfee - (c.BOTbalance_save_percent * d.balance_maker_total))
+        sell_amount = min(sell_amount, sell_amount - (c.BOTbalance_save_percent * d.balance_maker_total))
         sell_amount = max(sell_amount, 0)
         print('>>>> balance_save_percent {} apply, sell amount original {} new {}'.format(c.BOTbalance_save_percent, sell_amount_tmp, sell_amount))
     
@@ -1379,21 +1362,21 @@ def events_exit_bot():
 def events_reset_orders():
     global c, s, d
     
-    print('checking for reset order events')
+    print('---- DEBUG.main >> checking for reset order events')
     
     # if reset on price change positive is set and price has been changed, break and reset orders
     if c.BOTreset_on_price_change_positive != 0 and d.feature__maker_price__value_current_used >= (d.reset_on_price_change_start * (1 + c.BOTreset_on_price_change_positive)):
-        print('>>>> Reset on positive price change {0}% has been reached: price stored / actual {1} / {2}, going to order reset now...'.format(c.BOTreset_on_price_change_positive, d.reset_on_price_change_start, d.feature__maker_price__value_current_used))
+        print('^^^^ ACTION.reset_orders >> Reset on positive price change {0}% has been reached: price stored / actual {1} / {2}, going to order reset now...'.format(c.BOTreset_on_price_change_positive, d.reset_on_price_change_start, d.feature__maker_price__value_current_used))
         return True
         
     # if reset on price change negative is set and price has been changed, break and reset orders
     if c.BOTreset_on_price_change_negative != 0 and d.feature__maker_price__value_current_used <= (d.reset_on_price_change_start * (1 - c.BOTreset_on_price_change_negative)):
-        print('>>>> Reset on negative price change {0}% has been reached: price stored / actual {1} / {2}, going to order reset now...'.format(c.BOTreset_on_price_change_negative, d.reset_on_price_change_start, d.feature__maker_price__value_current_used))
+        print('^^^^ ACTION.reset_orders >> Reset on negative price change {0}% has been reached: price stored / actual {1} / {2}, going to order reset now...'.format(c.BOTreset_on_price_change_negative, d.reset_on_price_change_start, d.feature__maker_price__value_current_used))
         return True
     
     # if reset after delay is set and reached break and reset orders
     if c.BOTreset_after_delay != 0 and (time.time() - d.time_start_reset_orders) > c.BOTreset_after_delay:
-        print('>>>> Maximum orders lifetime {0} / {1} has been reached, going to order reset now...'.format((time.time() - d.time_start_reset_orders), c.BOTreset_after_delay))
+        print('^^^^ ACTION.reset_orders >> Maximum orders lifetime {0} / {1} has been reached, going to order reset now...'.format((time.time() - d.time_start_reset_orders), c.BOTreset_after_delay))
         return True
     
     if reset_afot__check() == True:
@@ -1406,7 +1389,7 @@ def events_wait_reopenfinished_reset_detect():
     global c, s, d
     
     if events_wait_reopenfinished_check_num_silent() == "reached" or events_wait_reopenfinished_check_delay_silent() == "reached":
-        print(">>>> reopen after finished reseting data...")
+        print("^^^^ ACTION.reopenfinished >> reopen after finished reseting data...")
         d.orders_pending_to_reopen_finished = 0
         d.orders_pending_to_reopen_finished_time = 0;
 
@@ -1435,7 +1418,7 @@ def events_wait_reopenfinished_check_num():
     global c, s, d
     ret = events_wait_reopenfinished_check_num_silent()
     if ret == "wait":
-        print('%%%% DEBUG Reopen finished order num {0} / {1} not reached, waiting...'.format(d.orders_pending_to_reopen_finished, c.BOTreopen_finished_num))
+        print('---- DEBUG.reopenfinished >> Reopen finished order num {0} / {1} not reached, waiting...'.format(d.orders_pending_to_reopen_finished, c.BOTreopen_finished_num))
     
     return ret
     
@@ -1462,7 +1445,7 @@ def events_wait_reopenfinished_check_delay():
     global c, s, d
     ret = events_wait_reopenfinished_check_delay_silent()
     if ret == "wait":
-        print('%%%% DEBUG Reopen finished orders delay {0} / {1} not reached, waiting...'.format((time.time() - d.orders_pending_to_reopen_finished_time), c.BOTreopen_finished_delay))
+        print('---- DEBUG.reopenfinished >> Reopen finished orders delay {0} / {1} not reached, waiting...'.format((time.time() - d.orders_pending_to_reopen_finished_time), c.BOTreopen_finished_delay))
         
     return ret
 
@@ -1485,7 +1468,7 @@ def events_wait():
     global c, s, d
     ret = False
     
-    print('checking for wait events')
+    print('---- DEBUG.events_wait >> checking for wait events')
     
     # wait if there is not enough balance to place order and pay fee
     if balance_available_to_sell_recompute() == 0:
@@ -1539,18 +1522,22 @@ def sell_amount_recompute(sell_start, sell_end, order_num_all, order_num_actual,
     
     # sell amount staggered
     else:
+        # first order is always at exact position
+        if order_num_actual = 0:
+            sell_type_res = 0
+            
         # linear staggered orders size distribution
-        if sell_type == 0:
-            sell_type_res = order_num_actual / order_num_all
+        elif sell_type == 0:
+            sell_type_res = order_num_actual / (order_num_all - 1)
         
         # exponential staggered order size distribution
         elif sell_type > 0:
-            sell_type_res = (order_num_actual / order_num_all)**(1-(sell_type))
+            sell_type_res = (order_num_actual / order_num_all - 1)**(1-(sell_type))
         
         # logarithmic staggered order size distribution
         elif sell_type < 0:
             # ~ sell_type_res = (order_num_actual / order_num_all)**(1-(10*sell_type))
-            sell_type_res = (order_num_actual / order_num_all)**((float(100)**(sell_type*-1))+(sell_type*4.4))
+            sell_type_res = (order_num_actual / order_num_all - 1)**((float(100)**(sell_type*-1))+(sell_type*4.4))
         
         # sell amount = amount starting point + (variable amount * intensity) 
         sell_amount = sell_start + ((sell_end - sell_start) * sell_type_res)
@@ -1565,27 +1552,21 @@ def sell_amount_recompute(sell_start, sell_end, order_num_all, order_num_actual,
 def virtual_orders__handle():
     global c, s, d
     
-    print('checking for virtual orders to handle')
-    
-    pumpdump_order_cleared = False
+    print('---- DEBUG.virtual_orders >> checking for virtual orders to handle')
     
     # loop all virtual orders and try to create em
     
     # staggered orders handling
-    for i in range(s.ordersvirtualmax - int(c.BOTpump_enabled)):
+    for i in range(s.ordersvirtualmax):
         if d.ordersvirtual[i]['status'] in s.reopenstatuses:
             
-            # as we found not virtual order to reopen, first it is cancel pump dump order needed
-            if c.BOTpump_enabled is True and pumpdump_order_cleared is False and d.ordersvirtual[s.ordersvirtualmax-1]['status'] in s.status_list__with_reserved_balance:
-                pumpdump_order_cleared = True
-                
             # update total available and reserve balances
             update_balances()
             
             # sse - sell size asset
             # compute dynamic order size range, apply <sell_type> linear/log/exp on maximum amount by order number distribution
-            sell_amount_max_sse = sell_amount_recompute(c.BOTsell_start_max, c.BOTsell_end_max, s.ordersvirtualmax - int(c.BOTpump_enabled), i, c.BOTsell_type)
-            sell_amount_min_sse = sell_amount_recompute(c.BOTsell_start_min, c.BOTsell_end_min, s.ordersvirtualmax - int(c.BOTpump_enabled), i, c.BOTsell_type)
+            sell_amount_max_sse = sell_amount_recompute(c.BOTsell_start_max, c.BOTsell_end_max, s.ordersvirtualmax, i, c.BOTsell_type)
+            sell_amount_min_sse = sell_amount_recompute(c.BOTsell_start_min, c.BOTsell_end_min, s.ordersvirtualmax, i, c.BOTsell_type)
             
             # convert sell size in sell size asset to maker asset
             sell_amount_max = sell_amount_max_sse * d.feature__sell_size_asset__price
@@ -1617,34 +1598,20 @@ def virtual_orders__handle():
                 else:
                     order_name = 'first staggered order with min-slide'
             # last order is max slide
-            elif i == (s.ordersvirtualmax - int(c.BOTpump_enabled) -1):
-                order_name = 'last staggered order'
+            elif i == s.ordersvirtualmax -1:
+                if c.BOTsell_start_slide >= c.BOTsell_end_slide:
+                    order_name = 'last staggered order with max-slide'
+                else:
+                    order_name = 'last staggered order with min-slide'
             # any other orders between min and max slide
             else:
-                if c.BOTsell_start_slide >= c.BOTsell_end_slide:
-                    order_name = 'last staggered order with min-slide'
-                else:
-                    order_name = 'first staggered order with max-slide'
+                order_name = 'middle staggered order'
             
             # compute staggered orders slides
-            staggeredslide = ((c.BOTsell_end_slide - c.BOTsell_start_slide) / max((s.ordersvirtualmax -1 -int(c.BOTpump_enabled)),1 ))*i
+            staggeredslide = ((c.BOTsell_end_slide - c.BOTsell_start_slide) / max((s.ordersvirtualmax -1),1 ))*i
             
             virtual_orders__create_one(i, order_name, d.feature__maker_price__value_current_used, d.feature__slide_dyn__value, price_maker_with_boundaries, c.BOTsell_start_slide, staggeredslide, sell_amount, sell_amount_min)
             time.sleep(c.BOTdelay_internal_op)
-    
-    # special pump/dump order handling
-    if c.BOTpump_enabled is True and d.ordersvirtual[s.ordersvirtualmax-1]['status'] in s.reopenstatuses:
-        update_balances()
-        
-        # convert sell size in sell size asset to maker asset
-        sell_amount_pumpdump_max = c.BOTpump_amount_max * d.feature__sell_size_asset__price
-        sell_amount_pumpdump_min = c.BOTpump_amount_min * d.feature__sell_size_asset__price
-        
-        # recompute sell amount by available balance, other limit conditions
-        sell_amount_final = balance_available_to_sell_recompute(sell_amount_pumpdump_max, sell_amount_pumpdump_min)
-        
-        if sell_amount_final > 0:
-            virtual_orders__create_one(s.ordersvirtualmax-1, 'pump/dump', d.feature__maker_price__value_current_used, d.feature__slide_dyn__value, price_maker_with_boundaries, c.BOTslidemax, c.BOTpump_slide, sell_amount_final, sell_amount_pumpdump_min)
             
 # check if virtual order was taken by takerbot
 def feature__takerbot__virtual_order_was_taken_get(virtual_order):
@@ -1665,7 +1632,7 @@ def feature__takerbot__virtual_order_was_taken_set(virtual_order, true_false):
 def feature__takerbot__run():
     global c, s, d
     
-    print('checking for takerbot actions')
+    print('---- DEBUG.takerbot >> checking for takerbot actions')
     
     ret = False
     
@@ -1750,6 +1717,9 @@ def feature__takerbot__run():
                                 
                                 # if there is enough balance and order meet requirements, try to handle situation and take order
                                 if maker_sum >= float(orders_market_sorted[i]['size']):
+                                    
+                                    print('>> ACTION.takerbot >> takerbot activated >>...')
+                                    
                                     print('\n *** *** *** *** summary of makers sizes <{}> is enough for <{}>\n'.format(maker_sum, orders_market_sorted[i]['size']))
                                     # try to cancel bot orders which are dependant on takerbot action
                                     for k in range(len(order_candidates)):
@@ -1842,7 +1812,6 @@ if __name__ == '__main__':
             ############################################################
             # following loop is about to:
             # staggered orders are created 
-            # pump/dump order is created
             # finished orders are recreated if needed
             # orders reset on delay/afterfinish/afterfinishdelay...
             ############################################################
