@@ -39,7 +39,7 @@ def fixed_fee__load_config_verify():
     crazy_num = 0
     
     if c.fixed_fee__value < 0:
-        print('**** ERROR, <fixed_fee_value> value <{0}> is invalid'.format(c.fixed_fee__value))
+        print('**** ERROR.fixed fee >> <fixed_fee_value> value <{0}> is invalid'.format(c.fixed_fee__value))
         error_num += 1
         
     # ~ if c.fixed_fee__asset == "":
@@ -49,7 +49,7 @@ def fixed_fee__load_config_verify():
     return error_num, crazy_num
 
 def fixed_fee__get_price_cb__(maker, taker):
-    print('** ERROR >> dynamic slide >> dexbot.features.slide_dyn.feature__slide_dyn__get_price_cb__() function is just empty default callback, please replace with pricing_storage__try_get_price')
+    print('**** ERROR.fixed fee >> dexbot.features.fixed_fee.fixed_fee__get_price_cb__() function is just empty default callback, please replace with pricing_storage__try_get_price')
     return 0
 
 # set update interval in seconds
@@ -74,6 +74,6 @@ def fixed_fee__asset_pricing_update():
 def fixed_fee__add_fee_int_amount(buy_amount):
     add_amount = c.fixed_fee__value * d.fixed_fee__price
     final_amount = buy_amount + add_amount
-    print('>>>> INFO >> fixed_fee >> adding <{} {} = {} {}> into <{} {}> buy amount, resulted as <{} {}>'.format(c.fixed_fee__value, c.fixed_fee__asset, add_amount, d.fixed_fee__taker, buy_amount, d.fixed_fee__taker, final_amount, d.fixed_fee__taker))
+    print('>>>> INFO.fixed_fee >> adding <{} {} = {} {}> into <{} {}> buy amount, resulted as <{} {}>'.format(c.fixed_fee__value, c.fixed_fee__asset, add_amount, d.fixed_fee__taker, buy_amount, d.fixed_fee__taker, final_amount, d.fixed_fee__taker))
     
     return final_amount 
