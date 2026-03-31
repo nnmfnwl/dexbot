@@ -36,7 +36,7 @@ def feature__tmp_cfg__load_config_verify():
         glob.c.feature__tmp_cfg__file_name = glob.c.feature__tmp_cfg__file_name + ".tmp.cfg"
         glob.d.feature__tmp_cfg__ready = True
     else:
-        print('** ERROR >> setting >> --config filename+.tmp.cfg >> value <{}> is invalid'.format(glob.c.feature__tmp_cfg__file_name))
+        print('**** ERROR.tmp_cfg >> setting >> --config filename+.tmp.cfg >> value <{}> is invalid'.format(glob.c.feature__tmp_cfg__file_name))
         error_num += 1
         
     return error_num, crazy_num
@@ -45,7 +45,7 @@ def feature__tmp_cfg__load_config_verify():
 def feature__tmp_cfg__load_saved_cfg():
     
     if glob.d.feature__tmp_cfg__ready == False:
-        print('** FATAL >> feature__tmp_cfg >> must be initialized first!')
+        print('**** FATAL.tmp_cfg >> feature__tmp_cfg >> must be initialized first!')
         sys.exit(1)
     
     try:
@@ -53,17 +53,17 @@ def feature__tmp_cfg__load_saved_cfg():
         glob.d.feature__tmp_cfg__data = pickle.load(file)
         file.close()
     except FileNotFoundError:
-        print('DEBUG: temporary configuration was not created yet')
+        print('---- DEBUG.tmp_cfg >> temporary configuration was not created yet')
     except EOFError:
-        print('DEBUG: temporary configuration was empty')
+        print('---- DEBUG.tmp_cfg >> temporary configuration was empty')
     
-    print('DEBUG: temporary configuration data: {}'.format(glob.d.feature__tmp_cfg__data))
+    print('---- DEBUG.tmp_cfg >> temporary configuration data: {}'.format(glob.d.feature__tmp_cfg__data))
     
 # returns value of loaded temporary configuration
 def feature__tmp_cfg__get_value(name, default = None):
     
     if glob.d.feature__tmp_cfg__ready == False:
-        print('** FATAL >> feature__tmp_cfg >> must be initialized first!')
+        print('**** FATAL.tmp_cfg >> feature must be initialized first!')
         sys.exit(1)
     
     ret = glob.d.feature__tmp_cfg__data.get(name, default)
@@ -73,7 +73,7 @@ def feature__tmp_cfg__get_value(name, default = None):
 def feature__tmp_cfg__set_value(name, value, update_tmp_cfg_file = True):
     
     if glob.d.feature__tmp_cfg__ready == False:
-        print('** FATAL >> feature__tmp_cfg >> must be initialized first!')
+        print('**** FATAL.tmp_cfg >> feature must be initialized first!')
         sys.exit(1)
     
     glob.d.feature__tmp_cfg__data[name] = value
