@@ -118,7 +118,7 @@ cfg['sell_random'] = "{cc_sell_random}"
 #
 cfg['sell_type'] = "{cc_sell_type}"
 
-# --max_open_orders | Max amount of orders to have open at any given time. Placing orders sequence: first placed order is at sell_start_slide(price slide),sell_start_max(amount) up to sell_end_slide(price slide),sell_end_max(amount), last order placed is pump_slide if configured, is not counted into this number (default=5)
+# --max_open_orders | Max amount of orders to have open at any given time. Placing orders sequence: first placed order is at sell_start_slide(price slide),sell_start_max(amount) up to sell_end_slide(price slide),sell_end_max(amount) (default=5)
 # configure bot to have 3 orders opened. all other orders between first and last order are automatically recomputed by number of orders and linearly distributed between <sell_start_max, sell_start_min> and <sell_end_max, sell_end_min>
 # so if bot have order size from <1> up to <6> and max number of orders is 3 middle will be 3.5, so orders will be <1> <3.5> <6>
 cfg['max_open_orders'] = "{cc_max_open_orders}"
@@ -141,12 +141,6 @@ cfg['fixed_fee_value'] = "{cc_fixed_fee_value}"
     # ~ "--sell_start_slide 1.10 --sell_end_slide 1.03"
 cfg['sell_start_slide'] = "{cc_sell_start_slide}"
 cfg['sell_end_slide'] = "{cc_sell_end_slide}"
-
-# no pump order. pump and dump orders are very useful, in case of pump you can buy back more and cheap.
-cfg['pump_slide'] = "{cc_pump_slide}"
-cfg['pump_amount_max'] = "{cc_pump_amount_max}"
-cfg['pump_amount_min'] = "{cc_pump_amount_min}"
-
 
 # Enabled dynamic slide based on maker amount and selling or buying maker.
 # static type is based on difference between configured static maker amount and actual maker amount
