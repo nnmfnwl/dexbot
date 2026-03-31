@@ -127,22 +127,22 @@ def sboundary__load_config_verify():
     
     if c.sboundary__max != 0:
         if c.sboundary__max < 0:
-            print('**** ERROR, <sboundary__max> value <{0}> is invalid. Maximum price boundary must be positive number'.format(c.sboundary__max))
+            print('**** ERROR.sboundary >> <sboundary__max> value <{0}> is invalid. Maximum price boundary must be positive number'.format(c.sboundary__max))
             error_num += 1
         
     if c.sboundary__min != 0:
         if c.sboundary__min < 0:
-            print('**** ERROR, <sboundary__min> value <{0}> is invalid. Minimum price boundary must be positive number'.format(c.sboundary__min))
+            print('**** ERROR.sboundary >> <sboundary__min> value <{0}> is invalid. Minimum price boundary must be positive number'.format(c.sboundary__min))
             error_num += 1
         
     if c.sboundary__max < c.sboundary__min:
-        print('**** ERROR, <sboundary__max> value <{0}> can not be less than <sboundary__min> value <{1}>.'.format(c.sboundary__max, c.sboundary__min))
+        print('**** ERROR.sboundary >> <sboundary__max> value <{0}> can not be less than <sboundary__min> value <{1}>.'.format(c.sboundary__max, c.sboundary__min))
         error_num += 1
     
     return error_num, crazy_num
 
 def sboundary__get_price_cb__(maker, taker):
-    print('**** ERROR >>> dexbot.features.sboundary.sboundary__get_price_cb__() function is just empty default callback, please replace with pricing_storage__try_get_price')
+    print('**** ERROR.sboundary >> dexbot.features.sboundary.sboundary__get_price_cb__() function is just empty default callback, please replace with pricing_storage__try_get_price')
     return 0
 
 # initial get pricing for relative boundaries
@@ -158,11 +158,11 @@ def sboundary__pricing_init(maker, taker, action, get_price_fn = sboundary__get_
     d.sboundary__id_price_initial = 'feature__sboundary__price_initial' + c.sboundary__asset
     d.sboundary__id_price_current = 'feature__sboundary__price_current' + c.sboundary__asset
     
-    print('>> INFO >> sboundary >> pricing init >> started >> {}/{}'.format(d.sboundary__maker, d.sboundary__taker))
+    print('---- DEBUG.sboundary >> pricing init >> started >> {}/{}'.format(d.sboundary__maker, d.sboundary__taker))
     
     # try to restore pricing from tmp cfg if requested
     if action == 'restore':
-        print('>> INFO >> sboundary >> pricing init >> trying to restore configuration from tmp cfg')
+        print('^^^^ ACTION.sboundary >> pricing init >> trying to restore configuration from tmp cfg')
         price_initial = feature__tmp_cfg__get_value(d.sboundary__id_price_initial)
         price_current = feature__tmp_cfg__get_value(d.sboundary__id_price_current)
         # if pricing been restored, then set values but run pricing update because if track is activated
@@ -170,21 +170,23 @@ def sboundary__pricing_init(maker, taker, action, get_price_fn = sboundary__get_
             d.sboundary__price_initial = price_initial
             d.sboundary__price_current = price_current
             sboundary__pricing_update()
-            print('>> INFO >> sboundary >> pricing init >> restore from tmp cfg >> price initial/current {}/{} >> success'.format(d.sboundary__price_initial, d.sboundary__price_current))
+            print('>>>> INFO.sboundary >> pricing init >> restore from tmp cfg >> price initial/current {}/{} >> success'.format(d.sboundary__price_initial, d.sboundary__price_current))
         # if pricing restore failed, then run normal pricing init
         else:
-            print('>> WARN >> sboundary >> pricing init >> restore from tmp cfg >> price initial/current {}/{} >> failed'.format(price_initial, price_current))
+            print('**** WARN.sboundary >> pricing init >> restore from tmp cfg >> price initial/current {}/{} >> failed'.format(price_initial, price_current))
             
     # if pricing restore not been called or failed, do normal initialization
     if d.sboundary__price_initial == 0:
         if c.sboundary__price_reverse is False:
+            print('^^^^ ACTION.sboundary >> pricing init >> trying to initialize not reversed price')
             d.sboundary__price_initial = sboundary__pricing_update()
             if d.sboundary__price_initial != 0:
                 feature__tmp_cfg__set_value(d.sboundary__id_price_initial, d.sboundary__price_initial, True)
-                print('>> INFO >> sboundary >> pricing init >> not restore >> not reversed >> maker/asset/taker {}/{}/{} price initial/current {}/{} >> success'.format(maker, c.sboundary__asset, taker, d.sboundary__price_initial, d.sboundary__price_current))
+                print('>>>> INFO.sboundary >> pricing init >> not restore >> not reversed >> maker/asset/taker {}/{}/{} price initial/current {}/{} >> success'.format(maker, c.sboundary__asset, taker, d.sboundary__price_initial, d.sboundary__price_current))
             else:
-                print('>> ERROR >> sboundary >> pricing init >> not restore >> not reversed >> maker/asset/taker {}/{}/{} price initial/current {}/{} >> failed'.format(maker, c.sboundary__asset, taker, d.sboundary__price_initial, d.sboundary__price_current))
+                print('**** ERROR.sboundary >> pricing init >> not restore >> not reversed >> maker/asset/taker {}/{}/{} price initial/current {}/{} >> failed'.format(maker, c.sboundary__asset, taker, d.sboundary__price_initial, d.sboundary__price_current))
         else:
+            print('^^^^ ACTION.sboundary >> pricing init >> trying to initialize reversed price')
             # code of reverse pricing magic ))
             tmp_price = d.sboundary__get_price_fn(d.sboundary__maker, d.sboundary__taker)
             if tmp_price != 0:
@@ -198,11 +200,11 @@ def sboundary__pricing_init(maker, taker, action, get_price_fn = sboundary__get_
                     c.sboundary__min = tmp_min
                     c.sboundary__max = tmp_max
                     feature__tmp_cfg__set_value(d.sboundary__id_price_initial, d.sboundary__price_initial, True)
-                    print('>> INFO >> sboundary >> pricing init >> not restore >> reversed >> maker/asset/taker {}/{}/{} price initial/current {}/{} >> success'.format(maker, c.sboundary__asset, taker, d.sboundary__price_initial, d.sboundary__price_current))
+                    print('>>>> INFO.sboundary >> pricing init >> not restore >> reversed >> maker/asset/taker {}/{}/{} price initial/current {}/{} >> success'.format(maker, c.sboundary__asset, taker, d.sboundary__price_initial, d.sboundary__price_current))
                 else:
-                    print('>> ERROR >> sboundary >> pricing init >> not restore >> reversed >> maker/asset/taker {}/{}/{} price initial/current {}/{} >> failed'.format(maker, c.sboundary__asset, taker, d.sboundary__price_initial, d.sboundary__price_current))
+                    print('**** ERROR.sboundary >> pricing init >> not restore >> reversed >> maker/asset/taker {}/{}/{} price initial/current {}/{} >> failed'.format(maker, c.sboundary__asset, taker, d.sboundary__price_initial, d.sboundary__price_current))
             else:
-                print('>> ERROR >> sboundary >> pricing init >> not restore >> reversed >> maker/asset/taker {}/{}/{} price initial/current {}/{} >> failed to reverse pricing'.format(maker, c.sboundary__asset, taker, d.sboundary__price_initial, d.sboundary__price_current))
+                print('**** ERROR.sboundary >> pricing init >> not restore >> reversed >> maker/asset/taker {}/{}/{} price initial/current {}/{} >> failed to reverse pricing'.format(maker, c.sboundary__asset, taker, d.sboundary__price_initial, d.sboundary__price_current))
                 
     return d.sboundary__price_initial
     
@@ -217,9 +219,9 @@ def sboundary__pricing_update():
         if tmp_sboundary__price_current != 0:
             d.sboundary__price_current = tmp_sboundary__price_current
             feature__tmp_cfg__set_value(d.sboundary__id_price_current, d.sboundary__price_current, False)
-            print(">>>> INFO >> sboundary >> pricing update >> <{}/{}>: <{}> >> success".format(c.sboundary__asset, d.sboundary__taker, tmp_sboundary__price_current))
+            print(">>>> INFO.sboundary >> pricing update >> <{}/{}>: <{}> >> success".format(c.sboundary__asset, d.sboundary__taker, tmp_sboundary__price_current))
         else:
-            print("**** ERROR >> sboundary >> pricing update >> <{}/{}>: <{}> >> failed".format(c.sboundary__asset, d.sboundary__taker, tmp_sboundary__price_current))
+            print("**** ERROR.sboundary >> pricing update >> <{}/{}>: <{}> >> failed".format(c.sboundary__asset, d.sboundary__taker, tmp_sboundary__price_current))
     else:
         tmp_sboundary__price_current = d.sboundary__price_current
         
@@ -236,10 +238,10 @@ def sboundary__get_max__():
         # if asset track is disabled
         if c.sboundary__max_track_asset is False:
             maximum = d.sboundary__price_initial * c.sboundary__max
-            print(">>>> INFO >> sboundary >> get maximum >> track no >> maker/asset/taker {}/{}/{} >> price initial(price of asset) * max(set in asset) = final >> {} * {} = {}".format(d.sboundary__maker, c.sboundary__asset, d.sboundary__taker, d.sboundary__price_initial, c.sboundary__max, maximum))
+            print(">>>> INFO.sboundary >> get maximum >> track no >> maker/asset/taker {}/{}/{} >> price initial(price of asset) * max(set in asset) = final >> {} * {} = {}".format(d.sboundary__maker, c.sboundary__asset, d.sboundary__taker, d.sboundary__price_initial, c.sboundary__max, maximum))
         else:
             maximum = d.sboundary__price_current * c.sboundary__max
-            print(">>>> INFO >> sboundary >> get maximum >> track yes >> maker/asset/taker {}/{}/{} >> price initial(price of asset) * max(set in asset) = final >> {} * {} = {}".format(d.sboundary__maker, c.sboundary__asset, d.sboundary__taker, d.sboundary__price_current, c.sboundary__max, maximum))
+            print(">>>> INFO.sboundary >> get maximum >> track yes >> maker/asset/taker {}/{}/{} >> price initial(price of asset) * max(set in asset) = final >> {} * {} = {}".format(d.sboundary__maker, c.sboundary__asset, d.sboundary__taker, d.sboundary__price_current, c.sboundary__max, maximum))
     
     return maximum
 
@@ -253,10 +255,10 @@ def sboundary__get_min__():
         # if asset track is disabled
         if c.sboundary__min_track_asset is False:
             minimum = d.sboundary__price_initial * c.sboundary__min
-            print(">>>> INFO >> sboundary >> get minimum >> track no >> maker/asset/taker {}/{}/{} >> price initial(price of asset) * min(set in asset) = final >> {} * {} = {}".format(d.sboundary__maker, c.sboundary__asset, d.sboundary__taker, d.sboundary__price_initial, c.sboundary__min, minimum))
+            print(">>>> INFO.sboundary >> get minimum >> track no >> maker/asset/taker {}/{}/{} >> price initial(price of asset) * min(set in asset) = final >> {} * {} = {}".format(d.sboundary__maker, c.sboundary__asset, d.sboundary__taker, d.sboundary__price_initial, c.sboundary__min, minimum))
         else:
             minimum = d.sboundary__price_current * c.sboundary__min
-            print(">>>> INFO >> sboundary >> get minimum >> track yes >> maker/asset/taker {}/{}/{} >> price initial(price of asset) * min(set in asset) = final >> {} * {} = {}".format(d.sboundary__maker, c.sboundary__asset, d.sboundary__taker, d.sboundary__price_current, c.sboundary__min, minimum))
+            print(">>>> INFO.sboundary >> get minimum >> track yes >> maker/asset/taker {}/{}/{} >> price initial(price of asset) * min(set in asset) = final >> {} * {} = {}".format(d.sboundary__maker, c.sboundary__asset, d.sboundary__taker, d.sboundary__price_current, c.sboundary__min, minimum))
             
     return minimum
 
@@ -270,7 +272,7 @@ def sboundary__check_max(price):
         # wait if out of price static sboundary happen
         maximum = sboundary__get_max__()
         if maximum < price:
-            print('>>>> INFO >> sboundary >> Maximum cfg <{}:{}> for <{}/{}> price {} hit maximum {}'.format(c.sboundary__asset, c.sboundary__max, d.sboundary__maker, d.sboundary__taker, price, maximum))
+            print('^^^^ ACTION.sboundary >> Maximum cfg <{}:{}> for <{}/{}> price {} hit maximum {}'.format(c.sboundary__asset, c.sboundary__max, d.sboundary__maker, d.sboundary__taker, price, maximum))
             return True, c.sboundary__max_exit, c.sboundary__max_cancel, maximum
     
     return False, False, False, final_price
@@ -285,7 +287,7 @@ def sboundary__check_min(price):
         # wait if out of price relative sboundary happen
         minimum = sboundary__get_min__()
         if minimum > price:
-            print('>>>> INFO >> sboundary >> Minimum cfg <{}:{}> for <{}/{}> price {} hit minimum {}'.format(c.sboundary__asset, c.sboundary__min, d.sboundary__maker, d.sboundary__taker, price, minimum))
+            print('^^^^ ACTION.sboundary >> Minimum cfg <{}:{}> for <{}/{}> price {} hit minimum {}'.format(c.sboundary__asset, c.sboundary__min, d.sboundary__maker, d.sboundary__taker, price, minimum))
             return True, c.sboundary__min_exit, c.sboundary__min_cancel, minimum
     
     return False, False, False, final_price
@@ -300,6 +302,9 @@ def sboundary__check(price):
     if ret_hit is False:
         ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_min(price)
     
-    print(">>>> INFO >> sboundary >> check boundary hit >> price > final price {} > {} ".format(price, ret_price))
+    if ret_hit is True:
+        print("^^^^ ACTION.sboundary >> check boundary >> hit >> price > final price {} > {} ".format(price, ret_price))
+    else:
+        print(">>>> INFO.sboundary >> check boundary >> not hit >> price > final price {} > {} ".format(price, ret_price))
     
     return ret_hit, ret_exit, ret_cancel, ret_price
