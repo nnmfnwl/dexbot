@@ -1523,7 +1523,7 @@ def sell_amount_recompute(sell_start, sell_end, order_num_all, order_num_actual,
     # sell amount staggered
     else:
         # first order is always at exact position
-        if order_num_actual = 0:
+        if order_num_actual == 0:
             sell_type_res = 0
             
         # linear staggered orders size distribution
