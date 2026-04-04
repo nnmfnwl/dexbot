@@ -9,9 +9,9 @@ import features.glob as glob
 from features.main_cfg import *
 
 def pricing_storage__try_get_price_empty_fn(maker, taker, price_provider):
-    print('**** WARNING.pricing_storage >> Using predefined empty pricing storage get price function')
-    print('**** WARNING.pricing_storage >> Pricing will not work correctly')
-    print('**** WARNING.pricing_storage >> please initialize with pricing_storage__init_postconfig()')
+    LOG_WARNING('Using predefined empty pricing storage get price function')
+    LOG_WARNING('Pricing will not work correctly')
+    LOG_WARNING('please initialize with pricing_storage__init_postconfig()')
     return 0
 
 # initialize pricing storage component
@@ -54,19 +54,19 @@ def pricing_storage__load_config_verify():
     crazy_num = 0
     
     if glob.d.pricing_storage.price_provider == "":
-        print('**** ERROR.pricing_storage >> <price_provider> value <{0}> is invalid'.format(glob.d.pricing_storage.price_provider))
+        LOG_ERROR('<price_provider> value <{0}> is invalid'.format(glob.d.pricing_storage.price_provider))
         error_num += 1
         
     if glob.d.pricing_storage.price_acceptable_outage < 0:
-        print('**** ERROR.pricing_storage >> <price_acceptable_outage> value <{0}> is invalid'.format(glob.d.pricing_storage.price_acceptable_outage))
+        LOG_ERROR('<price_acceptable_outage> value <{0}> is invalid'.format(glob.d.pricing_storage.price_acceptable_outage))
         error_num += 1
     
     if glob.d.pricing_storage.price_outage_extra_slide <= 0:
-        print('**** ERROR.pricing_storage >> <price_outage_extra_slide> value <{0}> is invalid'.format(glob.d.pricing_storage.price_outage_extra_slide))
+        LOG_ERROR('<price_outage_extra_slide> value <{0}> is invalid'.format(glob.d.pricing_storage.price_outage_extra_slide))
         error_num += 1
         
     if glob.d.pricing_storage.price_outage_extra_slide < 1:
-        print('**** WARNING.pricing_storage >> <price_outage_extra_slide> value <{0}> seems abnormal value'.format(glob.d.pricing_storage.price_outage_extra_slide))
+        LOG_ERROR('<price_outage_extra_slide> value <{0}> seems abnormal value'.format(glob.d.pricing_storage.price_outage_extra_slide))
         crazy_num += 1
     
     return error_num, crazy_num
@@ -96,7 +96,7 @@ def pricing_storage__get_pair_id__(maker, taker, price_provider = ""):
 def pricing_storage__try_get_price_fn(maker__item_to_sell, taker__payed_by, previous_price, price_provider, try_get_price_fn):
     
     maker_price_in_takers = try_get_price_fn(maker__item_to_sell, taker__payed_by, price_provider)
-    print('>>>> INFO.pricing_storage >> get external pricing >> maker/taker <{0}>/<{1}> at {2} >> previous <{3}> actual <{4}>'.format(maker__item_to_sell, taker__payed_by, price_provider, previous_price, maker_price_in_takers))
+    LOG_INFO('get external pricing >> maker/taker <{0}>/<{1}> at {2} >> previous <{3}> actual <{4}>'.format(maker__item_to_sell, taker__payed_by, price_provider, previous_price, maker_price_in_takers))
     
     return maker_price_in_takers
     
@@ -115,7 +115,7 @@ def pricing_storage__try_update_price__(maker, taker, price_provider, try_num, t
             break;
         # on failed try again
         try_num_actual += 1
-        print("#### WARNING.pricing_storage >> pricing storage update failed, price trying again... {}/{}".format(try_num_actual, try_num))
+        LOG_WARNING("pricing storage update failed, price trying again... {}/{}".format(try_num_actual, try_num))
         if try_num_actual >= try_num:
             break
         # on failed wait a while
@@ -140,10 +140,10 @@ def pricing_storage__try_update_price__(maker, taker, price_provider, try_num, t
         outage = time.time() - (price_time + glob.d.pricing_storage.update_interval)
         if outage < glob.d.pricing_storage.price_acceptable_outage:
             price = previous_price * glob.d.pricing_storage.price_outage_extra_slide
-            print('>>>> INFO.pricing_storage >> get external pricing >> maker/taker {0}/{1} >> outage accepted {2}/{3} >> using previous price * price_outage_extra_slide >> {4}*{5}={6}'.format(maker, taker, outage, glob.d.pricing_storage.price_acceptable_outage, previous_price, glob.d.pricing_storage.price_outage_extra_slide, price))
+            LOG_INFO('get external pricing >> maker/taker {0}/{1} >> outage accepted {2}/{3} >> using previous price * price_outage_extra_slide >> {4}*{5}={6}'.format(maker, taker, outage, glob.d.pricing_storage.price_acceptable_outage, previous_price, glob.d.pricing_storage.price_outage_extra_slide, price))
             
         else:
-            print('>>>> INFO.pricing_storage >> get external pricing >> maker/taker {0}/{1} >> outage not accepted {2}/{3} >> using price >> {4}'.format(maker, taker, outage, glob.d.pricing_storage.price_acceptable_outage, price))
+            LOG_INFO('get external pricing >> maker/taker {0}/{1} >> outage not accepted {2}/{3} >> using price >> {4}'.format(maker, taker, outage, glob.d.pricing_storage.price_acceptable_outage, price))
     
     return price
 
@@ -175,7 +175,7 @@ def pricing_storage__try_get_price(maker, taker, price_provider = None, try_num 
     final_price = 0
     virtual_price = 0
     
-    print('---- DEBUG.pricing_storage >> START >> maker/taker {0}/{1}'.format(maker, taker))
+    LOG_DEBUG('START >> maker/taker {0}/{1}'.format(maker, taker))
     
     if maker == taker:
         virtual_maker = maker
@@ -186,7 +186,7 @@ def pricing_storage__try_get_price(maker, taker, price_provider = None, try_num 
         
         virtual_price = 1
         
-        print('---- DEBUG.pricing_storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found auto price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+        LOG_DEBUG('maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found auto price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
         
     else:
         # default price provider
@@ -219,7 +219,7 @@ def pricing_storage__try_get_price(maker, taker, price_provider = None, try_num 
             
         if virtual_maker == virtual_taker:
             virtual_price = 1
-            print('---- DEBUG.pricing_storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found auto price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+            LOG_DEBUG('maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found auto price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
         else:
             
             # get actual price stored in
@@ -228,9 +228,9 @@ def pricing_storage__try_get_price(maker, taker, price_provider = None, try_num 
             price_time = glob.d.pricing_storage.data.get(pair, {}).get('time', 0)
             if virtual_price != 0:
                 if (time.time() - price_time) > glob.d.pricing_storage.update_interval:
-                    print('---- DEBUG.pricing_storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached outdated price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+                    LOG_DEBUG('maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached outdated price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
                 else:
-                    print('---- DEBUG.pricing_storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+                    LOG_DEBUG('maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
                 
             # also try reversed pair and do 1/virtual_price
             if virtual_price == 0 or (time.time() - price_time) > glob.d.pricing_storage.update_interval:
@@ -240,22 +240,22 @@ def pricing_storage__try_get_price(maker, taker, price_provider = None, try_num 
                 if virtual_price != 0:
                     virtual_price = 1/virtual_price
                     if (time.time() - price_time) > glob.d.pricing_storage.update_interval:
-                        print('---- DEBUG.pricing_storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached outdated 1/price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+                        LOG_DEBUG('maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached outdated 1/price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
                     else:
-                        print('---- DEBUG.pricing_storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached 1/price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+                        LOG_DEBUG('maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found cached 1/price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
                 
             # if price is not found, try to update price
             if virtual_price == 0:
                 virtual_price = pricing_storage__try_update_price__(virtual_maker, virtual_taker, price_provider, try_num, try_sleep, try_get_price_fn)
-                print('---- DEBUG.pricing_storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found remote price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+                LOG_DEBUG('maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found remote price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
                 
             # if price is found but out of date, try to update price
             elif (time.time() - price_time) > glob.d.pricing_storage.update_interval:
                 virtual_price = pricing_storage__try_update_price__(virtual_maker, virtual_taker, price_provider, try_num, try_sleep, try_get_price_fn)
-                print('---- DEBUG.pricing_storage >> maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> timeout, found updated remote price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
+                LOG_DEBUG('maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> timeout, found updated remote price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
         
     final_price = virtual_maker_price * virtual_price / virtual_taker_price
-    print('>>>> INFO.pricing_storage >> FINISH >> virtual_maker_price * virtual_price / virtual_taker_price >> {0} = {1} * {2} / {3}'.format(final_price, virtual_maker_price, virtual_price, virtual_taker_price))
+    LOG_INFO('FINISH >> virtual_maker_price * virtual_price / virtual_taker_price >> {0} = {1} * {2} / {3}'.format(final_price, virtual_maker_price, virtual_price, virtual_taker_price))
     # EXAMPLE: 1 BLOCK = 0.5 USD       1 USD = 0.9 EUR           1 LTC = 100 EUR
     #                0.5            *       0.9             /         100   
     
@@ -282,9 +282,9 @@ def pricing_storage__file_load(file_name = None):
         glob.d.pricing_storage.data = pickle.load(file)
         file.close()
     except FileNotFoundError:
-        print('---- DEBUG.pricing_storage >> temporary pricing database was not created yet')
+        LOG_DEBUG('temporary pricing database was not created yet')
     except EOFError:
-        print('---- DEBUG.pricing_storage >> temporary pricing database was empty')
+        LOG_DEBUG('temporary pricing database was empty')
     
-    print('---- DEBUG.pricing_storage >> temporary pricing database data: {}'.format(glob.d.pricing_storage.data))
+    LOG_DEBUG('temporary pricing database data: {}'.format(glob.d.pricing_storage.data))
 
