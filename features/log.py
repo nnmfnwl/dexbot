@@ -5,6 +5,7 @@
 import time
 
 from inspect import getframeinfo, stack
+import os
 
 import features.glob as glob
 c = glob.c
@@ -64,35 +65,35 @@ def LOG_ACTION(message):
     
     if c.log__action:
         caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
-        print("^^^^ ACTION {}:{} >> {}".format(caller.filename, caller.lineno, message))
+        print("^^^^ ACTION {}:{} >> {}".format(os.path.basename(caller.filename), caller.lineno, message))
         
 # log info message
 def LOG_INFO(message):
     
     if c.log__info:
         caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
-        print(">>>> INFO {}:{} >> {}".format(caller.filename, caller.lineno, message))
+        print(">>>> INFO {}:{} >> {}".format(os.path.basename(caller.filename), caller.lineno, message))
         
 # log info message
 def LOG_DEBUG(message):
     
     if c.log__debug:
         caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
-        print("---- DEBUG {}:{} >> {}".format(caller.filename, caller.lineno, message))
+        print("---- DEBUG {}:{} >> {}".format(os.path.basename(caller.filename), caller.lineno, message))
         
 # log fatal message
 def LOG_FATAL(message):
     
     if c.log__fatal:
         caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
-        print("**** FATAL {}:{} >> {}".format(caller.filename, caller.lineno, message))
+        print("**** FATAL {}:{} >> {}".format(os.path.basename(caller.filename), caller.lineno, message))
         
 # log error message
 def LOG_ERROR(message):
     
     if c.log__error:
         caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
-        print("**** ERROR {}:{} >> {}".format(caller.filename, caller.lineno, message))
+        print("**** ERROR {}:{} >> {}".format(os.path.basename(caller.filename), caller.lineno, message))
         
 
 # log warning message
@@ -100,4 +101,4 @@ def LOG_WARNING(message):
     
     if c.log__warning:
         caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
-        print("#### WARNING {}:{} >> {}".format(caller.filename, caller.lineno, message))
+        print("#### WARNING {}:{} >> {}".format(os.path.basename(caller.filename), caller.lineno, message))
