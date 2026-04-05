@@ -26,7 +26,7 @@ def log__load_config_postparse(args):
     
     c.log__action = bool(args.log_action)
     c.log__info = bool(args.log_info)
-    c.log__debug = bool(args.log_dbg)
+    c.log__debug = bool(args.log_debug)
     
     c.log__fatal = bool(args.log_fatal)
     c.log__error = bool(args.log_error)
@@ -39,3 +39,4 @@ def log__load_config_verify():
     crazy_num = 0
     
     return error_num, crazy_num
+
