@@ -2,13 +2,14 @@
 import requests
 from utils import dxsettings
 
+from features.log import *
 
 # default request function
 def baserequest(url):
     try:
       return requests.get(url).json()
     except Exception as e:
-      print('ERROR: Unable to retrieve price, check custom price URL:\n\t{}'.format(url))
+      LOG_ERROR('Unable to retrieve price, check custom price URL:\n\t{}'.format(url))
       raise RuntimeError(e)
 
 
