@@ -10,6 +10,7 @@ from utils import dxsettings
 import features.glob as glob
 
 from features.log import *
+from features.log_cfg import *
 
 from features.reset_afot import *
 from features.slide_dyn import *
@@ -48,6 +49,8 @@ def init_preconfig():
     d = glob.d
 
     global_vars_init_preconfig()
+    
+    log__init_preconfig__()
     
     feature__tmp_cfg__init_preconfig__()
     
@@ -277,6 +280,10 @@ def load_config_verify_or_exit(error_num, crazy_num):
             # ~ LOG_WARNING('<marking> value <{}> seems invalid. Values more than 0.001 can possibly have very impact on order value'.format(c.BOTmarking))
             # ~ LOG_HINT('If you are really sure about what you are doing, you can ignore this warning by using --im_really_sure_what_im_doing argument')
             # ~ crazy_num += 1
+    
+    error_num_tmp, crazy_num_tmp = log__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
     
     error_num_tmp, crazy_num_tmp = fixed_fee__load_config_verify()
     error_num += error_num_tmp
@@ -643,6 +650,8 @@ def load_config_main_cfg_postparse():
     c.BOTpartial_orders = bool(c.BOTcfg.partial_orders)
     
     c.BOThidden_orders = bool(c.BOTcfg.hidden_orders)
+    
+    log__load_config_postparse(c.BOTcfg)
     
     feature__maker_price__load_config_postparse(c.BOTcfg)
     
