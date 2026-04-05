@@ -5,6 +5,7 @@
 import time
 
 import features.glob as glob
+from features.log import *
 from features.main_cfg import *
 
 # preconfiguration  initialization
@@ -25,7 +26,7 @@ def feature__flush_co__load_config_verify():
     crazy_num = 0
     
     if glob.c.feature__flush_co__delay < 0:
-        print('**** ERROR, <feature__flush_co__delay> value <{0}> is invalid'.format(glob.c.feature__flush_co__delay))
+        LOG_ERROR('<feature__flush_co__delay> value <{0}> is invalid'.format(glob.c.feature__flush_co__delay))
         error_num += 1
     
     return error_num, crazy_num
@@ -40,7 +41,7 @@ def feature__flush_co__check(dxbottools):
     
     if glob.c.feature__flush_co__delay > 0:
         if (time.time() - glob.d.feature__flush_co__time_start) > glob.c.feature__flush_co__delay:
-            print('>>>> As timer {} we are flushing canceled orders'.format(glob.c.feature__flush_co__delay))
+            LOG_ACTION('As timer {} we are flushing canceled orders'.format(glob.c.feature__flush_co__delay))
             glob.d.feature__flush_co__time_start = time.time()
             dxbottools.rpc_connection.dxFlushCancelledOrders()
             return True
