@@ -6,6 +6,7 @@ import time
 import pickle
 
 import features.glob as glob
+from features.log import *
 from features.main_cfg import *
 
 def pricing_storage__try_get_price_empty_fn(maker, taker, price_provider):
