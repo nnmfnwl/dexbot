@@ -22,6 +22,7 @@ def log__init_preconfig__():
     c.log__action = True
     c.log__info = True
     c.log__debug = True
+    c.log__hint = True
     
     c.log__fatal = True
     c.log__error = True
@@ -34,11 +35,12 @@ def log__load_config_define():
     
     feature__main_cfg__add_variable('log_action', True, feature__main_cfg__validate_bool, None, """show action log messages, (default=True enabled)""", None)
     feature__main_cfg__add_variable('log_info', True, feature__main_cfg__validate_bool, None, """show info log messages, (default=True enabled)""", None)
-    feature__main_cfg__add_variable('log_debug', True, feature__main_cfg__validate_bool, None, """show info log messages, (default=True enabled)""", None)
+    feature__main_cfg__add_variable('log_debug', True, feature__main_cfg__validate_bool, None, """show debug log messages, (default=True enabled)""", None)
+    feature__main_cfg__add_variable('log_hint', True, feature__main_cfg__validate_bool, None, """show hint log messages, (default=True enabled)""", None)
     
-    feature__main_cfg__add_variable('log_fatal', True, feature__main_cfg__validate_bool, None, """show info log messages, (default=True enabled)""", None)
-    feature__main_cfg__add_variable('log_error', True, feature__main_cfg__validate_bool, None, """show info log messages, (default=True enabled)""", None)
-    feature__main_cfg__add_variable('log_warning', True, feature__main_cfg__validate_bool, None, """show info log messages, (default=True enabled)""", None)
+    feature__main_cfg__add_variable('log_fatal', True, feature__main_cfg__validate_bool, None, """show fatal log messages, (default=True enabled)""", None)
+    feature__main_cfg__add_variable('log_error', True, feature__main_cfg__validate_bool, None, """show error log messages, (default=True enabled)""", None)
+    feature__main_cfg__add_variable('log_warning', True, feature__main_cfg__validate_bool, None, """show warning log messages, (default=True enabled)""", None)
     
 
 # parse configuration value
@@ -61,44 +63,52 @@ def log__load_config_verify():
     return error_num, crazy_num
 
 # log action message
-def LOG_ACTION(message):
+def LOG_ACTION(message, prefix = ""):
     
     if c.log__action:
         caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
-        print("^^^^ ACTION {}:{} >> {}".format(os.path.basename(caller.filename), caller.lineno, message))
+        print("{}^^^^ ACTION {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
         
 # log info message
-def LOG_INFO(message):
+def LOG_INFO(message, prefix = ""):
     
     if c.log__info:
         caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
-        print(">>>> INFO {}:{} >> {}".format(os.path.basename(caller.filename), caller.lineno, message))
+        print("{}>>>> INFO {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
         
 # log info message
-def LOG_DEBUG(message):
+def LOG_DEBUG(message, prefix = ""):
     
     if c.log__debug:
         caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
-        print("---- DEBUG {}:{} >> {}".format(os.path.basename(caller.filename), caller.lineno, message))
+        print("{}---- DEBUG {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
         
+# log info message
+def LOG_HINT(message, prefix = ""):
+    
+    if c.log__hint:
+        caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
+        print("{}++++ HINT {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
+
+
 # log fatal message
-def LOG_FATAL(message):
+def LOG_FATAL(message, prefix = ""):
     
     if c.log__fatal:
         caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
-        print("**** FATAL {}:{} >> {}".format(os.path.basename(caller.filename), caller.lineno, message))
+        print("{}**** FATAL {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
         
 # log error message
-def LOG_ERROR(message):
+def LOG_ERROR(message, prefix = ""):
     
     if c.log__error:
         caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
-        print("**** ERROR {}:{} >> {}".format(os.path.basename(caller.filename), caller.lineno, message))
+        print("{}**** ERROR {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
         
 
 # log warning message
-def LOG_WARNING(message):
+def LOG_WARNING(message, prefix = ""):
     
     if c.log__warning:
         caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
-        print("#### WARNING {}:{} >> {}".format(os.path.basename(caller.filename), caller.lineno, message))
+        print("{}#### WARNING {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
