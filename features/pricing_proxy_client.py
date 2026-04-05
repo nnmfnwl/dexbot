@@ -3,6 +3,7 @@
 # pricing proxy client for pricing storage
 
 import features.glob as glob
+from features.log import *
 from features.main_cfg import *
 
 import jsonrpclib
@@ -28,7 +29,7 @@ def pricing_proxy_client__load_config_verify():
     crazy_num = 0
     
     if glob.c.pricing_proxy_client__url == "":
-        print('**** ERROR, <pricing_proxy_url> value <{0}> is invalid'.format(glob.c.pricing_proxy_client__url))
+        LOG_ERROR('<pricing_proxy_url> value <{0}> is invalid'.format(glob.c.pricing_proxy_client__url))
         error_num += 1
     
     return error_num, crazy_num
@@ -42,7 +43,7 @@ def pricing_proxy_client__pricing_storage__try_get_price_fn(maker__item_to_sell,
     try:
         maker_price_in_takers = glob.d.pricing_proxy_client__conn.proxy_server__rpc_get_price(maker__item_to_sell, taker__payed_by, price_provider)
     except Exception as err:
-        print('**** ERROR >> PROXY >> pricing_proxy_client__pricing_storage__try_get_price_fn >> EXCEPTION >> %s' % err)
+        LOG_ERROR('pricing_proxy_client__pricing_storage__try_get_price_fn >> EXCEPTION >> %s' % err)
         maker_price_in_takers = 0
     
     return maker_price_in_takers
