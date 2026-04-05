@@ -501,6 +501,8 @@ def load_config_main_cfg_define():
 For example trading BLOCK with LTC, you would rather set BLOCK price manually in USDT and BOT automatically converts value into LTC.""",
 [["example to redirect Blocknet price by $59 USDT per $BLOCK, and $1299 LTC ", """ "BLOCK": { "asset": "USDT", "price": 59} , "LTC": { "asset": "USDT", "price": 1299}"""]])
     
+    log__load_config_define()
+    
     feature__flush_co__load_config_define()
     
     pricing_proxy_client__load_config_define()
