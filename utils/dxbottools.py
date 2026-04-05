@@ -8,6 +8,8 @@ from json import JSONEncoder
 from dateutil import parser
 from utils import dxsettings
 
+from features.log import *
+
 rpc_connection = None
 
 class MyJSONEncoder(JSONEncoder):
@@ -90,7 +92,7 @@ def cancel_orders_list(orders_list):
         retcode = -1
     
     if retcode != 0:
-        print('ERROR: cancel orders list >> {0} >> {1}'.format(retcode, orders_list))
+        LOG_ERROR('cancel orders list >> {0} >> {1}'.format(retcode, orders_list))
     
     return retcode, orders_list
 
@@ -113,7 +115,7 @@ def cancelallorders():
         retdata = myorders
     
     if retcode != 0:
-        print('ERROR: cancel all orders >> {0} >> {1}'.format(retcode, retdata))
+        LOG_ERROR('cancel all orders >> {0} >> {1}'.format(retcode, retdata))
     
     return retcode, retdata
 
@@ -132,7 +134,7 @@ def cancelallordersbymarket(maker, taker):
         retcode, retdata = cancel_orders_list(retdata)
     
     if retcode != 0:
-        print('ERROR: cancel all orders by market result: {0} >> {1}'.format(retcode, retdata))
+        LOG_ERROR('cancel all orders by market result: {0} >> {1}'.format(retcode, retdata))
     
     return retcode, retdata
 
@@ -151,7 +153,7 @@ def cancelallordersbyaddress(maker_ticker, taker_ticker, maker_address, taker_ad
         retcode, retdata = cancel_orders_list(retdata)
     
     if retcode != 0:
-        print('ERROR: cancel all orders by market result: {0} >> {1}'.format(retcode, retdata))
+        LOG_ERROR('cancel all orders by market result: {0} >> {1}'.format(retcode, retdata))
     
     return retcode, retdata
 
@@ -176,7 +178,7 @@ def getopenordersbymarket(maker, taker):
         retcode = -1
     
     if retcode != 0:
-        print('ERROR: get open orders by market  >> {0} >> {1}'.format(retcode, myorders))
+        LOG_ERROR('get open orders by market  >> {0} >> {1}'.format(retcode, myorders))
     
     return retcode, myorders
 
@@ -196,7 +198,7 @@ def getopenordersbyaddress(maker_ticker, taker_ticker, maker_address, taker_addr
         retcode = -1
     
     if retcode != 0:
-        print('ERROR: get open orders by market  >> {0} >> {1}'.format(retcode, myorders))
+        LOG_ERROR('get open orders by market  >> {0} >> {1}'.format(retcode, myorders))
     
     return retcode, myorders
     
@@ -262,16 +264,16 @@ def get_token_balance(balances, token_name):
     return float(balances.get(token_name, 0))
 
 def showorders():
-    print ('### Getting balances >>>')
+    LOG_DEBUG('### Getting balances >>>')
     mybalances = rpc_connection.dxGetTokenBalances()
-    print (mybalances)
-    print ('### Getting my orders >>>')
+    LOG_DEBUG(mybalances)
+    LOG_DEBUG('### Getting my orders >>>')
     myorders = rpc_connection.dxGetMyOrders()
     for z in myorders:
-      print (z['status'], z['id'], z['maker'], z['maker_size'], z['taker'],z['taker_size'], float(z['taker_size'])/float(z['maker_size']))
+      LOG_INFO(z['status'], z['id'], z['maker'], z['maker_size'], z['taker'],z['taker_size'], float(z['taker_size'])/float(z['maker_size']))
 
     allorders = rpc_connection.dxGetOrders()
-    print ('#############################################################')
+    LOG_DEBUG('#############################################################')
     for z in allorders:
       # checks if your order
       if lookup_order_id(z['id'], myorders):
