@@ -5,6 +5,7 @@
 import os.path
 
 import features.glob as glob
+from features.log import *
 
 # main configuration initialization
 def feature__main_cfg__init_preconfig__():
@@ -21,15 +22,15 @@ feature__main_cfg__init_preconfig__()
 def feature__main_cfg__add_variable(var_name, default_val = None, validation_fn = None, validation_arg = None, description_str = None, examples_list = None):
    
    if var_name is None or var_name == "":
-      print('*** ERROR >> main_cfg >> variable name {} >> name is invalid'.format(var_name))
+      LOG_ERROR('variable name {} >> name is invalid'.format(var_name))
       return False
       
    if description_str is None or description_str == "":
-      print('*** ERROR >> main_cfg >> variable name {} >> description {} >> is invalid'.format(var_name, description_str))
+      LOG_ERROR('variable name {} >> description {} >> is invalid'.format(var_name, description_str))
       return False
    
    if glob.d.main_cfg.cfg.get(var_name, None) is not None:
-      print('*** ERROR >> main_cfg >> variable name {} >> add failed because already exist'.format(var_name))
+      LOG_ERROR('variable name {} >> add failed because already exist'.format(var_name))
       return False
    
    glob.d.main_cfg.cfg[var_name] = {}
@@ -46,12 +47,12 @@ def feature__main_cfg__add_variable(var_name, default_val = None, validation_fn 
 def feature__main_cfg__add_value(var_name, value):
    
    if var_name is None or var_name == "":
-      print('*** ERROR >> main_cfg >> variable >> {} >> name is invalid'.format(var_name))
+      LOG_ERROR('variable >> {} >> name is invalid'.format(var_name))
       return False
       
    cfg = glob.d.main_cfg.cfg.get(var_name, None)
    if cfg is None:
-      print('*** ERROR >> main_cfg >> variable >> {} >> not defined'.format(var_name))
+      LOG_ERROR('variable >> {} >> not defined'.format(var_name))
       return False
       
    descr = cfg.get('description', None)
@@ -68,7 +69,7 @@ def feature__main_cfg__add_value(var_name, value):
          if ret is True:
             cfg['value'] = value2
          else:
-            print('*** ERROR >> main_cfg >> variable >> {} >> value >> {} >> is invalid'.format(var_name, value))
+            LOG_ERROR('variable >> {} >> value >> {} >> is invalid'.format(var_name, value))
             return False
             
    return True
@@ -78,13 +79,13 @@ def feature__main_cfg__load_cfg(filename):
    error_num = 0
    
    if filename is None:
-      print("*** ERROR >> main_cfg >> --config filename is None")
+      LOG_ERROR(" --config filename is None")
       error_num +=1
       return error_num
    
    # TODO analyze file extension and load by format
    
-   print(">>> INFO >> main_cfg >> using --config file >> <{}>".format(filename))
+   LOG_INFO("using --config file >> <{}>".format(filename))
    glob.d.main_cfg.filedata = __import__(filename)
    
    # try to load and validate all configuration from file by main_cfg feature
@@ -109,12 +110,12 @@ def feature__main_cfg__get_cfg_obj():
 def feature__main_cfg__get_value(var_name):
    
    if var_name is None or var_name == "":
-      print('*** ERROR >> main_cfg >> variable >> {} >> name is invalid'.format(var_name))
+      LOG_ERROR('variable >> {} >> name is invalid'.format(var_name))
       return False, None
    
    cfg = glob.d.main_cfg.cfg.get(var_name, None)
    if cfg is None:
-      print('*** ERROR >> main_cfg >> variable >> {} >> not defined'.format(var_name))
+      LOG_ERROR('variable >> {} >> not defined'.format(var_name))
       return False, None
       
    return True, cfg['value']
@@ -123,12 +124,12 @@ def feature__main_cfg__get_value(var_name):
 def feature__main_cfg__get_cfg(var_name):
    
    if var_name is None or var_name == "":
-      print('*** ERROR >> main_cfg >> variable >> {} >> name is invalid'.format(var_name))
+      LOG_ERROR('variable >> {} >> name is invalid'.format(var_name))
       return False, None
    
    cfg = glob.d.main_cfg.cfg.get(var_name, None)
    if cfg is None:
-      print('*** ERROR >> main_cfg >> variable >> {} >> not defined'.format(var_name))
+      LOG_ERROR('variable >> {} >> not defined'.format(var_name))
       return False, None
       
    return True, cfg
@@ -138,16 +139,16 @@ def feature__main_cfg__generate_cfg(filename, action):
    
    # check action validity
    if action == "defaults":
-      print('>> INFO >> generate_cfg >> generating configuration file >> {} >> style >> {}'.format(filename, action))
+      LOG_ACTION('generate_cfg >> generating configuration file >> {} >> style >> {}'.format(filename, action))
    elif action == "template":
-      print('>> INFO >> generate_cfg >> generating configuration file >> {} >> style >> {}'.format(filename, action))
+      LOG_ACTION('generate_cfg >> generating configuration file >> {} >> style >> {}'.format(filename, action))
    else:
-      print('>> ERROR >> generate_cfg >> generating configuration file >> {} >> invalid style >> {}'.format(filename, action))
+      LOG_ACTION('generate_cfg >> generating configuration file >> {} >> invalid style >> {}'.format(filename, action))
       return False
    
    # check if file not exist
    if os.path.exists(filename) is True and os.path.getsize(filename) > 0 :
-      print('>> ERROR >> generate_cfg >> generating configuration file >> {} >> file already exist >> {} >> please remove configuration file first'.format(filename, action))
+      LOG_ERROR('generate_cfg >> generating configuration file >> {} >> file already exist >> {} >> please remove configuration file first'.format(filename, action))
       return False
    
    # open file
@@ -208,7 +209,7 @@ def feature__main_cfg__generate_cfg(filename, action):
 def feature__main_cfg__validate_bool(var_name, val, arg):
    
    if arg is not None:
-      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      LOG_ERROR('variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
       return False, False
    
    if isinstance(val, bool):
@@ -230,7 +231,7 @@ def feature__main_cfg__validate_bool(var_name, val, arg):
 def feature__main_cfg__validate_int(var_name, val, arg):
    
    if arg is not None:
-      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      LOG_ERROR('variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
       return False, int(0)
    
    if isinstance(val, int):
@@ -244,7 +245,7 @@ def feature__main_cfg__validate_int(var_name, val, arg):
 def feature__main_cfg__validate_float(var_name, val, arg):
    
    if arg is not None:
-      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      LOG_ERROR('variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
       return False, float(0)
    
    if isinstance(val, float):
@@ -258,7 +259,7 @@ def feature__main_cfg__validate_float(var_name, val, arg):
 def feature__main_cfg__validate_str(var_name, val, arg):
    
    if arg is not None:
-      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      LOG_ERROR('variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
       return False, str("")
    
    if isinstance(val, str):
@@ -269,7 +270,7 @@ def feature__main_cfg__validate_str(var_name, val, arg):
 def feature__main_cfg__validate_password(var_name, val, arg):
    
    if arg is not None:
-      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      LOG_ERROR('variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
       return False, str("")
    
    if isinstance(val, str):
@@ -281,7 +282,7 @@ def feature__main_cfg__validate_password(var_name, val, arg):
 def feature__main_cfg__validate_select(var_name, val, arg):
    
    if arg is None:
-      print('*** ERROR >> main_cfg >> variable >> {} = {} >> expected argument not found {}'.format(var_name, val, arg))
+      LOG_ERROR('variable >> {} = {} >> expected argument not found {}'.format(var_name, val, arg))
       return False, str("")
    
    return True, val
@@ -290,7 +291,7 @@ def feature__main_cfg__validate_select(var_name, val, arg):
 def feature__main_cfg__validate_dict(var_name, val, arg):
    
    if arg is not None:
-      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      LOG_ERROR('variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
       return False, dict({})
    
    if isinstance(val, dict):
@@ -302,7 +303,7 @@ def feature__main_cfg__validate_dict(var_name, val, arg):
 def feature__main_cfg__validate_list(var_name, val, arg):
    
    if arg is not None:
-      print('*** ERROR >> main_cfg >> variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
+      LOG_ERROR('variable >> {} = {} >> unexpect argument found {}'.format(var_name, val, arg))
       return False, list([])
    
    if isinstance(val, list):
