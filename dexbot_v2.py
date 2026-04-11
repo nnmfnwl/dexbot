@@ -410,7 +410,8 @@ def load_config_verify_or_exit(error_num, crazy_num):
     if c.BOTdelay_check_price < 1:
         LOG_ERROR('<delay_check_price> value <{0}> is invalid'.format(c.BOTdelay_check_price))
         error_num += 1
-        
+    
+    # if there are unresolved configuration warnings or error, then exit bot with error
     if crazy_num != c.BOTim_really_sure_what_im_doing or error_num != 0:
         if error_num != 0:
             LOG_ERROR("errors in configuration detected > {}".format(error_num))
@@ -423,6 +424,9 @@ def load_config_verify_or_exit(error_num, crazy_num):
         'Please read help and use <im_really_sure_what_im_doing> argument correctly, it allows you to specify number of crazy/meaningless/special configuration values, which are expected, to confirm you are sure what you are doing.')
         sys.exit(1)
     else:
+        if crazy_num != 0 and crazy_num == c.BOTim_really_sure_what_im_doing:
+            LOG_DEBUG("crazy config values match expected > {}/{}".format(crazy_num, c.BOTim_really_sure_what_im_doing))
+            
         LOG_INFO('Verifying configuration success')
 
 def feature__maker_price__load_config_define():
