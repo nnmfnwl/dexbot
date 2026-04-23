@@ -11,6 +11,7 @@ import features.glob as glob
 
 from features.log import *
 from features.log_cfg import *
+from features.cli import *
 
 from features.reset_afot import *
 from features.slide_dyn import *
@@ -51,6 +52,8 @@ def init_preconfig():
     global_vars_init_preconfig()
     
     log__init_preconfig__()
+    
+    cli__init_preconfig__()
     
     feature__tmp_cfg__init_preconfig__()
     
@@ -100,6 +103,10 @@ def init_postconfig():
     feature__slide_dyn__init_postconfig(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
     
     fixed_fee__init_postconfig(c.BOTbuymarket, pricing_storage__try_get_price)
+    
+    cli__init_postconfig()
+    
+    log__init_postconfig(cli__register_cmd)
     
 #global variables initialization
 def global_vars_init_preconfig():
@@ -282,6 +289,10 @@ def load_config_verify_or_exit(error_num, crazy_num):
             # ~ crazy_num += 1
     
     error_num_tmp, crazy_num_tmp = log__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
+    
+    error_num_tmp, crazy_num_tmp = cli__load_config_verify()
     error_num += error_num_tmp
     crazy_num += crazy_num_tmp
     
@@ -507,6 +518,8 @@ For example trading BLOCK with LTC, you would rather set BLOCK price manually in
     
     log__load_config_define()
     
+    cli__load_config_define()
+    
     feature__flush_co__load_config_define()
     
     pricing_proxy_client__load_config_define()
@@ -658,6 +671,8 @@ def load_config_main_cfg_postparse():
     c.BOThidden_orders = bool(c.BOTcfg.hidden_orders)
     
     log__load_config_postparse(c.BOTcfg)
+    
+    cli__load_config_postparse(c.BOTcfg)
     
     feature__maker_price__load_config_postparse(c.BOTcfg)
     
@@ -991,7 +1006,7 @@ def balance_get(token, address_funds_only = None):
 def update_balances():
     global c, s, d
     
-    LOG_ACTION('Updating balances')
+    LOG_DEBUG('Updating balances')
     
     tmp_maker = {}
     tmp_taker = {}
@@ -1015,8 +1030,8 @@ def update_balances():
     d.balance_taker_available = tmp_taker["available"]
     d.balance_taker_reserved = tmp_taker["reserved"]
     
-    LOG_ACTION('Actual balance maker token <{}> <{}> total <{}> available <{}> reserved <{}>'.format(tmp_maker_address, c.BOTsellmarket, d.balance_maker_total, d.balance_maker_available, d.balance_maker_reserved))
-    LOG_ACTION('Actual balance taker token <{}> <{}> total <{}> available <{}> reserved <{}>'.format(tmp_taker_address, c.BOTbuymarket, d.balance_taker_total, d.balance_taker_available, d.balance_taker_reserved))
+    LOG_INFO('Actual balance maker token <{}> <{}> total <{}> available <{}> reserved <{}>'.format(tmp_maker_address, c.BOTsellmarket, d.balance_maker_total, d.balance_maker_available, d.balance_maker_reserved))
+    LOG_INFO('Actual balance taker token <{}> <{}> total <{}> available <{}> reserved <{}>'.format(tmp_taker_address, c.BOTbuymarket, d.balance_taker_total, d.balance_taker_available, d.balance_taker_reserved))
 
 def virtual_orders__get_status(order):
     return order.get("status",None)
@@ -1086,7 +1101,7 @@ def lookup_order_id_2(orderid, myorders):
 # check all virtual-orders if there is some finished  
 def virtual_orders__check_status_update_status():
     global c, s, d
-    LOG_ACTION('Checking all session virtual orders how many orders finished and last time when order was finished...')
+    LOG_DEBUG('Checking all session virtual orders how many orders finished and last time when order was finished...')
     
     ordersopen = dxbottools.getallmyordersbymarket(c.BOTsellmarket,c.BOTbuymarket)
     for i in range(s.ordersvirtualmax):
@@ -1855,6 +1870,14 @@ if __name__ == '__main__':
             else:
                 virtual_orders__handle()
             
-            time.sleep(c.BOTdelay_internal_loop)
+            # keyboard interactions
+            sleep_start = float(0)
+            while sleep_start < c.BOTdelay_internal_loop:
+                sleep_start += float(0.2)
+                time.sleep(0.2)
+                cli__try_read_cmd()
+                
+            # ~ log__update_keyboard_cfg()
+            # ~ time.sleep(c.BOTdelay_internal_loop)
             
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
