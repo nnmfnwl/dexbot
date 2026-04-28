@@ -78,21 +78,21 @@ def cli__try_read_cmd():
          
          scmd = clicmd.split(None, 2) # split into arguments
          
-         arg1 = scmd[0] if len(scmd) > 0 else None
+         cmd1 = scmd[0] if len(scmd) > 0 else None
          arg2 = scmd[1] if len(scmd) > 1 else None
          arg3 = scmd[2] if len(scmd) > 2 else None
          
-         cmd = d.cli__cmds.get(arg1, None)
+         cmd = d.cli__cmds.get(cmd1, None) # try to get possible command line command obj from dictionary
          
          if cmd == None:
-            printf("Command <{}> not found".format(arg1))
+            printf("Command <{}> not defined".format(cmd1))
          else:
-            cmd.exec_fn(arg1, arg2, arg3)
+            cmd.exec_fn(cmd1, arg2, arg3)
 
 # self help functionality to describe other commands
-def cli__help_cmd(param1, param2, param3):
+def cli__help_cmd(cmd1, arg2, arg3):
    
-   if param2 is None or param2 == "":
+   if arg2 is None or arg2 == "":
       print("""Welcome in Blocknet decentralized exchange automatic trading bot command line interface:
 USAGE:
 
@@ -105,13 +105,13 @@ COMMANDS:""")
          print("{} - {}".format(d.cli__cmds[cmd_name].cmd_name, d.cli__cmds[cmd_name].cmd_short_descr))
       
    else:
-      cmd = d.cli__cmds.get(param2, None)
+      cmd = d.cli__cmds.get(arg2, None)
       if cmd is None:
-         print('command >> {} >> not defined'.format(param2))
+         print('command >> {} >> not defined'.format(arg2))
       else:
          print("{} - {}".format(cmd.cmd_name, cmd.cmd_short_descr))
-         print("{}".format(cmd.help_fn(param2, param3)))
+         cmd.help_fn(arg2, arg3)
 
 # help for help command
-def cli__help_cmd_help(param1, param2)
-   print("""welcome in Blocknet Mesa Help transit systems ))""")
+def cli__help_cmd_help(cmd1, arg2):
+   print("""Rise and Shine Mr. Freeman, welcome in Blocknet Mesa Help transit systems ))""")
