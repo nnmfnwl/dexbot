@@ -55,33 +55,33 @@ def log__init_postconfig(reg_fn):
    reg_fn('w', log__cli_help, log__cli_cmd, "enable/disable WARNING log messages")
    
 # help for log cli
-def log__cli_help(cmd):
+def log__cli_help(cmd1, arg2):
    
-   if cmd == 'a':
+   if cmd1 == 'a':
       print("\nLOG >> enable/disable ACTION log messages\n")
    
-   if cmd == 'i':
+   if cmd1 == 'i':
       print("\nLOG >> enable/disable INFO log messages\n")
    
-   if cmd == 'd':
+   if cmd1 == 'd':
       print("\nLOG >> enable/disable DEBUG log messages\n")
          
-   if cmd == 'h':
+   if cmd1 == 'h':
       print("\nLOG >> enable/disable HINT log messages\n")
          
-   if cmd == 'f':
+   if cmd1 == 'f':
       print("\nLOG >> enable/disable FATAL log messages\n")
       
-   if cmd == 'e':
+   if cmd1 == 'e':
       print("\nLOG >> enable/disable ERROR log messages\n")
    
-   if cmd == 'w':
+   if cmd1 == 'w':
       print("\nLOG >> enable/disable WARNING log messages\n")
    
 # check and do command line interface configuration
-def log__cli_cmd(cmd):
+def log__cli_cmd(cmd1, arg2, arg3):
    
-   if cmd == 'a':
+   if cmd1 == 'a':
       if c.log__action == True:
          c.log__action = False
          print("\nLOG >> ACTION disabled\n")
@@ -89,7 +89,7 @@ def log__cli_cmd(cmd):
          c.log__action = True
          print("\nLOG >> ACTION enabled\n")
    
-   if cmd == 'i':
+   if cmd1 == 'i':
       if c.log__info == True:
          c.log__info = False
          print("\nLOG >> INFO disabled\n")
@@ -97,7 +97,7 @@ def log__cli_cmd(cmd):
          c.log__info = True
          print("\nLOG >> INFO enabled\n")
    
-   if cmd == 'd':
+   if cmd1 == 'd':
       if c.log__debug == True:
          c.log__debug = False
          print("\nLOG >> DEBUG disabled\n")
@@ -105,7 +105,7 @@ def log__cli_cmd(cmd):
          c.log__debug = True
          print("\nLOG >> DEBUG enabled\n")
          
-   if cmd == 'h':
+   if cmd1 == 'h':
       if c.log__hint == True:
          c.log__hint = False
          print("\nLOG >> HINT disabled\n")
@@ -113,7 +113,7 @@ def log__cli_cmd(cmd):
          c.log__hint = True
          print("\nLOG >> HINT enabled\n")
          
-   if cmd == 'f':
+   if cmd1 == 'f':
       if c.log__fatal == True:
          c.log__fatal = False
          print("\nLOG >> FATAL disabled\n")
@@ -121,7 +121,7 @@ def log__cli_cmd(cmd):
          c.log__fatal = True
          print("\nLOG >> FATAL enabled\n")
    
-   if cmd == 'e':
+   if cmd1 == 'e':
       if c.log__error == True:
          c.log__error = False
          print("\nLOG >> ERROR disabled\n")
@@ -129,7 +129,7 @@ def log__cli_cmd(cmd):
          c.log__error = True
          print("\nLOG >> ERROR enabled\n")
    
-   if cmd == 'w':
+   if cmd1 == 'w':
       if c.log__warning == True:
          c.log__warning = False
          print("\nLOG >> WARNING disabled\n")
