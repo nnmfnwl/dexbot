@@ -405,16 +405,16 @@ def load_config_verify_or_exit(error_num, crazy_num):
     crazy_num += crazy_num_tmp
     
     # arguments: internal values changes
-    if c.BOTdelay_internal_op < 1:
+    if c.BOTdelay_internal_op < 0.1:
         LOG_ERROR('<delay_internal_op> value <{0}> is invalid'.format(c.BOTdelay_internal_op))
         error_num += 1
         
-    if c.BOTdelay_internal_error < 1:
+    if c.BOTdelay_internal_error < 0.3:
         LOG_ERROR('<delay_internal_error> value <{0}> is invalid'.format(c.BOTdelay_internal_error))
         error_num += 1
         
     # arguments: internal values changes
-    if c.BOTdelay_internal_loop < 1:
+    if c.BOTdelay_internal_loop < 0.1:
         LOG_ERROR('<delay_internal_loop> value <{0}> is invalid'.format(c.BOTdelay_internal_loop))
         error_num += 1
     
