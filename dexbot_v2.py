@@ -11,6 +11,7 @@ import features.glob as glob
 
 from features.log import *
 from features.log_cfg import *
+from features.cli import *
 
 from features.reset_afot import *
 from features.slide_dyn import *
@@ -51,6 +52,8 @@ def init_preconfig():
     global_vars_init_preconfig()
     
     log__init_preconfig__()
+    
+    cli__init_preconfig__()
     
     feature__tmp_cfg__init_preconfig__()
     
@@ -100,6 +103,10 @@ def init_postconfig():
     feature__slide_dyn__init_postconfig(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
     
     fixed_fee__init_postconfig(c.BOTbuymarket, pricing_storage__try_get_price)
+    
+    cli__init_postconfig()
+    
+    log__init_postconfig(cli__register_cmd)
     
 #global variables initialization
 def global_vars_init_preconfig():
@@ -285,6 +292,10 @@ def load_config_verify_or_exit(error_num, crazy_num):
     error_num += error_num_tmp
     crazy_num += crazy_num_tmp
     
+    error_num_tmp, crazy_num_tmp = cli__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
+    
     error_num_tmp, crazy_num_tmp = fixed_fee__load_config_verify()
     error_num += error_num_tmp
     crazy_num += crazy_num_tmp
@@ -394,16 +405,16 @@ def load_config_verify_or_exit(error_num, crazy_num):
     crazy_num += crazy_num_tmp
     
     # arguments: internal values changes
-    if c.BOTdelay_internal_op < 1:
+    if c.BOTdelay_internal_op < 0.1:
         LOG_ERROR('<delay_internal_op> value <{0}> is invalid'.format(c.BOTdelay_internal_op))
         error_num += 1
         
-    if c.BOTdelay_internal_error < 1:
+    if c.BOTdelay_internal_error < 0.3:
         LOG_ERROR('<delay_internal_error> value <{0}> is invalid'.format(c.BOTdelay_internal_error))
         error_num += 1
         
     # arguments: internal values changes
-    if c.BOTdelay_internal_loop < 1:
+    if c.BOTdelay_internal_loop < 0.1:
         LOG_ERROR('<delay_internal_loop> value <{0}> is invalid'.format(c.BOTdelay_internal_loop))
         error_num += 1
     
@@ -506,6 +517,8 @@ For example trading BLOCK with LTC, you would rather set BLOCK price manually in
 [["example to redirect Blocknet price by $59 USDT per $BLOCK, and $1299 LTC ", """ "BLOCK": { "asset": "USDT", "price": 59} , "LTC": { "asset": "USDT", "price": 1299}"""]])
     
     log__load_config_define()
+    
+    cli__load_config_define()
     
     feature__flush_co__load_config_define()
     
@@ -615,7 +628,7 @@ In theory we need bot to try to create orders in dynamic size if there is not en
     reset_afot__load_config_define()
 
     # arguments: internal values changes
-    feature__main_cfg__add_variable('delay_internal_op', 2.3, feature__main_cfg__validate_float, None, """sleep delay, in seconds, between place/cancel orders or other internal operations(can be used ie. case of bad internet connection...) (default=2.3)""", None)
+    feature__main_cfg__add_variable('delay_internal_op', 0.7, feature__main_cfg__validate_float, None, """sleep delay, in seconds, between place/cancel orders or other internal operations(can be used ie. case of bad internet connection...) (default=0.7)""", None)
     feature__main_cfg__add_variable('delay_internal_error', 10, feature__main_cfg__validate_float, None, """sleep delay, in seconds, when error happen to try again. (default=10)""")
     feature__main_cfg__add_variable('delay_internal_loop', 8, feature__main_cfg__validate_float, None, """sleep delay, in seconds, between main loops to process all things to handle. (default=8)""", None)
     feature__main_cfg__add_variable('delay_check_price', 180, feature__main_cfg__validate_float, None, """sleep delay, in seconds to check again pricing (default=180)""", None)
@@ -658,6 +671,8 @@ def load_config_main_cfg_postparse():
     c.BOThidden_orders = bool(c.BOTcfg.hidden_orders)
     
     log__load_config_postparse(c.BOTcfg)
+    
+    cli__load_config_postparse(c.BOTcfg)
     
     feature__maker_price__load_config_postparse(c.BOTcfg)
     
@@ -991,7 +1006,7 @@ def balance_get(token, address_funds_only = None):
 def update_balances():
     global c, s, d
     
-    LOG_ACTION('Updating balances')
+    LOG_DEBUG('Updating balances')
     
     tmp_maker = {}
     tmp_taker = {}
@@ -1015,8 +1030,8 @@ def update_balances():
     d.balance_taker_available = tmp_taker["available"]
     d.balance_taker_reserved = tmp_taker["reserved"]
     
-    LOG_ACTION('Actual balance maker token <{}> <{}> total <{}> available <{}> reserved <{}>'.format(tmp_maker_address, c.BOTsellmarket, d.balance_maker_total, d.balance_maker_available, d.balance_maker_reserved))
-    LOG_ACTION('Actual balance taker token <{}> <{}> total <{}> available <{}> reserved <{}>'.format(tmp_taker_address, c.BOTbuymarket, d.balance_taker_total, d.balance_taker_available, d.balance_taker_reserved))
+    LOG_INFO('Actual balance maker token <{}> <{}> total <{}> available <{}> reserved <{}>'.format(tmp_maker_address, c.BOTsellmarket, d.balance_maker_total, d.balance_maker_available, d.balance_maker_reserved))
+    LOG_INFO('Actual balance taker token <{}> <{}> total <{}> available <{}> reserved <{}>'.format(tmp_taker_address, c.BOTbuymarket, d.balance_taker_total, d.balance_taker_available, d.balance_taker_reserved))
 
 def virtual_orders__get_status(order):
     return order.get("status",None)
@@ -1086,7 +1101,7 @@ def lookup_order_id_2(orderid, myorders):
 # check all virtual-orders if there is some finished  
 def virtual_orders__check_status_update_status():
     global c, s, d
-    LOG_ACTION('Checking all session virtual orders how many orders finished and last time when order was finished...')
+    LOG_DEBUG('Checking all session virtual orders how many orders finished and last time when order was finished...')
     
     ordersopen = dxbottools.getallmyordersbymarket(c.BOTsellmarket,c.BOTbuymarket)
     for i in range(s.ordersvirtualmax):
@@ -1855,6 +1870,14 @@ if __name__ == '__main__':
             else:
                 virtual_orders__handle()
             
-            time.sleep(c.BOTdelay_internal_loop)
+            # keyboard interactions
+            sleep_start = float(0)
+            while sleep_start < c.BOTdelay_internal_loop:
+                sleep_start += float(0.2)
+                time.sleep(0.2)
+                cli__try_read_cmd()
+                
+            # ~ log__update_keyboard_cfg()
+            # ~ time.sleep(c.BOTdelay_internal_loop)
             
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
