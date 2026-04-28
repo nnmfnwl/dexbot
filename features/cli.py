@@ -85,7 +85,7 @@ def cli__try_read_cmd():
          cmd = d.cli__cmds.get(cmd1, None) # try to get possible command line command obj from dictionary
          
          if cmd == None:
-            printf("Command <{}> not defined".format(cmd1))
+            print("Command <{}> not defined".format(cmd1))
          else:
             cmd.exec_fn(cmd1, arg2, arg3)
 
