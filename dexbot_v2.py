@@ -628,7 +628,7 @@ In theory we need bot to try to create orders in dynamic size if there is not en
     reset_afot__load_config_define()
 
     # arguments: internal values changes
-    feature__main_cfg__add_variable('delay_internal_op', 2.3, feature__main_cfg__validate_float, None, """sleep delay, in seconds, between place/cancel orders or other internal operations(can be used ie. case of bad internet connection...) (default=2.3)""", None)
+    feature__main_cfg__add_variable('delay_internal_op', 0.7, feature__main_cfg__validate_float, None, """sleep delay, in seconds, between place/cancel orders or other internal operations(can be used ie. case of bad internet connection...) (default=0.7)""", None)
     feature__main_cfg__add_variable('delay_internal_error', 10, feature__main_cfg__validate_float, None, """sleep delay, in seconds, when error happen to try again. (default=10)""")
     feature__main_cfg__add_variable('delay_internal_loop', 8, feature__main_cfg__validate_float, None, """sleep delay, in seconds, between main loops to process all things to handle. (default=8)""", None)
     feature__main_cfg__add_variable('delay_check_price', 180, feature__main_cfg__validate_float, None, """sleep delay, in seconds to check again pricing (default=180)""", None)
