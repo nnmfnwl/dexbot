@@ -156,7 +156,7 @@ def feature__main_cfg__generate_cfg(filename, action):
    # check if file not exist
    if os.path.exists(filename) is True and os.path.getsize(filename) > 0 :
       if action == "update":
-         os.rename(filename, "./cfg_backup/" + filename + datetime.datetime.now())
+         os.rename(filename, "./cfg_backup/" + filename + str(datetime.datetime.now()))
       else:
          LOG_ERROR('generate_cfg >> generating configuration file >> {} >> file already exist >> {} >> please remove configuration file first'.format(filename, action))
          return False
