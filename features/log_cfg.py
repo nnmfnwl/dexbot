@@ -88,6 +88,7 @@ def log__cli_cmd(cmd1, arg2, arg3):
       else:
          c.log__action = True
          print("\nLOG >> ACTION enabled\n")
+      feature__main_cfg__add_value("log_action", c.log__action)
    
    if cmd1 == 'i':
       if c.log__info == True:
@@ -96,7 +97,8 @@ def log__cli_cmd(cmd1, arg2, arg3):
       else:
          c.log__info = True
          print("\nLOG >> INFO enabled\n")
-   
+      feature__main_cfg__add_value("log_info", c.log__info)
+      
    if cmd1 == 'd':
       if c.log__debug == True:
          c.log__debug = False
@@ -104,6 +106,7 @@ def log__cli_cmd(cmd1, arg2, arg3):
       else:
          c.log__debug = True
          print("\nLOG >> DEBUG enabled\n")
+      feature__main_cfg__add_value("log_debug", c.log__debug)
          
    if cmd1 == 'h':
       if c.log__hint == True:
@@ -112,6 +115,7 @@ def log__cli_cmd(cmd1, arg2, arg3):
       else:
          c.log__hint = True
          print("\nLOG >> HINT enabled\n")
+      feature__main_cfg__add_value("log_hint", c.log__hint)
          
    if cmd1 == 'f':
       if c.log__fatal == True:
@@ -120,6 +124,7 @@ def log__cli_cmd(cmd1, arg2, arg3):
       else:
          c.log__fatal = True
          print("\nLOG >> FATAL enabled\n")
+      feature__main_cfg__add_value("log_fatal", c.log__fatal)
    
    if cmd1 == 'e':
       if c.log__error == True:
@@ -128,6 +133,7 @@ def log__cli_cmd(cmd1, arg2, arg3):
       else:
          c.log__error = True
          print("\nLOG >> ERROR enabled\n")
+      feature__main_cfg__add_value("log_error", c.log__error)
    
    if cmd1 == 'w':
       if c.log__warning == True:
@@ -136,4 +142,5 @@ def log__cli_cmd(cmd1, arg2, arg3):
       else:
          c.log__warning = True
          print("\nLOG >> WARNING enabled\n")
+      feature__main_cfg__add_value("log_warning", c.log__warning)
    
