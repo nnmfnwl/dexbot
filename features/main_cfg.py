@@ -3,6 +3,7 @@
 # main configuration definition and base checking module
 
 import os.path
+import datetime
 
 import features.glob as glob
 from features.log import *
@@ -12,6 +13,8 @@ def feature__main_cfg__init_preconfig__():
    
    glob.d.main_cfg = glob.GlobVars()
    glob.d.main_cfg.cfg = {}
+   glob.d.main_cfg.filename = "default.cfg.py"
+   
    glob.c.main_cfg = glob.GlobVars()
    glob.c.main_cfg.cfg = glob.GlobVars()
    
@@ -83,6 +86,8 @@ def feature__main_cfg__load_cfg(filename):
       error_num +=1
       return error_num
    
+   glob.d.main_cfg.filename = filename
+   
    # TODO analyze file extension and load by format
    
    LOG_INFO("using --config file >> <{}>".format(filename))
@@ -142,14 +147,19 @@ def feature__main_cfg__generate_cfg(filename, action):
       LOG_ACTION('generate_cfg >> generating configuration file >> {} >> style >> {}'.format(filename, action))
    elif action == "template":
       LOG_ACTION('generate_cfg >> generating configuration file >> {} >> style >> {}'.format(filename, action))
+   elif action == "update":
+      LOG_ACTION('generate_cfg >> generating configuration file >> {} >> style >> {}'.format(filename, action))
    else:
       LOG_ACTION('generate_cfg >> generating configuration file >> {} >> invalid style >> {}'.format(filename, action))
       return False
    
    # check if file not exist
    if os.path.exists(filename) is True and os.path.getsize(filename) > 0 :
-      LOG_ERROR('generate_cfg >> generating configuration file >> {} >> file already exist >> {} >> please remove configuration file first'.format(filename, action))
-      return False
+      if action == "update":
+         os.rename(filename, "./cfg_backup/" + filename + datetime.datetime.now())
+      else:
+         LOG_ERROR('generate_cfg >> generating configuration file >> {} >> file already exist >> {} >> please remove configuration file first'.format(filename, action))
+         return False
    
    # open file
    file = open(filename,'w', encoding="utf-8")
@@ -197,14 +207,16 @@ def feature__main_cfg__generate_cfg(filename, action):
          else:
             file.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, defaultvalue))
       # write down as template
-      else:
+      elif action == "template":
          file.write('cfg[\'{}\'] = "{}cc_{}{}"\n'.format(cfg_name, '{', cfg_name, '}'))
+      else:
+         file.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, glob.d.main_cfg.cfg.get("value", "")))
       
    # close file
    file.close()
-
-   return True
    
+   return True
+
 # validate boolean
 def feature__main_cfg__validate_bool(var_name, val, arg):
    
@@ -310,3 +322,23 @@ def feature__main_cfg__validate_list(var_name, val, arg):
       return True, val
    
    return True, list(val)
+
+
+# register commands
+def main_cfg__init_postconfig(reg_fn):
+   
+   reg_fn('cfg', main_cfg__cli_cfg_help, main_cfg__cli_cfg, "update configuration")
+   
+# help for log cli
+def main_cfg__cli_cfg_help(cmd1, arg2):
+   print("\nCFG >> just one argument <update> needed to make configuration update\n")
+   
+# check and do command line interface configuration
+def main_cfg__cli_cfg(cmd1, arg2, arg3):
+   
+      if arg2 == "update":
+         LOG_ACTION("configuration update in progress")
+         feature__main_cfg__generate_cfg(glob.d.main_cfg.filename, "update")
+      else:
+         LOG_ERROR("command <cfg> takes only argument <update>")
+   
