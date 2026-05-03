@@ -4,6 +4,7 @@
 
 import os.path
 import datetime
+import shutil
 
 import features.glob as glob
 from features.log import *
@@ -156,7 +157,7 @@ def feature__main_cfg__generate_cfg(filename, action):
    # check if file not exist
    if os.path.exists(filename) is True and os.path.getsize(filename) > 0 :
       if action == "update":
-         os.rename(filename, "./cfg_backup/" + filename + str(datetime.datetime.now()))
+         shutil.copy("./" + filename, "./cfg_backup/" + filename + str(datetime.datetime.now()))
       else:
          LOG_ERROR('generate_cfg >> generating configuration file >> {} >> file already exist >> {} >> please remove configuration file first'.format(filename, action))
          return False
@@ -195,22 +196,42 @@ def feature__main_cfg__generate_cfg(filename, action):
    # iterate all configuration and write em all into file
    for cfg_name in glob.d.main_cfg.cfg.keys():
       
+      cfg = glob.d.main_cfg.cfg[cfg_name]
+      
       # write down description
-      description = glob.d.main_cfg.cfg[cfg_name]["description"]
-      file.write('"""{}"""\n'.format(description))
+      file.write('\n"""{}"""\n'.format(cfg["description"]))
       
       # write down default values
       if action == "defaults":
-         defaultvalue = glob.d.main_cfg.cfg[cfg_name]["defaultvalue"]
-         if defaultvalue is None:
-            file.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, ""))
+         if cfg.get("validationfn", None) == feature__main_cfg__validate_dict:
+            file.write('cfg[\'{}\'] = {}\n'.format(cfg_name, cfg.get("defaultvalue", "{}")))
+         elif cfg.get("validationfn", None) == feature__main_cfg__validate_list:
+            file.write('cfg[\'{}\'] = {}\n'.format(cfg_name, cfg.get("defaultvalue", "[]")))
+         elif cfg.get("validationfn", None) == feature__main_cfg__validate_bool:
+            file.write('cfg[\'{}\'] = {}\n'.format(cfg_name, cfg.get("defaultvalue", False)))
+         elif cfg.get("validationfn", None) == feature__main_cfg__validate_int:
+            file.write('cfg[\'{}\'] = {}\n'.format(cfg_name, cfg.get("defaultvalue", 0)))
+         elif cfg.get("validationfn", None) == feature__main_cfg__validate_float:
+            file.write('cfg[\'{}\'] = {}\n'.format(cfg_name, cfg.get("defaultvalue", 0.0)))
          else:
-            file.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, defaultvalue))
+            file.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, cfg.get("value", "")))
       # write down as template
       elif action == "template":
          file.write('cfg[\'{}\'] = "{}cc_{}{}"\n'.format(cfg_name, '{', cfg_name, '}'))
+      # else write down actual update configuration
       else:
-         file.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, glob.d.main_cfg.cfg.get("value", "")))
+         if cfg.get("validationfn", None) == feature__main_cfg__validate_dict:
+            file.write('cfg[\'{}\'] = {}\n'.format(cfg_name, cfg.get("value", "{}")))
+         elif cfg.get("validationfn", None) == feature__main_cfg__validate_list:
+            file.write('cfg[\'{}\'] = {}\n'.format(cfg_name, cfg.get("value", "[]")))
+         elif cfg.get("validationfn", None) == feature__main_cfg__validate_bool:
+            file.write('cfg[\'{}\'] = {}\n'.format(cfg_name, cfg.get("value", False)))
+         elif cfg.get("validationfn", None) == feature__main_cfg__validate_int:
+            file.write('cfg[\'{}\'] = {}\n'.format(cfg_name, cfg.get("value", 0)))
+         elif cfg.get("validationfn", None) == feature__main_cfg__validate_float:
+            file.write('cfg[\'{}\'] = {}\n'.format(cfg_name, cfg.get("value", 0.0)))
+         else:
+            file.write('cfg[\'{}\'] = "{}"\n'.format(cfg_name, cfg.get("value", "")))
       
    # close file
    file.close()
