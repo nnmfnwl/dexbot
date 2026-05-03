@@ -108,6 +108,8 @@ def init_postconfig():
     
     log__init_postconfig(cli__register_cmd)
     
+    main_cfg__init_postconfig(cli__register_cmd)
+    
 #global variables initialization
 def global_vars_init_preconfig():
     global c, s, d
