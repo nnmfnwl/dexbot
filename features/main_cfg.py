@@ -86,7 +86,7 @@ def feature__main_cfg__load_cfg(filename):
       error_num +=1
       return error_num
    
-   glob.d.main_cfg.filename = filename
+   glob.d.main_cfg.filename = filename + '.py'
    
    # TODO analyze file extension and load by format
    
