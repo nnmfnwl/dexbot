@@ -1116,8 +1116,7 @@ def virtual_orders__check_status_update_status():
             
             #debug log
             LOG_ORDER('Order <{}> sell <{}> <{}> for <{}> <{}> price market/order <{}>/<{}> status update <{}> to <{}> id <{}> descr <{}>'
-            .format(d.ordersvirtual[i]['vid'], d.ordersvirtual[i]['maker'], d.ordersvirtual[i]['maker_size'], d.ordersvirtual[i]['taker'], d.ordersvirtual[i]['taker_size'], 
-            d.ordersvirtual[i]['status'], d.ordersvirtual[i]['market_price'], d.ordersvirtual[i]['order_price'], (order['status'] if (order is not None) else 'no status'), d.ordersvirtual[i]['id'], d.ordersvirtual[i]['name'] ))
+            .format(d.ordersvirtual[i]['vid'], d.ordersvirtual[i]['maker'], d.ordersvirtual[i]['maker_size'], d.ordersvirtual[i]['taker'], d.ordersvirtual[i]['taker_size'], d.ordersvirtual[i]['market_price'], d.ordersvirtual[i]['order_price'], d.ordersvirtual[i]['status'], (order['status'] if (order is not None) else 'no status'), d.ordersvirtual[i]['id'], d.ordersvirtual[i]['name'] ))
             
             # if virtual order is clear BUT order is still in progress, skip this order, because is not finished yet
             if order__check_status(d.ordersvirtual[i], ifyes = [s.status_list__clear]):
