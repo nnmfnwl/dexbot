@@ -18,6 +18,8 @@ def log__init_preconfig__():
    # static boundary asset
    c.log__action = True
    c.log__info = True
+   c.log__balance = True
+   c.log__order = True
    c.log__debug = True
    c.log__hint = True
 
@@ -41,14 +43,28 @@ def LOG_INFO(message, prefix = ""):
       caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
       print("{}>>>> INFO {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
 
-# log info message
+# log balance message
+def LOG_BALANCE(message, prefix = ""):
+   
+   if c.log__balance:
+      caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
+      print("{}>>>> BALANCE {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
+      
+# log orders message
+def LOG_ORDER(message, prefix = ""):
+   
+   if c.log__order:
+      caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
+      print("{}>>>> ORDER {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
+
+# log debug message
 def LOG_DEBUG(message, prefix = ""):
    
    if c.log__debug:
       caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
       print("{}---- DEBUG {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
 
-# log info message
+# log hint message
 def LOG_HINT(message, prefix = ""):
    
    if c.log__hint:
