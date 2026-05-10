@@ -16,6 +16,8 @@ def log__load_config_define():
    
    feature__main_cfg__add_variable('log_action', True, feature__main_cfg__validate_bool, None, """show action log messages, (default=True enabled)""", None)
    feature__main_cfg__add_variable('log_info', True, feature__main_cfg__validate_bool, None, """show info log messages, (default=True enabled)""", None)
+   feature__main_cfg__add_variable('log_balance', True, feature__main_cfg__validate_bool, None, """show balance log messages, (default=True enabled)""", None)
+   feature__main_cfg__add_variable('log_order', True, feature__main_cfg__validate_bool, None, """show open order log messages, (default=True enabled)""", None)
    feature__main_cfg__add_variable('log_debug', True, feature__main_cfg__validate_bool, None, """show debug log messages, (default=True enabled)""", None)
    feature__main_cfg__add_variable('log_hint', True, feature__main_cfg__validate_bool, None, """show hint log messages, (default=True enabled)""", None)
 
@@ -28,6 +30,8 @@ def log__load_config_postparse(args):
    
    c.log__action = bool(args.log_action)
    c.log__info = bool(args.log_info)
+   c.log__balance = bool(args.log_balance)
+   c.log__order = bool(args.log_order)
    c.log__debug = bool(args.log_debug)
    c.log__hint = bool(args.log_hint)
 
@@ -48,6 +52,8 @@ def log__init_postconfig(reg_fn):
    
    reg_fn('a', log__cli_help, log__cli_cmd, "enable/disable ACTION log messages")
    reg_fn('i', log__cli_help, log__cli_cmd, "enable/disable INFO log messages")
+   reg_fn('b', log__cli_help, log__cli_cmd, "enable/disable BALANCE log messages")
+   reg_fn('o', log__cli_help, log__cli_cmd, "enable/disable ORDER log messages")
    reg_fn('d', log__cli_help, log__cli_cmd, "enable/disable DEBUG log messages")
    reg_fn('h', log__cli_help, log__cli_cmd, "enable/disable HINT log messages")
    reg_fn('f', log__cli_help, log__cli_cmd, "enable/disable FATAL log messages")
@@ -62,6 +68,12 @@ def log__cli_help(cmd1, arg2):
    
    if cmd1 == 'i':
       print("\nLOG >> enable/disable INFO log messages\n")
+      
+   if cmd1 == 'b':
+      print("\nLOG >> enable/disable BALANCE log messages\n")
+      
+   if cmd1 == 'o':
+      print("\nLOG >> enable/disable ORDER log messages\n")
    
    if cmd1 == 'd':
       print("\nLOG >> enable/disable DEBUG log messages\n")
@@ -98,6 +110,24 @@ def log__cli_cmd(cmd1, arg2, arg3):
          c.log__info = True
          print("\nLOG >> INFO enabled\n")
       feature__main_cfg__add_value("log_info", c.log__info)
+      
+   if cmd1 == 'b':
+      if c.log__balance == True:
+         c.log__balance = False
+         print("\nLOG >> BALANCE disabled\n")
+      else:
+         c.log__balance = True
+         print("\nLOG >> BALANCE enabled\n")
+      feature__main_cfg__add_value("log_balance", c.log__balance)
+      
+   if cmd1 == 'o':
+      if c.log__order == True:
+         c.log__order = False
+         print("\nLOG >> ORDER disabled\n")
+      else:
+         c.log__order = True
+         print("\nLOG >> ORDER enabled\n")
+      feature__main_cfg__add_value("log_order", c.log__order)
       
    if cmd1 == 'd':
       if c.log__debug == True:
