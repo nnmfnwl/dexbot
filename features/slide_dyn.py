@@ -335,7 +335,7 @@ def feature__slide_dyn__update_dyn_slide():
     # 
     # >> buy and sell dynamic slide is very native market behavior expectation algorithm. as prices will go up and down, up and down bot will profit..., but remember, there are also txfees...
     
-    LOG_INFO('recomputing')
+    LOG_DEBUG('recomputing')
     
     if c.BOTslide_dyn_asset_track is True:
         if feature__slide_dyn__asset_pricing_update() == 0:
@@ -427,7 +427,10 @@ def feature__slide_dyn__update_dyn_slide():
         slide_dyn_final = max(slide_dyn_final, tmp_max_final)
     
     # ~ LOG_DEBUG('>>>> dynamic_slide >> <'+str(case_buy_sell)+'> zero type <')
-    LOG_INFO('<'+str(case_buy_sell)+'> dyn zero at <'+str(c.BOTslide_dyn_zero_type)+' '+str(c.BOTslide_dyn_zero_value)+'~'+str(c.feature__slide_dyn__zero_value)+' '+str(tmp_dyn_zero_asset)+'> ~~ <'+str(tmp_bot_slide_dyn_zero_value)+' '+str(c.BOTsellmarket)+'> maker actual balance <'+str(d.balance_maker_total)+'> maker balance diff <'+str(balance_diff_dirty)+'> maker ignore <'+str(tmp_ignore_dirty)+' '+str(tmp_dyn_asset)+' ~~ '+str(tmp_ignore_final)+' '+str(c.BOTsellmarket)+'> maker balance diff final <'+str(balance_diff_final)+'> slide type <'+str(c.BOTslide_dyn_type)+'> slide step threshold <'+str(tmp_threshold_dirty)+'>~<'+str(tmp_threshold_final)+'> slide dyn step num * size <'+str(slide_dyn_step_num)+'*'+str(tmp_step_final)+'> final dyn slide <'+str(slide_dyn_final)+'> at max <'+str(tmp_max_final)+'>')
+    LOG_ORDER('<'+str(case_buy_sell)+'> dyn zero at <'+str(c.BOTslide_dyn_zero_type)+' '+str(c.BOTslide_dyn_zero_value)+'~'+str(c.feature__slide_dyn__zero_value)+' '+str(tmp_dyn_zero_asset)+'> ~~ <'+str(tmp_bot_slide_dyn_zero_value)+' '+str(c.BOTsellmarket)+'> maker actual balance <'+str(d.balance_maker_total)+'> maker balance diff <'+str(balance_diff_dirty)+'> maker ignore <'+str(tmp_ignore_dirty)+' '+str(tmp_dyn_asset)+' ~~ '+str(tmp_ignore_final)+' '+str(c.BOTsellmarket)+'> maker balance diff final <'+str(balance_diff_final)+'> slide type <'+str(c.BOTslide_dyn_type)+'> slide step threshold <'+str(tmp_threshold_dirty)+'>~<'+str(tmp_threshold_final)+'> slide dyn step num * size <'+str(slide_dyn_step_num)+'*'+str(tmp_step_final)+'> final dyn slide <'+str(slide_dyn_final)+'> at max <'+str(tmp_max_final)+'>')
+    
+    if d.feature__slide_dyn__value != slide_dyn_final:
+       LOG_ACTION('dynamic slide has been changed from <{}> to <{}>'.format(d.feature__slide_dyn__value, slide_dyn_final))
     
     d.feature__slide_dyn__value = slide_dyn_final
     
