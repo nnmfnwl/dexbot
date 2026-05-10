@@ -824,7 +824,7 @@ def do_utils_cancel_orders_address():
     global c, s, d
     LOG_ACTION('Using utility to cancel specifix market pair and address {0}-{1} {2}-{3}'.format(c.BOTsellmarket, c.BOTbuymarket, c.BOTmaker_address, c.BOTtaker_address))
     retcode, retdata = dxbottools.cancelallordersbyaddress(c.BOTsellmarket, c.BOTbuymarket, c.BOTmaker_address, c.BOTtaker_address)
-    LOG_INFO('Cancel orders result: {0} >> {1}'.format(retcode, retdata))
+    LOG_ORDER('Cancel orders result: {0} >> {1}'.format(retcode, retdata))
     return retcode
 
 # do utils and exit
