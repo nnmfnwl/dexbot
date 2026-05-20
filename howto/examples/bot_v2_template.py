@@ -313,3 +313,13 @@ cfg['price_outage_extra_slide'] = "{cc_price_outage_extra_slide}"
     
     # enable exceptions in configuration values
 cfg['im_really_sure_what_im_doing'] = "{cc_im_really_sure_what_im_doing}"
+
+cfg['log_action'] = "{cc_log_action}"
+cfg['log_info'] = "{cc_log_info}"
+cfg['log_balance'] = "{cc_log_balance}"
+cfg['log_order'] = "{cc_log_order}"
+cfg['log_debug'] = "{cc_log_debug}"
+cfg['log_hint'] = "{cc_log_hint}"
+cfg['log_fatal'] = "{cc_log_fatal}"
+cfg['log_error'] = "{cc_log_error}"
+cfg['log_warning'] = "{cc_log_warning}"
