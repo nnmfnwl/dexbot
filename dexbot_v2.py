@@ -106,6 +106,9 @@ def init_postconfig():
     
     cli__init_postconfig()
     
+    cli__register_cmd("exit", main__cli_exit_cmd_help, main__cli_exit_cmd, "Exit bot command")
+    cli__register_cmd("restart", main__cli_restart_cmd_help, main__cli_restart_cmd, "Restart bot command")
+    
     log__init_postconfig(cli__register_cmd)
     
     main_cfg__init_postconfig(cli__register_cmd)
@@ -1787,6 +1790,105 @@ def feature__takerbot__run():
                     d.feature__takerbot__time_start = time.time()
     
     return ret
+
+# exit cli cmd
+def main__cli_exit_cmd(cmd1, arg2, arg3):
+   global c, s, d
+   
+   LOG_DEBUG("CLI command >> {} {} {}".format(cmd1, arg2, arg3))
+   
+   # default action is to cancel all orders on configured address
+   if arg2 is None or arg2 == "" or arg2 == "canceladdress":
+      retcode = do_utils_cancel_orders_address()
+   elif arg2 == "cancelmarket":
+      retcode = do_utils_cancel_orders_market()
+   elif arg2 == "cancelall":
+      retcode = do_utils_cancel_orders_all()
+   else:
+      LOG_ERROR("exit argument >> {} >> is invalid".format(arg2))
+      return
+   
+   # exit on error strategy, default is force
+   if arg3 is None or arg3 == "" or arg3 == "force":
+      sys.exit(0)
+   elif arg3 == "normal":
+      if retcode == 0:
+         sys.exit(0)
+      else:
+         LOG_ERROR("Orders fails to cancel on exit, therefore bot not quit")
+         return
+   else:
+      LOG_ERROR("exit argument >> {} >> is invalid".format(arg3))
+      return
+    
+
+# exit cli cmd help
+def main__cli_exit_cmd_help(cmd1, arg2):
+   
+   print("""Command exit:
+USAGE:
+
+exit [|canceladdress|cancelmarket|cancelall] [|force|normal]
+  - no arguments try to cancel all configured address orders and force quit even if cancel orders fails
+  
+  - canceladdress - try to cancel all configured address orders before exit
+  - cancelmarket - try to cancel all market pair orders before exit
+  - cancelall - try to cancel all open orders before exit
+  
+  - force - exit bot even on error
+  - normal - bot will not exit if orders fails to cancel
+
+""")
+
+# restart cli cmd
+def main_cli_restart_cmd(cmd1, arg2, arg3):
+   global c, s, d
+   
+   LOG_DEBUG("CLI command >> {} {} {}".format(cmd1, arg2, arg3))
+   
+   # default action is to cancel all orders on configured address
+   if arg2 is None or arg2 == "" or arg2 == "canceladdress":
+      retcode = do_utils_cancel_orders_address()
+   elif arg2 == "cancelmarket":
+      retcode = do_utils_cancel_orders_market()
+   elif arg2 == "cancelall":
+      retcode = do_utils_cancel_orders_all()
+   else:
+      LOG_ERROR("restart argument >> {} >> is invalid".format(arg2))
+      return
+   
+   # restart on error strategy, default is force
+   if arg3 is None or arg3 == "" or arg3 == "force":
+      sys.exit(1)
+   elif arg3 == "normal":
+      if retcode == 0:
+         sys.exit(0)
+      else:
+         LOG_ERROR("Orders fails to cancel on restart, therefore bot not restart")
+         return
+   else:
+      LOG_ERROR("restart argument >> {} >> is invalid".format(arg3))
+      return
+    
+
+# restart cli cmd help
+def main__cli_restart_cmd_help(cmd1, arg2):
+   
+   print("""Command restart:
+USAGE:
+
+restart [|canceladdress|cancelmarket|cancelall] [|force|normal]
+  - no arguments try to cancel all configured address orders and force restart even if cancel orders fails
+  
+  - canceladdress - try to cancel all configured address orders before restart
+  - cancelmarket - try to cancel all market pair orders before restart
+  - cancelall - try to cancel all open orders before restart
+  
+  - force - restart bot even on error
+  - normal - bot will not restart if orders fails to cancel
+
+""")
+
 
 # main function
 if __name__ == '__main__':
