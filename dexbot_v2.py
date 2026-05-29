@@ -1841,7 +1841,7 @@ exit [|canceladdress|cancelmarket|cancelall] [|force|normal]
 """)
 
 # restart cli cmd
-def main_cli_restart_cmd(cmd1, arg2, arg3):
+def main__cli_restart_cmd(cmd1, arg2, arg3):
    global c, s, d
    
    LOG_DEBUG("CLI command >> {} {} {}".format(cmd1, arg2, arg3))
