@@ -64,31 +64,31 @@ def log__init_postconfig(reg_fn):
 def log__cli_help(cmd1, arg2):
    
    if cmd1 == 'a':
-      print("\nLOG >> enable/disable ACTION log messages\n")
+      print("\nLOG >> enable/disable ACTION log messages ({})\n".format(c.log__action))
    
    if cmd1 == 'i':
-      print("\nLOG >> enable/disable INFO log messages\n")
+      print("\nLOG >> enable/disable INFO log messages ({})\n".format(c.log__info))
       
    if cmd1 == 'b':
-      print("\nLOG >> enable/disable BALANCE log messages\n")
+      print("\nLOG >> enable/disable BALANCE log messages ({})\n".format(c.log__balance))
       
    if cmd1 == 'o':
-      print("\nLOG >> enable/disable ORDER log messages\n")
+      print("\nLOG >> enable/disable ORDER log messages ({})\n".format(c.log__order))
    
    if cmd1 == 'd':
-      print("\nLOG >> enable/disable DEBUG log messages\n")
+      print("\nLOG >> enable/disable DEBUG log messages ({})\n".format(c.log__debug))
          
    if cmd1 == 'h':
-      print("\nLOG >> enable/disable HINT log messages\n")
+      print("\nLOG >> enable/disable HINT log messages ({})\n".format(c.log__hint))
          
    if cmd1 == 'f':
-      print("\nLOG >> enable/disable FATAL log messages\n")
+      print("\nLOG >> enable/disable FATAL log messages ({})\n".format(c.log__fatal))
       
    if cmd1 == 'e':
-      print("\nLOG >> enable/disable ERROR log messages\n")
+      print("\nLOG >> enable/disable ERROR log messages ({})\n".format(c.log__error))
    
    if cmd1 == 'w':
-      print("\nLOG >> enable/disable WARNING log messages\n")
+      print("\nLOG >> enable/disable WARNING log messages ({})\n".format(c.log__warning))
    
 # check and do command line interface configuration
 def log__cli_cmd(cmd1, arg2, arg3):
