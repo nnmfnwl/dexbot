@@ -28,6 +28,7 @@ d = glob.d
 from features.tmp_cfg import *
 from features.main_cfg import *
 from features.log import *
+from features.pricing_storage import *
 
 # preconfiguration  initialization
 def rboundary__init_preconfig__():
@@ -192,7 +193,8 @@ def rboundary__pricing_init(maker, taker, action, get_price_fn = rboundary__get_
         # static initial price is not set
         if c.rboundary__price_asset_initial == 0:
             LOG_ACTION('pricing init >> remote pricing init')
-            d.rboundary__price_asset_initial = d.rboundary__get_price_fn(d.rboundary__maker, c.rboundary__asset)
+            req = pricing_storage__assetmap_create_req(d.rboundary__maker, c.rboundary__asset)
+            d.rboundary__price_asset_initial = d.rboundary__get_price_fn(req)
             if d.rboundary__price_asset_initial != 0:
                 # if asset initial price load success then finally update pricing and set initial price
                 d.rboundary__price_initial = rboundary__pricing_update()
@@ -222,7 +224,8 @@ def rboundary__pricing_init(maker, taker, action, get_price_fn = rboundary__get_
         else:
             LOG_ACTION('pricing init >> manual reversed pricing init')
             # we get default final price first
-            d.rboundary__price_asset_initial = d.rboundary__get_price_fn(d.rboundary__maker, d.rboundary__taker)
+            req = pricing_storage__assetmap_create_req(d.rboundary__maker, d.rboundary__taker)
+            d.rboundary__price_asset_initial = d.rboundary__get_price_fn(req)
             # and we convert back taker to asset by its manual initial price
             d.rboundary__price_asset_initial = d.rboundary__price_asset_initial * c.rboundary__price_asset_initial
             # if remote price load success
@@ -249,7 +252,8 @@ def rboundary__pricing_update():
     # current price is loaded if is not already set or live tracking of asset price is activated
     if c.rboundary__max_track_asset is True or c.rboundary__min_track_asset is True or d.rboundary__price_current == 0:
         if d.rboundary__price_asset_initial != 0:
-            tmp_rboundary__price_current = d.rboundary__get_price_fn(c.rboundary__asset, d.rboundary__taker)
+            req = pricing_storage__assetmap_create_req(c.rboundary__asset, d.rboundary__taker)
+            tmp_rboundary__price_current = d.rboundary__get_price_fn(req)
             if tmp_rboundary__price_current != 0:
                 tmp_rboundary__price_current = tmp_rboundary__price_current * d.rboundary__price_asset_initial
                 d.rboundary__price_current = tmp_rboundary__price_current
