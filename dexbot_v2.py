@@ -19,9 +19,14 @@ from features.sboundary import *
 from features.rboundary import *
 from features.flush_co import *
 from features.pricing_storage import *
-from features.pricing_proxy_client import *
+from features.pricing_proxymod import *
 from features.tmp_cfg import *
 from features.fixed_fee import *
+
+from features.pricing_proxymod import *
+from features.pricing_cmcmod import *
+from features.pricing_cgmod import *
+from features.pricing_cpmod import *
 
 # ~ logging.basicConfig(filename='botdebug.log',
                     # ~ level=logging.INFO,
@@ -59,6 +64,11 @@ def init_preconfig():
     
     pricing_storage__init_preconfig__()
     
+    pricing_proxymod__init_preconfig__()
+    pricing_cmcmod__init_preconfig__()
+    pricing_cgmod__init_preconfig__()
+    pricing_cpmod__init_preconfig__()
+    
     fixed_fee__init_preconfig__()
     
     reset_afot__init_preconfig__()
@@ -95,10 +105,12 @@ def init_postconfig():
                                c.BOTrpc_port)
     
     # initialize pricing proxy client
-    pricing_proxy_client__init_postconfig()
+    pricing_proxymod__init_postconfig(cli__register_cmd)
     
     # initialize pricing storage and set proxy client
-    pricing_storage__init_postconfig(c.BOTconfigname + ".tmp.pricing", c.BOTdelay_check_price, 1, 8, pricing_proxy_client__pricing_storage__try_get_price_fn, c.BOTcfg.price_redirections)
+    pricing_storage__init_postconfig(c.BOTconfigname + ".tmp.pricing", c.BOTdelay_check_price, 1, 8, c.BOTcfg.price_redirections)
+    
+    pricing_storage__pricing_mod_upt_one("proxy",pricing_proxymod__try_get_price)
     
     feature__slide_dyn__init_postconfig(c.BOTsellmarket, c.BOTbuymarket, pricing_storage__try_get_price)
     
@@ -110,6 +122,10 @@ def init_postconfig():
     cli__register_cmd("restart", main__cli_restart_cmd_help, main__cli_restart_cmd, "Restart bot command")
     
     log__init_postconfig(cli__register_cmd)
+    
+    pricing_cmcmod__init_postconfig(cli__register_cmd)
+    pricing_cgmod__init_postconfig(cli__register_cmd)
+    pricing_cpmod__init_postconfig(cli__register_cmd)
     
     main_cfg__init_postconfig(cli__register_cmd)
     
@@ -297,6 +313,18 @@ def load_config_verify_or_exit(error_num, crazy_num):
     error_num += error_num_tmp
     crazy_num += crazy_num_tmp
     
+    error_num_tmp, crazy_num_tmp = pricing_cmcmod__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
+    
+    error_num_tmp, crazy_num_tmp = pricing_cgmod__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
+    
+    error_num_tmp, crazy_num_tmp = pricing_cpmod__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
+    
     error_num_tmp, crazy_num_tmp = cli__load_config_verify()
     error_num += error_num_tmp
     crazy_num += crazy_num_tmp
@@ -310,7 +338,7 @@ def load_config_verify_or_exit(error_num, crazy_num):
         LOG_HINT('If you are really sure about what you are doing, you can ignore this warning by using --im_really_sure_what_im_doing argument')
         crazy_num += 1
     
-    if c.BOTsell_start_slide > 10:
+    if c.BOTsell_start_slide > 100:
         LOG_WARNING('<sell_start_slide> value <{0}> seems invalid. <1.01> means +1%, <1.10> means +10%, more than <2> means +100% of actual price'.format(c.BOTsell_start_slide))
         LOG_HINT('If you are really sure about what you are doing, you can ignore this warning by using --im_really_sure_what_im_doing argument')
         crazy_num += 1
@@ -320,7 +348,7 @@ def load_config_verify_or_exit(error_num, crazy_num):
         LOG_HINT('If you are really sure about what you are doing, you can ignore this warning by using --im_really_sure_what_im_doing argument')
         crazy_num += 1
     
-    if c.BOTsell_end_slide > 10:
+    if c.BOTsell_end_slide > 100:
         LOG_WARNING('<sell_end_slide> value <{0}> seems invalid. <1.01> means +1%, <1.10> means +10%, more than <2> means +100% of actual price'.format(c.BOTsell_end_slide))
         LOG_HINT('If you are really sure about what you are doing, you can ignore this warning by using --im_really_sure_what_im_doing argument')
         crazy_num += 1
@@ -378,7 +406,7 @@ def load_config_verify_or_exit(error_num, crazy_num):
     error_num += error_num_tmp
     crazy_num += crazy_num_tmp
     
-    error_num_tmp, crazy_num_tmp = pricing_proxy_client__load_config_verify()
+    error_num_tmp, crazy_num_tmp = pricing_proxymod__load_config_verify()
     error_num += error_num_tmp
     crazy_num += crazy_num_tmp
     
@@ -511,8 +539,12 @@ def load_config_main_cfg_define():
     feature__main_cfg__add_variable("rpc_port", None, feature__main_cfg__validate_int, None, """RPC authentication port used to connect to Blocknet node wallet""", [["use port 41414", "41414"]])
     
     # arguments: main maker/taker
+    # ~ feature__main_cfg__add_variable('maker_name', 'blocknet', feature__main_cfg__validate_str, None, """asset being sold (default=BLOCK). For example BLOCK LTC BTC PIVX XVG DASH DOGE""")
+    # ~ feature__main_cfg__add_variable('taker_name', 'litecoin', feature__main_cfg__validate_str, None, """asset being bought (default=LTC). For example BLOCK LTC BTC PIVX XVG DASH DOGE""")
     feature__main_cfg__add_variable('maker_ticker', 'BLOCK', feature__main_cfg__validate_str, None, """asset being sold (default=BLOCK). For example BLOCK LTC BTC PIVX XVG DASH DOGE""")
     feature__main_cfg__add_variable('taker_ticker', 'LTC', feature__main_cfg__validate_str, None, """asset being bought (default=LTC). For example BLOCK LTC BTC PIVX XVG DASH DOGE""")
+    # ~ feature__main_cfg__add_variable('maker_ucid', '', feature__main_cfg__validate_str, None, """asset being sold (default=707(BLOCK)). BLOCK(707) LTC(2) BTC(1) PIVX(1169) XVG(693) DASH(131) DOGE(74) PKOIN(5925)""")
+    # ~ feature__main_cfg__add_variable('taker_ucid', '', feature__main_cfg__validate_str, None, """asset being bought (default=2(LTC)). BLOCK(707) LTC(2) BTC(1) PIVX(1169) XVG(693) DASH(131) DOGE(74) PKOIN(5925)""")
     feature__main_cfg__add_variable('maker_address', None, feature__main_cfg__validate_str, None, """trading address of asset being sold (default=None)""")
     feature__main_cfg__add_variable('taker_address', None, feature__main_cfg__validate_str, None, """trading address of asset being bought (default=None)""")
     feature__main_cfg__add_variable('address_funds_only', None, feature__main_cfg__validate_bool, None, """limit bot to use and compute funds only from maker and taker address(default=False disabled)""")
@@ -523,11 +555,15 @@ For example trading BLOCK with LTC, you would rather set BLOCK price manually in
     
     log__load_config_define()
     
+    pricing_cmcmod__load_config_define()
+    pricing_cpmod__load_config_define()
+    pricing_cgmod__load_config_define()
+    
     cli__load_config_define()
     
     feature__flush_co__load_config_define()
     
-    pricing_proxy_client__load_config_define()
+    pricing_proxymod__load_config_define()
     
     pricing_storage__load_config_define()
     
@@ -677,13 +713,17 @@ def load_config_main_cfg_postparse():
     
     log__load_config_postparse(c.BOTcfg)
     
+    pricing_cmcmod__load_config_postparse(c.BOTcfg)
+    pricing_cpmod__load_config_postparse(c.BOTcfg)
+    pricing_cgmod__load_config_postparse(c.BOTcfg)
+    
     cli__load_config_postparse(c.BOTcfg)
     
     feature__maker_price__load_config_postparse(c.BOTcfg)
     
     feature__flush_co__load_config_postparse(c.BOTcfg)
     
-    pricing_proxy_client__load_config_postparse(c.BOTcfg)
+    pricing_proxymod__load_config_postparse(c.BOTcfg)
     
     pricing_storage__load_config_postparse(c.BOTcfg)
     
@@ -848,7 +888,8 @@ def feature__maker_price__pricing_update():
     global c, s, d
     
     # load pricing from remote source
-    price_maker_used = pricing_storage__try_get_price(c.BOTsellmarket, c.BOTbuymarket)
+    req = pricing_storage__assetmap_create_req(c.BOTsellmarket, c.BOTbuymarket)
+    price_maker_used = pricing_storage__try_get_price(req)
     # ~ price_maker_remote = pricing_storage__try_get_price(c.BOTsellmarket, c.BOTbuymarket, allow_redirect = False)
     
     # Check if price been loaded from remote pricing storage or remote
@@ -960,7 +1001,8 @@ def feature__balance_save_asset__init_preconfig():
 def feature__balance_save_asset__pricing_update():
     global c, s, d
     
-    temp_price = pricing_storage__try_get_price(c.BOTbalance_save_asset, c.BOTsellmarket)
+    req = pricing_storage__assetmap_create_req(c.BOTbalance_save_asset, c.BOTsellmarket)
+    temp_price = pricing_storage__try_get_price(req)
     if temp_price != 0:
         d.feature__balance_save_asset__price = temp_price
     
@@ -975,8 +1017,9 @@ def feature__balance_save_asset__convert_to_maker(size_in_balance_save_asset):
 # get price of asset vs maker in which are orders sizes set, ie USD
 def feature__sell_size_asset__pricing_update():
     global c, s, d
-    
-    temp_price = pricing_storage__try_get_price(c.BOTsell_size_asset, c.BOTsellmarket)
+      
+    req = pricing_storage__assetmap_create_req(c.BOTsell_size_asset, c.BOTsellmarket)
+    temp_price = pricing_storage__try_get_price(req)
     if temp_price != 0:
         d.feature__sell_size_asset__price = temp_price
     
