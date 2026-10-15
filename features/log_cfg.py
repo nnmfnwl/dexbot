@@ -19,6 +19,7 @@ def log__load_config_define():
    feature__main_cfg__add_variable('log_balance', True, feature__main_cfg__validate_bool, None, """show balance log messages, (default=True enabled)""", None)
    feature__main_cfg__add_variable('log_order', True, feature__main_cfg__validate_bool, None, """show open order log messages, (default=True enabled)""", None)
    feature__main_cfg__add_variable('log_debug', True, feature__main_cfg__validate_bool, None, """show debug log messages, (default=True enabled)""", None)
+   feature__main_cfg__add_variable('log_trace', False, feature__main_cfg__validate_bool, None, """show trace log messages, (default=False disabled)""", None)
    feature__main_cfg__add_variable('log_hint', True, feature__main_cfg__validate_bool, None, """show hint log messages, (default=True enabled)""", None)
 
    feature__main_cfg__add_variable('log_fatal', True, feature__main_cfg__validate_bool, None, """show fatal log messages, (default=True enabled)""", None)
@@ -33,6 +34,7 @@ def log__load_config_postparse(args):
    c.log__balance = bool(args.log_balance)
    c.log__order = bool(args.log_order)
    c.log__debug = bool(args.log_debug)
+   c.log__trace = bool(args.log_trace)
    c.log__hint = bool(args.log_hint)
 
    c.log__fatal = bool(args.log_fatal)
@@ -55,6 +57,7 @@ def log__init_postconfig(reg_fn):
    reg_fn('b', log__cli_help, log__cli_cmd, "enable/disable BALANCE log messages")
    reg_fn('o', log__cli_help, log__cli_cmd, "enable/disable ORDER log messages")
    reg_fn('d', log__cli_help, log__cli_cmd, "enable/disable DEBUG log messages")
+   reg_fn('t', log__cli_help, log__cli_cmd, "enable/disable TRACE log messages")
    reg_fn('h', log__cli_help, log__cli_cmd, "enable/disable HINT log messages")
    reg_fn('f', log__cli_help, log__cli_cmd, "enable/disable FATAL log messages")
    reg_fn('e', log__cli_help, log__cli_cmd, "enable/disable ERROR log messages")
@@ -77,6 +80,9 @@ def log__cli_help(cmd1, arg2):
    
    if cmd1 == 'd':
       print("\nLOG >> enable/disable DEBUG log messages ({})\n".format(c.log__debug))
+   
+   if cmd1 == 't':
+      print("\nLOG >> enable/disable TRACE log messages ({})\n".format(c.log__trace))
          
    if cmd1 == 'h':
       print("\nLOG >> enable/disable HINT log messages ({})\n".format(c.log__hint))
@@ -137,6 +143,15 @@ def log__cli_cmd(cmd1, arg2, arg3):
          c.log__debug = True
          print("\nLOG >> DEBUG enabled\n")
       feature__main_cfg__add_value("log_debug", c.log__debug)
+      
+   if cmd1 == 't':
+      if c.log__trace == True:
+         c.log__trace = False
+         print("\nLOG >> TRACE disabled\n")
+      else:
+         c.log__trace = True
+         print("\nLOG >> TRACE enabled\n")
+      feature__main_cfg__add_value("log_trace", c.log__trace)
          
    if cmd1 == 'h':
       if c.log__hint == True:
