@@ -21,6 +21,7 @@ def log__init_preconfig__():
    c.log__balance = True
    c.log__order = True
    c.log__debug = True
+   c.log__trace = False
    c.log__hint = True
 
    c.log__fatal = True
@@ -63,6 +64,13 @@ def LOG_DEBUG(message, prefix = ""):
    if c.log__debug:
       caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
       print("{}---- DEBUG {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
+      
+# log trace message
+def LOG_TRACE(message, prefix = ""):
+   
+   if c.log__trace:
+      caller = getframeinfo(stack()[1][0]) # <-- stack()[1][0] for next caller line
+      print("{}---- TRACE {}:{} >> {}".format(prefix, os.path.basename(caller.filename), caller.lineno, message))
 
 # log hint message
 def LOG_HINT(message, prefix = ""):
