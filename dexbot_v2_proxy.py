@@ -13,7 +13,10 @@ from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
 import features.glob as glob
 
 from features.pricing_storage import *
-from features.pricing_proxy_server import *
+from features.pricing_proxymod import *
+from features.pricing_cmcmod import *
+from features.pricing_cpmod import *
+from features.pricing_cgmod import *
 from features.main_cfg import *
 
 # welcome message
@@ -33,7 +36,10 @@ def init_postconfig():
     proxy_server__init_postconfig()
     
     # initialize pricing storage and set proxy client
-    pricing_storage__init_postconfig("proxy.tmp.pricing", 180, 1, 6, pricing_proxy_server__pricing_storage__try_get_price_fn)
+    pricing_storage__init_postconfig("proxy.tmp.pricing", 180, 1, 6)
+    pricing_storage__pricing_mod_upt_one("cmc",pricing_cmcmod__get_price)
+    pricing_storage__pricing_mod_upt_one("cg",pricing_cgmod__get_price)
+    pricing_storage__pricing_mod_upt_one("cp",pricing_cpmod__get_price)
 
 def load_config():
     global c, s, d
@@ -64,6 +70,8 @@ def load_config():
     main_cfg_obj = feature__main_cfg__get_cfg_obj()
     
     pricing_storage__load_config_postparse(main_cfg_obj)
+    glob.d.pricing_storage.price_provider = "cp"
+    glob.d.pricing_storage.price_providers_autotry = "off"
     
     # verify arguments
     load_config_verify_or_exit()
@@ -99,15 +107,45 @@ def load_config_verify_or_exit():
 
 # check if pricing works or exit
 def pricing_check_or_exit():
-    print('>>>> Internal test >> Checking pricing information for <{0}> <{1}> (skipped to save server req rate limit)'.format("USDT", "LTC"))
+    # ~ print('>>>> Internal test >> Checking pricing information for <{0}> <{1}> (skipped to save server req rate limit)'.format("USDT", "LTC"))
     
     # Test skip to save req number to server
         # try to get main pricing
-        # ~ price_maker = pricing_storage__try_get_price("USDT", "LTC", "cg", 2, 30)
-        # ~ if price_maker == 0:
-            # ~ print('#### Internal test >> failed >> pricing not available')
-            # ~ sys.exit(1)
-    
+        req = pricing_storage__assetmap_create_req("BTC", "USDT")
+        price_maker = pricing_storage__try_get_price(req, 1, 3)
+        if price_maker == 0:
+            print('#### Internal test >> failed >> pricing not available')
+            sys.exit(1)
+            
+        req = pricing_storage__assetmap_create_req("LTC", "BLOCK")
+        price_maker = pricing_storage__try_get_price(req, 1, 3)
+        if price_maker == 0:
+            print('#### Internal test >> failed >> pricing not available')
+            sys.exit(1)
+            
+        req = pricing_storage__assetmap_create_req("LTC", "BTC")
+        price_maker = pricing_storage__try_get_price(req, 1, 3)
+        if price_maker == 0:
+            print('#### Internal test >> failed >> pricing not available')
+            sys.exit(1)
+            
+        req = pricing_storage__assetmap_create_req("LTC", "BCH")
+        price_maker = pricing_storage__try_get_price(req, 1, 3)
+        if price_maker == 0:
+            print('#### Internal test >> failed >> pricing not available')
+            sys.exit(1)
+            
+        req = pricing_storage__assetmap_create_req("LTC", "DOGE")
+        price_maker = pricing_storage__try_get_price(req, 1, 3)
+        if price_maker == 0:
+            print('#### Internal test >> failed >> pricing not available')
+            sys.exit(1)
+            
+        req = pricing_storage__assetmap_create_req("DOGE", "LTC")
+        price_maker = pricing_storage__try_get_price(req, 1, 3)
+        if price_maker == 0:
+            print('#### Internal test >> failed >> pricing not available')
+            sys.exit(1)
     # ~ print('>>>> Internal test >> Get pricing information for <{0}> <{1}> <{2}> >> success'.format("USDT", "LTC", price_maker))
 
 def proxy_server__init_preconfig():
@@ -142,10 +180,10 @@ def proxy_server__load_config_verify():
     
     return error_num, crazy_num
 
-def proxy_server__rpc_get_price(maker__item_to_sell, taker__payed_by, price_provider = ""):
+def proxy_server__rpc_get_price(req):
     
-    print('**** get external price >> {}/{}/{}'.format(maker__item_to_sell, taker__payed_by, price_provider))
-    return pricing_storage__try_get_price(maker__item_to_sell, taker__payed_by, price_provider)
+    print('**** get external price >> {}/{}/{}'.format(req['maker_name'], req['taker_name'], req.get("price_provider","")))
+    return pricing_storage__try_get_price(req)
 
 def proxy_server__init_postconfig():
     
@@ -170,3 +208,35 @@ if __name__ == '__main__':
     pricing_check_or_exit()
     
     proxy_server__serve_forever()
+
+
+
+# ~ ## Test server
+# ~ from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
+
+# ~ def rpc_test(my_object):
+   # ~ name = my_object.get("name", None)
+   # ~ age = my_object.get("age", None)
+   # ~ fail = my_object.get("fail", None)
+   
+   # ~ print(f"{name} and {age} and {fail}")
+
+   # ~ return 0
+
+# ~ server = SimpleJSONRPCServer(("127.0.0.1", 22333))
+# ~ server.register_function(rpc_test)
+# ~ server.serve_forever()
+
+# ~ ## Test client
+# ~ import jsonrpclib
+
+# ~ clientconn = jsonrpclib.Server("http://127.0.0.1:22333")
+
+# ~ paramm = {}
+# ~ paramm["name"] = "john doe"
+# ~ paramm["age"] = 109
+# ~ paramm["random"] = "random"
+
+# ~ ret = clientconn.rpc_test(paramm)
+# ~ print(f"{ret}")
+
