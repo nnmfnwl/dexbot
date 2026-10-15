@@ -14,6 +14,8 @@ from features.log import *
 
 from features.main_cfg import *
 
+from features.pricing_storage import *
+
 # initialize fixed fee component
 def fixed_fee__init_preconfig__():
     c.fixed_fee__asset = None
@@ -66,8 +68,9 @@ def fixed_fee__init_postconfig(taker, get_price_fn = fixed_fee__get_price_cb__):
 
 # get price of fixed fee asset vs taker
 def fixed_fee__asset_pricing_update():
-    
-    temp_price = d.fixed_fee__get_price_fn(c.fixed_fee__asset, d.fixed_fee__taker)
+
+    req = pricing_storage__assetmap_create_req(c.fixed_fee__asset, d.fixed_fee__taker)
+    temp_price = d.fixed_fee__get_price_fn(req)
     if temp_price != 0:
         d.fixed_fee__price = temp_price
     
