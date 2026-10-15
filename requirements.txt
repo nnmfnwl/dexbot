@@ -2,3 +2,4 @@ python-bitcoinrpc
 flask
 python-dateutil
 jsonrpclib-pelix
+ccxt
