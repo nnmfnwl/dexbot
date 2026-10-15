@@ -25,7 +25,7 @@
 ########################################################################
 
 cfg = {}
-
+ 
 cfg['rpc_user'] = "{cc_rpc_user}"
 cfg['rpc_password'] = "{cc_rpc_password}"
 cfg['rpc_hostname'] = "{cc_rpc_hostname}"
@@ -35,6 +35,13 @@ cfg['price_redirections'] = { {cc_price_redirections} }
 
 cfg['maker_ticker'] = "{cc_maker_ticker}"
 cfg['taker_ticker'] = "{cc_taker_ticker}"
+
+cfg['cmcmod_apikey'] = "{cc_cmcmod_apikey}"
+cfg['cpmod_apikey'] = "{cc_cpmod_apikey}"
+cfg['cgmod_free_apikey'] = "{cc_cgmod_free_apikey}"
+cfg['cgmod_pro_apikey'] = "{cc_cgmod_pro_apikey}"
+cfg['proxymod_provider'] = "{cc_proxymod_provider}"
+cfg['proxymod_autotry'] = "{cc_proxymod_autotry}"
 
 # --maker_address  | trading address of asset being sold (default=None)
 cfg['maker_address'] = "{cc_address_maker}"
