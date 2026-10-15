@@ -14,6 +14,8 @@ from features.log import *
 from features.tmp_cfg import *
 from features.main_cfg import *
 
+from features.pricing_storage import *
+
 # preconfiguration  initialization
 def feature__slide_dyn__init_preconfig__():
     
@@ -230,7 +232,8 @@ def feature__slide_dyn__init_postconfig(maker, taker, get_price_fn = feature__sl
 # asset which dynamic slide zero size is set in pricing update
 def feature__slide_dyn__asset_pricing_update():
     
-    temp_price = d.feature__slide_dyn__get_price_fn(c.BOTslide_dyn_asset, c.BOTsellmarket)
+    req = pricing_storage__assetmap_create_req(c.BOTslide_dyn_asset, c.BOTsellmarket)
+    temp_price = d.feature__slide_dyn__get_price_fn(req)
     if temp_price != 0:
         d.feature__slide_dyn__asset_price = temp_price
     
