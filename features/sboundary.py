@@ -37,6 +37,7 @@ from features.log import *
 
 from features.tmp_cfg import *
 from features.main_cfg import *
+from features.pricing_storage import *
 
 # pre-configuration  initialization
 def sboundary__init_preconfig__():
@@ -190,7 +191,8 @@ def sboundary__pricing_init(maker, taker, action, get_price_fn = sboundary__get_
         else:
             LOG_ACTION('pricing init >> trying to initialize reversed price')
             # code of reverse pricing magic ))
-            tmp_price = d.sboundary__get_price_fn(d.sboundary__maker, d.sboundary__taker)
+            req = pricing_storage__assetmap_create_req(d.sboundary__maker, d.sboundary__taker)
+            tmp_price = d.sboundary__get_price_fn(req)
             if tmp_price != 0:
                 tmp_min = tmp_price * c.sboundary__min
                 tmp_max = tmp_price * c.sboundary__max
@@ -217,7 +219,8 @@ def sboundary__pricing_update():
     
     # current price is loaded if is not already set or live tracking of asset price is activated
     if c.sboundary__max_track_asset is True or c.sboundary__min_track_asset is True or d.sboundary__price_current == 0:
-        tmp_sboundary__price_current = d.sboundary__get_price_fn(c.sboundary__asset, d.sboundary__taker)
+        req = pricing_storage__assetmap_create_req(c.sboundary__asset, d.sboundary__taker)
+        tmp_sboundary__price_current = d.sboundary__get_price_fn(req)
         if tmp_sboundary__price_current != 0:
             d.sboundary__price_current = tmp_sboundary__price_current
             feature__tmp_cfg__set_value(d.sboundary__id_price_current, d.sboundary__price_current, False)
