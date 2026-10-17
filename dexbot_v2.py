@@ -1562,28 +1562,28 @@ def events_wait():
     if ret_hit is True and ret_exit is False:
         if ret_cancel is True:
             virtual_orders__cancel_all()
-        ret = True
+            ret = True
     
     # detect and handle min static boundary event
     ret_hit, ret_exit, ret_cancel, ret_price = sboundary__check_min(d.feature__maker_price__value_current_used + (d.feature__maker_price__value_current_used * d.feature__slide_dyn__value))
     if ret_hit is True and ret_exit is False:
         if ret_cancel is True:
             virtual_orders__cancel_all()
-        ret = True
+            ret = True
         
     # detect and handle max relative boundary event
     ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_max(d.feature__maker_price__value_current_used + (d.feature__maker_price__value_current_used * d.feature__slide_dyn__value))
     if ret_hit is True and ret_exit is False:
         if ret_cancel is True:
             virtual_orders__cancel_all()
-        ret = True
+            ret = True
     
     # detect and handle min relative boundary event
     ret_hit, ret_exit, ret_cancel, ret_price = rboundary__check_min(d.feature__maker_price__value_current_used + (d.feature__maker_price__value_current_used * d.feature__slide_dyn__value))
     if ret_hit is True and ret_exit is False:
         if ret_cancel is True:
             virtual_orders__cancel_all()
-        ret = True
+            ret = True
     
     return ret
 
