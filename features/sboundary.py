@@ -138,7 +138,7 @@ def sboundary__load_config_verify():
             LOG_ERROR('<sboundary__min> value <{0}> is invalid. Minimum price boundary must be positive number'.format(c.sboundary__min))
             error_num += 1
         
-    if c.sboundary__max < c.sboundary__min:
+    if c.sboundary__max != 0 and c.sboundary__min != 0 and c.sboundary__max < c.sboundary__min:
         LOG_ERROR('<sboundary__max> value <{0}> can not be less than <sboundary__min> value <{1}>.'.format(c.sboundary__max, c.sboundary__min))
         error_num += 1
     
