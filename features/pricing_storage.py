@@ -222,6 +222,8 @@ def pricing_storage__try_get_price_from_mods(req):
             if module_name == price_provider:
                 price = glob.d.pricing_storage.pricing_mod[module_name](req)
                 provider = module_name
+                if price == 0:
+                    LOG_WARNING(f"Remote selected price provider <{price_provider}>/<{module_name}> get price failed...")
                 break
     
     # second priority is custom local price provider but only if price providers are auto on or remote price provider is not set
@@ -230,6 +232,8 @@ def pricing_storage__try_get_price_from_mods(req):
             LOG_TRACE(f"searching for local selected price provider <{price_provider}> <{module_name}> ")
             if module_name == glob.d.pricing_storage.price_provider:
                 price = glob.d.pricing_storage.pricing_mod[module_name](req)
+                if price == 0:
+                    LOG_WARNING(f"Local selected price provider <{glob.d.pricing_storage.price_provider}>/<{module_name}> get price failed...")
                 provider = module_name
                 break
     
@@ -239,6 +243,8 @@ def pricing_storage__try_get_price_from_mods(req):
             LOG_TRACE(f"trying all other price providers <{price_provider}> <{module_name}> ")
             if module_name != price_provider and module_name != glob.d.pricing_storage.price_provider:
                 price = glob.d.pricing_storage.pricing_mod[module_name](req)
+                if price == 0:
+                    LOG_WARNING(f"Other auto price providers <{module_name}> get price failed...")
                 if price != 0:
                     provider = module_name
                     break
