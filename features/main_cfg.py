@@ -73,7 +73,7 @@ def feature__main_cfg__add_value(var_name, value):
          if ret is True:
             cfg['value'] = value2
          else:
-            LOG_ERROR('variable >> {} >> value >> {} >> is invalid'.format(var_name, value))
+            LOG_ERROR('validation function for variable >> {} >> value >> {} >> is invalid'.format(var_name, value))
             return False
             
    return True
@@ -346,16 +346,16 @@ def feature__main_cfg__validate_list(var_name, val, arg):
 
 
 # register commands
-def main_cfg__init_postconfig(reg_fn):
+def feature__main_cfg__init_postconfig(reg_fn):
    
-   reg_fn('cfg', main_cfg__cli_cfg_help, main_cfg__cli_cfg, "update configuration")
+   reg_fn('cfg', feature__main_cfg__cli_cfg_help, feature__main_cfg__cli_cfg_cmd, "update configuration")
    
 # help for log cli
-def main_cfg__cli_cfg_help(cmd1, arg2):
+def feature__main_cfg__cli_cfg_help(cmd1, arg2):
    print("\nCFG >> just one argument <update> needed to make configuration update\n")
    
 # check and do command line interface configuration
-def main_cfg__cli_cfg(cmd1, arg2, arg3):
+def feature__main_cfg__cli_cfg_cmd(cmd1, arg2, arg3):
    
       if arg2 == "update":
          LOG_ACTION("configuration update in progress")
