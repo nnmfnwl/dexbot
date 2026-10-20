@@ -443,7 +443,9 @@ def pricing_storage__try_get_price(req, try_num = None, try_sleep = None, allow_
             virtual_taker = taker
             virtual_maker_price = 1
             virtual_taker_price = 1
-            
+        
+        LOG_DEBUG(f'redirection status <{allow_redirect}> >> maker->virtual/taker->virtual {maker}->{virtual_maker}/{taker}->{virtual_taker} >> virtual_maker_price <{virtual_maker_price}> virtual_taker_price <{virtual_taker_price}>')
+        
         if virtual_maker == virtual_taker:
             virtual_price = 1
             LOG_DEBUG('maker/taker {0}/{1} >> redirected {2}/{3} >> at {4} >> found auto price >> {5}'.format(maker, taker, virtual_maker, virtual_taker, price_provider, virtual_price))
