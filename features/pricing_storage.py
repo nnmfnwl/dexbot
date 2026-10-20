@@ -25,7 +25,7 @@ def pricing_storage__init_preconfig__():
     glob.d.pricing_storage__try_num = 1
     glob.d.pricing_storage__try_sleep = 6
     glob.d.pricing_storage.price_acceptable_outage = 0
-    glob.d.pricing_storage.price_outage_extra_slide = 1
+    glob.d.pricing_storage.price_outage_extra_slide = 1.0
     glob.d.pricing_storage.req = {}
     glob.d.pricing_storage.pricing_mod = {}
     glob.d.pricing_storage.assetmap = {}
@@ -40,7 +40,7 @@ def pricing_storage__load_config_define():
     Default: "cg"; available options: "cg" (CoinGecko), "ccxt" (CCXT), "cmc" (Coinmarketcap) """, [['use external source by proxy client module','proxy'], ['CoinGecko','cg'],['ccxt','ccxt'],['CoinMarketCap','cmc'],['CoinPaprika','cp']])
     feature__main_cfg__add_variable('price_providers_autotry', "off", feature__main_cfg__validate_str, None, """off/auto - try also other price providers""", [['automatic','on'],['try only one provider','off']])
     feature__main_cfg__add_variable('price_acceptable_outage', 0, feature__main_cfg__validate_int, None, """Acceptable external pricing outage in seconds, previous price is used for time of outage. (default=0)""", None)
-    feature__main_cfg__add_variable('price_outage_extra_slide', 1, feature__main_cfg__validate_float, None, """Xtra slide added to price in percent if outage happens. 1.05 is +5%. Default 0%""", [['no added slide', 1],['slide outage is considered as market pressure so automatically rise price 20%', 1.2]])
+    feature__main_cfg__add_variable('price_outage_extra_slide', 1.0, feature__main_cfg__validate_float, None, """Xtra slide added to price in percent if outage happens. 1.05 is +5%. Default 0%""", [['no added slide', 1],['slide outage is considered as market pressure so automatically rise price 20%', 1.2]])
 
 
 # parse configuration value
