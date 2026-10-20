@@ -56,6 +56,8 @@ def init_preconfig():
 
     global_vars_init_preconfig()
     
+    feature__main_cfg__init_preconfig__()
+    
     log__init_preconfig__()
     
     cli__init_preconfig__()
@@ -127,7 +129,7 @@ def init_postconfig():
     pricing_cgmod__init_postconfig(cli__register_cmd)
     pricing_cpmod__init_postconfig(cli__register_cmd)
     
-    main_cfg__init_postconfig(cli__register_cmd)
+    feature__main_cfg__init_postconfig(cli__register_cmd)
     
 #global variables initialization
 def global_vars_init_preconfig():
