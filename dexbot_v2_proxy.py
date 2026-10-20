@@ -4,6 +4,11 @@ import random
 import argparse
 import sys
 import logging
+
+import os.path
+import datetime
+import shutil
+
 from utils import dxbottools
 from utils import getpricing as pricebot
 from utils import dxsettings
@@ -12,12 +17,17 @@ from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
 
 import features.glob as glob
 
+from features.log import *
+from features.log_cfg import *
+from features.cli import *
+
+from features.main_cfg import *
+
 from features.pricing_storage import *
 from features.pricing_proxymod import *
 from features.pricing_cmcmod import *
 from features.pricing_cpmod import *
 from features.pricing_cgmod import *
-from features.main_cfg import *
 
 # welcome message
 def start_welcome_message():
@@ -27,7 +37,14 @@ def start_welcome_message():
 def init_preconfig():
     print('>>>> Preconfig initialization')
     
+    feature__main_cfg__init_preconfig__()
+    
+    log__init_preconfig__()
+    
+    cli__init_preconfig__()
+    
     proxy_server__init_preconfig()
+    
 
 # initialization of items dependent on config
 def init_postconfig():
@@ -35,8 +52,14 @@ def init_postconfig():
     
     proxy_server__init_postconfig()
     
+    cli__init_postconfig()
+    
+    log__init_postconfig(cli__register_cmd)
+    
+    feature__main_cfg__init_postconfig(cli__register_cmd)
+    
     # initialize pricing storage and set proxy client
-    pricing_storage__init_postconfig("proxy.tmp.pricing", 180, 1, 6)
+    pricing_storage__init_postconfig("proxy_tmp_pricing", 180, 1, 6)
     pricing_storage__pricing_mod_upt_one("cmc",pricing_cmcmod__get_price)
     pricing_storage__pricing_mod_upt_one("cg",pricing_cgmod__get_price)
     pricing_storage__pricing_mod_upt_one("cp",pricing_cpmod__get_price)
@@ -50,44 +73,81 @@ def load_config():
     
     parser.add_argument('--restore', type=glob.t.argparse_bool, nargs='?', const=True, help='Variable used to let bot know to try restore auto-configured values from tmp cfg. Usable when secondary run script management by, also manual testing... (default=False not restoring)', default=False)
     
+    # arguments: config file(will be used instead of arguments later)
+    parser.add_argument('--config', type=str, help='python proxy server config file', default="proxy_configuration")
+    
     parser.add_argument('--imreallysurewhatimdoing', type=int, default=0, help='This argument allows user to specify number of non-standard configuration values for special cases like user want to activate bot trading later relatively higher price than actual is')
     
-    proxy_server__load_config_define(parser, argparse)
+    log__load_config_define()
+    
+    cli__load_config_define()
+    
+    proxy_server__load_config_define()
     
     pricing_storage__load_config_define()
     
     # parse arguments and postparse arguments
     args = parser.parse_args()
     
-    proxy_server__load_config_postparse(args)
-    
     glob.c.BOTrestore = bool(args.restore)
-
+   
+    # check if configuration argument is set as --config and try to import configuration file
+    glob.c.BOTconfigname = str(args.config)
+    if glob.c.BOTconfigname is None:
+        LOG_ERROR("--config file is invalid")
+        sys.exit(1)
+    
+    # check if file not exist and create default one
+    if os.path.exists(glob.c.BOTconfigname + '.py') != True or os.path.getsize(glob.c.BOTconfigname + '.py') <= 0:
+       LOG_WARNING(f"Generating configuration file >> {glob.c.BOTconfigname + '.py'} >> because not exist or is empty")
+       retcode = feature__main_cfg__generate_cfg(glob.c.BOTconfigname + '.py', "defaults")
+       if retcode == False:
+          sys.exit(retcode)
+       
+    error_num = 0
+    # load configuration from configuration file
+    error_num += feature__main_cfg__load_cfg(c.BOTconfigname)
+    
     glob.c.BOTimreallysurewhatimdoing = int(args.imreallysurewhatimdoing)
     
+    # parse loaded configuration and build obj file
     feature__main_cfg__parse_cfg()
     
+    # return whole cfg as obj
     main_cfg_obj = feature__main_cfg__get_cfg_obj()
     
+    # post main cfg parse process
     pricing_storage__load_config_postparse(main_cfg_obj)
+    
+    cli__load_config_postparse(main_cfg_obj)
+    
+    proxy_server__load_config_postparse(main_cfg_obj)
+    
     glob.d.pricing_storage.price_provider = "cp"
     glob.d.pricing_storage.price_providers_autotry = "off"
     
     # verify arguments
-    load_config_verify_or_exit()
+    load_config_verify_or_exit(error_num)
 
-def load_config_verify_or_exit():
+def load_config_verify_or_exit(error_num):
     global c, s, d
     print('>>>> Verifying configuration')
     
-    error_num = 0
     crazy_num = 0
+    
+    error_num_tmp, crazy_num_tmp = log__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
     
     error_num_tmp, crazy_num_tmp = proxy_server__load_config_verify()
     error_num += error_num_tmp
     crazy_num += crazy_num_tmp
     
     error_num_tmp, crazy_num_tmp = pricing_storage__load_config_verify()
+    error_num += error_num_tmp
+    crazy_num += crazy_num_tmp
+    
+    error_num_tmp, crazy_num_tmp = cli__load_config_verify()
     error_num += error_num_tmp
     crazy_num += crazy_num_tmp
     
@@ -155,10 +215,13 @@ def proxy_server__init_preconfig():
     glob.c.proxy_server__addr = ""
     glob.c.proxy_server__port = 0
     
-def proxy_server__load_config_define(parser, argparse):
-    parser.add_argument('--proxy_server_addr', type=str, help='proxy server address to listen on (default="'+glob.c.proxy_server__default_addr+'")', default=glob.c.proxy_server__default_addr)
     
-    parser.add_argument('--proxy_server_port', type=int, help='proxy server port to listen on (default="'+str(glob.c.proxy_server__default_port)+'")', default=glob.c.proxy_server__default_port)
+def proxy_server__load_config_define():
+   
+    feature__main_cfg__add_variable('proxy_server_addr', glob.c.proxy_server__default_addr, feature__main_cfg__validate_str, None, 'proxy server address to listen on (default="'+glob.c.proxy_server__default_addr+'")', None)
+    
+    feature__main_cfg__add_variable('proxy_server_port', glob.c.proxy_server__default_port, feature__main_cfg__validate_int, None, 'proxy server port to listen on (default="'+str(glob.c.proxy_server__default_port)+'")', None)
+    
     
 def proxy_server__load_config_postparse(args):
     
@@ -182,6 +245,12 @@ def proxy_server__load_config_verify():
 
 def proxy_server__rpc_get_price(req):
     
+    # For now processing commands is done right in request message receive and response process
+    # read all waiting commands first
+    while cli__try_read_cmd() == True:
+       pass
+    
+    # process request
     print('**** get external price >> {}/{}/{}'.format(req['maker_name'], req['taker_name'], req.get("price_provider","")))
     return pricing_storage__try_get_price(req)
 
@@ -206,6 +275,11 @@ if __name__ == '__main__':
     init_postconfig()
     
     pricing_check_or_exit()
+    
+    # For now processing commands is done right in request message receive and response process and at bot start...
+    # read all waiting commands first
+    while cli__try_read_cmd() == True:
+       pass
     
     proxy_server__serve_forever()
 
