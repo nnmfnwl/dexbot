@@ -91,8 +91,6 @@ def pricing_storage__init_postconfig(auto_save_file_name, update_interval, try_n
     # try to load auto auto saved pricing data
     pricing_storage__file_load()
     
-    pricing_storage__update_data_redirect(data_redirect)
-    
     pricing_storage__assetmap_update({'ticker': "BLOCK", 'name': "blocknet", 'ucid': "707"})
     pricing_storage__assetmap_update({'ticker': "BTC", 'name': "bitcoin", 'ucid': "1"})
     pricing_storage__assetmap_update({'ticker': "ETH", 'name': "ethereum", 'ucid': "1027"})
@@ -108,6 +106,8 @@ def pricing_storage__init_postconfig(auto_save_file_name, update_interval, try_n
     pricing_storage__assetmap_update({'ticker': "BTX", 'name': "bitcore", 'ucid': "1654"})
     pricing_storage__assetmap_update({'ticker': "SCC", 'name': "stakecubecoin", 'ucid': "3986"})
     pricing_storage__assetmap_update({'ticker': "XVG", 'name': "verge", 'ucid': "693"})
+    
+    pricing_storage__update_data_redirect(data_redirect)
 
 # get pair identificator for storing price information
 def pricing_storage__get_pair_id(maker, taker, price_provider = ""):
@@ -154,7 +154,7 @@ def pricing_storage__assetmap_find(asset_ticker):
     ret = {}
     
     if asset_ticker != None:
-        ret = glob.d.pricing_storage.assetmap[asset_ticker]
+        ret = glob.d.pricing_storage.assetmap.get(asset_ticker, {})
     else:
         LOG_ERROR(f"param asset_ticker is invalid: {asset_ticker}")
     
