@@ -354,7 +354,7 @@ def pricing_storage__update_asset_redirect(asset, redirect_asset, price):
     
     glob.d.pricing_storage.data_redirect[asset] = {}
     # search for asset in existing predefined map and try to merge in the asset details
-    redirect_asset = pricing_storage__assetmap_merge_into_req(asset, "", redirect_asset)
+    redirect_asset = pricing_storage__assetmap_merge_into_req(redirect_asset.get('ticker', None), "", redirect_asset)
     # redirect for example BLOCK into USDT
     glob.d.pricing_storage.data_redirect[asset]['asset'] = redirect_asset
     # redirected BLOCK into USDT, so 1 BLOCK is 0.035 USDT
