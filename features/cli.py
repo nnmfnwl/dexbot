@@ -72,6 +72,8 @@ def cli__register_cmd(cmd_name, help_fn, exec_fn, cmd_short_descr):
 # check and do interactive keyboard configuration
 def cli__try_read_cmd():
    
+   ret = False
+   
    if select.select([sys.stdin], [], [], 0)[0]: # detect input to read
       clicmd = sys.stdin.readline().strip()  # Read a line without blocking
       if clicmd != None: # check return command line
@@ -88,6 +90,9 @@ def cli__try_read_cmd():
             print("Command <{}> not defined".format(cmd1))
          else:
             cmd.exec_fn(cmd1, arg2, arg3)
+         ret = True
+         
+   return ret
 
 # self help functionality to describe other commands
 def cli__help_cmd(cmd1, arg2, arg3):
