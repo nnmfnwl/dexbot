@@ -1194,6 +1194,19 @@ def virtual_orders__check_status_update_status():
             # else update status of virtual order to existing order status
             else:
                 virtual_orders__update_status(d.ordersvirtual[i], order['status'], ifnot = [s.status_list__clear])
+                
+    # simple BALANCE status collect
+    stat_open_num=float(0)
+    stat_maker_amount=float(0)
+    stat_taker_amount=float(0)
+    for ordervirtual in d.ordersvirtual:
+       if order__check_status(ordervirtual, ifyes = s.status_list__with_reserved_balance):
+          stat_open_num = stat_open_num + 1
+          stat_maker_amount = stat_maker_amount + float(ordervirtual['maker_size'])
+          stat_taker_amount = stat_taker_amount + float(ordervirtual['taker_size'])
+    
+    LOG_BALANCE(f"open orders: <{stat_open_num}> summary-amount for sell/buy <{stat_maker_amount}>/<{stat_taker_amount}> ")
+       
 
 # update information needed by reopen after finish feature to know how many orders are opened and how many finished
 def events_wait_reopenfinished_update(virtual_order, actual_order, finished_by_takerbot):
