@@ -144,12 +144,9 @@ def sboundary__load_config_verify():
     
     return error_num, crazy_num
 
-def sboundary__get_price_cb__(maker, taker):
-    LOG_ERROR('dexbot.features.sboundary.sboundary__get_price_cb__() function is just empty default callback, please replace with pricing_storage__try_get_price')
-    return 0
 
 # initial get pricing for relative boundaries
-def sboundary__pricing_init(maker, taker, action, get_price_fn = sboundary__get_price_cb__):
+def sboundary__pricing_init(maker, taker, action, get_price_fn):
     
     if c.sboundary__asset == "":
         c.sboundary__asset = taker
@@ -192,7 +189,7 @@ def sboundary__pricing_init(maker, taker, action, get_price_fn = sboundary__get_
             LOG_ACTION('pricing init >> trying to initialize reversed price')
             # code of reverse pricing magic ))
             req = pricing_storage__assetmap_create_req(d.sboundary__maker, d.sboundary__taker)
-            tmp_price = d.sboundary__get_price_fn(req)
+            tmp_price = d.sboundary__get_price_fn(req, allow_outage=False)
             if tmp_price != 0:
                 tmp_min = tmp_price * c.sboundary__min
                 tmp_max = tmp_price * c.sboundary__max
@@ -220,7 +217,7 @@ def sboundary__pricing_update():
     # current price is loaded if is not already set or live tracking of asset price is activated
     if c.sboundary__max_track_asset is True or c.sboundary__min_track_asset is True or d.sboundary__price_current == 0:
         req = pricing_storage__assetmap_create_req(c.sboundary__asset, d.sboundary__taker)
-        tmp_sboundary__price_current = d.sboundary__get_price_fn(req)
+        tmp_sboundary__price_current = d.sboundary__get_price_fn(req, allow_outage=False)
         if tmp_sboundary__price_current != 0:
             d.sboundary__price_current = tmp_sboundary__price_current
             feature__tmp_cfg__set_value(d.sboundary__id_price_current, d.sboundary__price_current, False)
