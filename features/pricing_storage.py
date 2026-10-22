@@ -376,7 +376,7 @@ def pricing_storage__update_data_redirect(data_redirect = {}):
 
 
 # try to get price from pricing storage
-def pricing_storage__try_get_price(req, try_num = None, try_sleep = None, allow_redirect = True):
+def pricing_storage__try_get_price(req, try_num = None, try_sleep = None, allow_redirect = True, allow_outage = True):
     
     maker = req['maker_ticker']
     taker = req['taker_ticker']
@@ -486,7 +486,7 @@ def pricing_storage__try_get_price(req, try_num = None, try_sleep = None, allow_
                             pricing_storage__file_save()
             
             # if storage and remote price get failed, the temporary price outage could be ignored for a while
-            if virtual_price == 0:
+            if virtual_price == 0 and glob.d.pricing_storage.price_acceptable_outage > 0 and allow_outage == True:
                 
                 # get previous price and time from general no provider storage
                 virtual_pair = pricing_storage__get_pair_id(virtual_maker, virtual_taker)
