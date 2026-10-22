@@ -172,37 +172,37 @@ def pricing_check_or_exit():
     # Test skip to save req number to server
         # try to get main pricing
         req = pricing_storage__assetmap_create_req("BTC", "USDT")
-        price_maker = pricing_storage__try_get_price(req, 1, 3)
+        price_maker = pricing_storage__try_get_price(req, 1, 3, allow_outage=False)
         if price_maker == 0:
             print('#### Internal test >> failed >> pricing not available')
             sys.exit(1)
             
         req = pricing_storage__assetmap_create_req("LTC", "BLOCK")
-        price_maker = pricing_storage__try_get_price(req, 1, 3)
+        price_maker = pricing_storage__try_get_price(req, 1, 3, allow_outage=False)
         if price_maker == 0:
             print('#### Internal test >> failed >> pricing not available')
             sys.exit(1)
             
         req = pricing_storage__assetmap_create_req("LTC", "BTC")
-        price_maker = pricing_storage__try_get_price(req, 1, 3)
+        price_maker = pricing_storage__try_get_price(req, 1, 3, allow_outage=False)
         if price_maker == 0:
             print('#### Internal test >> failed >> pricing not available')
             sys.exit(1)
             
         req = pricing_storage__assetmap_create_req("LTC", "BCH")
-        price_maker = pricing_storage__try_get_price(req, 1, 3)
+        price_maker = pricing_storage__try_get_price(req, 1, 3, allow_outage=False)
         if price_maker == 0:
             print('#### Internal test >> failed >> pricing not available')
             sys.exit(1)
             
         req = pricing_storage__assetmap_create_req("LTC", "DOGE")
-        price_maker = pricing_storage__try_get_price(req, 1, 3)
+        price_maker = pricing_storage__try_get_price(req, 1, 3, allow_outage=False)
         if price_maker == 0:
             print('#### Internal test >> failed >> pricing not available')
             sys.exit(1)
             
         req = pricing_storage__assetmap_create_req("DOGE", "LTC")
-        price_maker = pricing_storage__try_get_price(req, 1, 3)
+        price_maker = pricing_storage__try_get_price(req, 1, 3, allow_outage=False)
         if price_maker == 0:
             print('#### Internal test >> failed >> pricing not available')
             sys.exit(1)
