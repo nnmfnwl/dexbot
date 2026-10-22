@@ -216,11 +216,7 @@ def feature__slide_dyn__load_config_verify():
     
     return error_num, crazy_num
 
-def feature__slide_dyn__get_price_cb__(maker, taker):
-    LOG_ERROR('dexbot.features.slide_dyn.feature__slide_dyn__get_price_cb__() function is just empty default callback, please replace with pricing_storage__try_get_price')
-    return 0
-
-def feature__slide_dyn__init_postconfig(maker, taker, get_price_fn = feature__slide_dyn__get_price_cb__):
+def feature__slide_dyn__init_postconfig(maker, taker, get_price_fn):
     
     if c.BOTslide_dyn_asset is None:
         c.BOTslide_dyn_asset = taker
@@ -233,7 +229,7 @@ def feature__slide_dyn__init_postconfig(maker, taker, get_price_fn = feature__sl
 def feature__slide_dyn__asset_pricing_update():
     
     req = pricing_storage__assetmap_create_req(c.BOTslide_dyn_asset, c.BOTsellmarket)
-    temp_price = d.feature__slide_dyn__get_price_fn(req)
+    temp_price = d.feature__slide_dyn__get_price_fn(req, allow_outage=False)
     if temp_price != 0:
         d.feature__slide_dyn__asset_price = temp_price
     
