@@ -1004,7 +1004,7 @@ def feature__balance_save_asset__pricing_update():
     global c, s, d
     
     req = pricing_storage__assetmap_create_req(c.BOTbalance_save_asset, c.BOTsellmarket)
-    temp_price = pricing_storage__try_get_price(req)
+    temp_price = pricing_storage__try_get_price(req, allow_outage=False)
     if temp_price != 0:
         d.feature__balance_save_asset__price = temp_price
     
@@ -1021,7 +1021,7 @@ def feature__sell_size_asset__pricing_update():
     global c, s, d
       
     req = pricing_storage__assetmap_create_req(c.BOTsell_size_asset, c.BOTsellmarket)
-    temp_price = pricing_storage__try_get_price(req)
+    temp_price = pricing_storage__try_get_price(req, allow_outage=False)
     if temp_price != 0:
         d.feature__sell_size_asset__price = temp_price
     
