@@ -53,12 +53,8 @@ def fixed_fee__load_config_verify():
         
     return error_num, crazy_num
 
-def fixed_fee__get_price_cb__(maker, taker):
-    LOG_ERROR('dexbot.features.fixed_fee.fixed_fee__get_price_cb__() function is just empty default callback, please replace with pricing_storage__try_get_price')
-    return 0
-
 # set update interval in seconds
-def fixed_fee__init_postconfig(taker, get_price_fn = fixed_fee__get_price_cb__):
+def fixed_fee__init_postconfig(taker, get_price_fn):
     
     if c.fixed_fee__asset is None or c.fixed_fee__asset == "":
         c.fixed_fee__asset = taker
@@ -70,7 +66,7 @@ def fixed_fee__init_postconfig(taker, get_price_fn = fixed_fee__get_price_cb__):
 def fixed_fee__asset_pricing_update():
 
     req = pricing_storage__assetmap_create_req(c.fixed_fee__asset, d.fixed_fee__taker)
-    temp_price = d.fixed_fee__get_price_fn(req)
+    temp_price = d.fixed_fee__get_price_fn(req, allow_outage=False)
     if temp_price != 0:
         d.fixed_fee__price = temp_price
     
