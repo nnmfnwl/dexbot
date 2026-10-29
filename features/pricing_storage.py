@@ -496,7 +496,7 @@ def pricing_storage__try_get_price(req, try_num = None, try_sleep = None, allow_
                 outage = time.time() - (price_time + glob.d.pricing_storage.update_interval)
                 if outage < glob.d.pricing_storage.price_acceptable_outage:
                     virtual_price = virtual_price_previous * glob.d.pricing_storage.price_outage_extra_slide
-                    LOG_INFO(f'maker/taker {virtual_maker}/{virtual_maker} >> outage accepted {outage}/{glob.d.pricing_storage.price_acceptable_outage} >> using previous price * price_outage_extra_slide >> {virtual_price_previous}*{glob.d.pricing_storage.price_outage_extra_slide}={price}')
+                    LOG_INFO(f'maker/taker {virtual_maker}/{virtual_maker} >> outage accepted {outage}/{glob.d.pricing_storage.price_acceptable_outage} >> using previous price * price_outage_extra_slide >> {virtual_price_previous}*{glob.d.pricing_storage.price_outage_extra_slide}={virtual_price}')
                     
                 else:
                     LOG_INFO(f'maker/taker {virtual_maker}/{virtual_maker} >> outage not accepted {outage}/{glob.d.pricing_storage.price_acceptable_outage} >> not using previous price')
